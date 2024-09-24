@@ -1,24 +1,46 @@
 import logo from './logo.svg';
 import './App.css';
+import { app } from './firebase';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import Home from './Home';
+import Stats from './Stats'
+import Messages from './Messages';
+import Playlists from './Playlists';
+import Profile from './Profile';
 
 function App() {
+  useEffect(() => {
+    // Confirm Firebase is initialized
+    console.log('Firebase App:', app);
+  }, []);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <nav>
+        <Link to="/" style={{ color: 'blue', textDecoration: 'none', marginRight: '15px' }}>
+          Home
+        </Link>
+        <Link to="/stats" style={{ color: 'blue', textDecoration: 'none', marginRight: '15px' }}>
+          Statistics
+        </Link>
+        <Link to="/messages" style={{ color: 'blue', textDecoration: 'none', marginRight: '15px' }}>
+          Messages
+        </Link>
+        <Link to="/playlists" style={{ color: 'blue', textDecoration: 'none', marginRight: '15px' }}>
+          Playlists
+        </Link>
+        <Link to="/profile" style={{ color: 'blue', textDecoration: 'none', marginRight: '15px' }}>
+          Profile
+        </Link>
+      </nav>
+      <Routes>
+        <Route path='/' element={<Home/>} />
+        <Route path='/stats' element={<Stats/>} />
+        <Route path='/messages' element={<Messages/>} />
+        <Route path='/playlists' element={<Playlists/>} />
+        <Route path='/profile' element={<Profile/>} />
+      </Routes>
+    </Router>
   );
 }
 
