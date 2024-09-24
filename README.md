@@ -5,7 +5,7 @@
 3. Create a new branch with the naming convention: feature/"story name" number (use underscores to separate spaces and with number)
 4. Run `npm install` to install all dependencies
 5. Everytime you make a change run `npm run build`
-6. Run `firebase serve` to generate localhost link that the build changes will take effect on
+6. Run `firebase serve` to generate localhost link that the build changes will take effect on (make sure you are not in a subfolder when running this)
 
 Additional Notes:
  - Always make sure you are on your branch (do NOT commit to main)
