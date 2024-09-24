@@ -1,3 +1,22 @@
+# Firebase Project Instructions
+
+1. Clone Repository (Make sure to create developer key for permission)
+2. Install firebase CLI and configure credentials (should be online)
+3. Create a new branch with the naming convention: feature/"story name" number (use underscores to separate spaces and with number)
+4. Run `npm install` to install all dependencies
+5. Everytime you make a change run `npm run build`
+6. Run `firebase serve` to generate localhost link that the build changes will take effect on
+
+Additional Notes:
+ - Always make sure you are on your branch (do NOT commit to main)
+ - DO NOT run firebase deploy
+ - DO NOT run firebase init
+ - All react files are in the src folder
+ - Respective site pages are defined by the folder (eg. Profile page - Profile.js, Playlist page - Playlists.js)
+
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
