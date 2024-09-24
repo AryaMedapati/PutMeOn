@@ -28,10 +28,24 @@
   color: #61dafb;
 }
 
+nav {
+  display: flex;
+  justify-content: space-around;  
+  align-items: center;          
+  padding: 1rem;                 
+  background-color: #000000;      
+}
+
+nav div {
+  display: flex;
+  align-items: center;
+}
+
 .icon {
   font-size: 50px;
-  color: "blue";
+  color: #1DB954;
 }
+
 
 @keyframes App-logo-spin {
   from {
