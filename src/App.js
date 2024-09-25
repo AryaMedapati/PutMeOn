@@ -54,9 +54,21 @@ function App() {
           </div>
         </Link>
         <Link to="/playlists">
-        <div
+          <div
             onMouseEnter={() => setIsPlayHovered(true)}
             onMouseLeave={() => setIsPlayHovered(false)}
+          >
+            {isProfHovered ? (
+              <PiPlaylistFill className="icon" />
+            ) : (
+              <PiPlaylist className="icon" />
+            )}
+          </div>
+        </Link>
+        <Link to="/messages">
+          <div
+            onMouseEnter={() => setIsMesHovered(true)}
+            onMouseLeave={() => setIsMesHovered(false)}
           >
             {isPlayHovered ? (
               <TbMessageCircleFilled className="icon" />
@@ -65,27 +77,15 @@ function App() {
             )}
           </div>
         </Link>
-        <Link to="/messages">
-        <div
-            onMouseEnter={() => setIsMesHovered(true)}
-            onMouseLeave={() => setIsMesHovered(false)}
+        <Link to="/profile">
+          <div
+            onMouseEnter={() => setIsProfHovered(true)}
+            onMouseLeave={() => setIsProfHovered(false)}
           >
             {isMesHovered ? (
               <FaUserCircle className="icon" />
             ) : (
               <FaRegUserCircle className="icon" />
-            )}
-          </div>
-        </Link>
-        <Link to="/profile">
-        <div
-            onMouseEnter={() => setIsProfHovered(true)}
-            onMouseLeave={() => setIsProfHovered(false)}
-          >
-            {isProfHovered ? (
-              <PiPlaylistFill className="icon" />
-            ) : (
-              <PiPlaylist className="icon" />
             )}
           </div>
         </Link>
