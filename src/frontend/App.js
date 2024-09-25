@@ -1,5 +1,4 @@
-import logo from "./logo.svg";
-import "./App.css";
+import "./styles/App.css";
 import { app } from "./firebase";
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
@@ -14,6 +13,7 @@ import Stats from "./Stats";
 import Messages from "./Messages";
 import Playlists from "./Playlists";
 import Profile from "./Profile";
+import Tracks from "./TopTracks"
 
 function App() {
   const [isHomeHovered, setIsHomeHovered] = useState(false);
@@ -96,6 +96,7 @@ function App() {
         <Route path="/messages" element={<Messages />} />
         <Route path="/playlists" element={<Playlists />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/toptracks" element={<Tracks />} />
       </Routes>
     </Router>
   );
