@@ -58,7 +58,7 @@ function App() {
             onMouseEnter={() => setIsPlayHovered(true)}
             onMouseLeave={() => setIsPlayHovered(false)}
           >
-            {isProfHovered ? (
+            {isPlayHovered ? (
               <PiPlaylistFill className="icon" />
             ) : (
               <PiPlaylist className="icon" />
@@ -70,7 +70,7 @@ function App() {
             onMouseEnter={() => setIsMesHovered(true)}
             onMouseLeave={() => setIsMesHovered(false)}
           >
-            {isPlayHovered ? (
+            {isMesHovered ? (
               <TbMessageCircleFilled className="icon" />
             ) : (
               <TbMessageCircle className="icon" />
@@ -82,7 +82,7 @@ function App() {
             onMouseEnter={() => setIsProfHovered(true)}
             onMouseLeave={() => setIsProfHovered(false)}
           >
-            {isMesHovered ? (
+            {isProfHovered ? (
               <FaUserCircle className="icon" />
             ) : (
               <FaRegUserCircle className="icon" />
