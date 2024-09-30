@@ -46,8 +46,8 @@ function App() {
       }
 
       // Testing purposes, delete later
-      // setIsLoggedIn(true);
-      // setUser("dummy");
+      setIsLoggedIn(true);
+      setUser("dummy");
 
     });
 

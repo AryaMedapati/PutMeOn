@@ -46,7 +46,7 @@ function CreateAccount() {
     console.log("good");
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:3001/insertUser", {
+      const res = await fetch("http://localhost:5002/insertUser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
