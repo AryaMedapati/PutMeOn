@@ -61,6 +61,7 @@ You don't have to ever use `eject`. The curated feature set is suitable for smal
 ## Setup nodemon
 
 run: npm install -g nodemon
+
 On a new terminal tab start nodemon with: nodemon
 
 ## Learn More
