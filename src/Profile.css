@@ -1,0 +1,28 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+
+.sidebar {
+    width: 300px;
+    background-color: #313131; 
+    padding: 0px;
+    height: 100vh;
+}
+
+
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+
+ 
