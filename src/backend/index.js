@@ -23,19 +23,19 @@ app.post("/insertUser", async (req, res) => {
   }
 });
 
-app.get("/fetchUsers", async (req, res) => {
-  try {
-    const getUsers = db.collection("UserData");
-    const snapshot = await getUsers.get();
-    snapshot.forEach(doc => {
-      console.log(doc.data());
-    })
-    return getUsers.docs.map(doc => doc.data());
-  } catch (error) {
-    console.log(error);
-    res.status(500).send(error);
-  }
-})
+// app.get("/fetchUsers", async (req, res) => {
+//   try {
+//     const getUsers = db.collection("UserData");
+//     const snapshot = await getUsers.get();
+//     snapshot.forEach(doc => {
+//       console.log(doc.data());
+//     })
+//     return getUsers.docs.map(doc => doc.data());
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send(error);
+//   }
+// })
 
 app.listen(port, () => {
   console.log("Server running on port " + port)

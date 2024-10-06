@@ -41,13 +41,13 @@ function CreateAccount() {
   const handleSubmit = async (e) => {
     console.log("good");
     e.preventDefault();
-    try {
-      await fetch("http://localhost:3001/fetchUsers");
-      console.log("inside");
+    // try {
+    //   await fetch("http://localhost:3001/fetchUsers");
+    //   console.log("inside");
 
-    } catch (error) {
-      console.log(error);
-    }
+    // } catch (error) {
+    //   console.log(error);
+    // }
     try {
       const res = await fetch("http://localhost:3001/insertUser", {
         method: "POST",
