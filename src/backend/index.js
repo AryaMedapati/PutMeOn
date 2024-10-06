@@ -1,4 +1,5 @@
 const express = require("express");
+// const functions = require('firebase-functions');
 const bp = require("body-parser");
 const db = require("./firebaseConfig");
 const cors = require("cors")
@@ -21,6 +22,20 @@ app.post("/insertUser", async (req, res) => {
       res.status(500).json({message: error})
   }
 });
+
+app.get("/fetchUsers", async (req, res) => {
+  try {
+    const getUsers = db.collection("UserData");
+    const snapshot = await getUsers.get();
+    snapshot.forEach(doc => {
+      console.log(doc.data());
+    })
+    return getUsers.docs.map(doc => doc.data());
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+})
 
 app.listen(port, () => {
   console.log("Server running on port " + port)
