@@ -1,18 +1,21 @@
 import React from 'react';
 import ProfileUsername from './ProfileUsername';
-import ProfileMain from './ProfileMain';
+import ViewProfile from './ViewProfile';
+import EditProfile from './EditProfile';
 
 const ProfileContent = ({ activeContent }) => {
   switch (activeContent) {
-    case 'profile':
-      return <div><ProfileMain/></div>;
+    case 'view':
+      return <div><ViewProfile/></div>;
+    case 'edit':
+        return <div><EditProfile/></div>;
     case 'username':
       return <div><ProfileUsername/></div>;
     case 'privacy':
       return <div>Here are your Privacy settings.</div>;
     default:
-      return <div>Select an option from the sidebar.</div>;
-  }
+        return <div><ViewProfile/></div>;
+    }
 };
 
 export default ProfileContent;

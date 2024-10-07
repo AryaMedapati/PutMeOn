@@ -1,10 +1,11 @@
 // Sidebar.js
 import React from 'react';
 import { Button, ButtonGroup } from "@blueprintjs/core";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const ProfileSidebar = ({ onChangeContent }) => {
-    const [hoverProfile, setHoverProfile] = useState(false);
+    const [hoverView, setHoverView] = useState(false);
+    const [hoverEdit, setHoverEdit] = useState(false);
     const [hoverUsername, setHoverUsername] = useState(false);
     const [hoverPrivacy, setHoverPrivacy] = useState(false);
 
@@ -22,18 +23,28 @@ const ProfileSidebar = ({ onChangeContent }) => {
             >
                 <Button
                     style={{...buttonStyle,
-                        backgroundColor: hoverProfile ? colors.spGreen : colors.spDarkGray,
-                        color: hoverProfile ? colors.spDarkGray : colors.spGreen,
+                        backgroundColor: hoverView ? colors.text : colors.background,
+                        color: hoverView ? colors.background : colors.text,
                     }}
-                    onMouseEnter={() => setHoverProfile(true)}
-                    onMouseLeave={() => setHoverProfile(false)}
-                    onClick={() => onChangeContent('profile')}
+                    onMouseEnter={() => setHoverView(true)}
+                    onMouseLeave={() => setHoverView(false)}
+                    onClick={() => onChangeContent('view')}
                     text="Your Profile" />
+
+                <Button
+                    style={{...buttonStyle,
+                        backgroundColor: hoverEdit ? colors.text : colors.background,
+                        color: hoverEdit ? colors.background : colors.text,
+                    }}
+                    onMouseEnter={() => setHoverEdit(true)}
+                    onMouseLeave={() => setHoverEdit(false)}
+                    onClick={() => onChangeContent('edit')}
+                    text="Edit Profile" />
                 
                 <Button
                     style={{...buttonStyle,
-                        backgroundColor: hoverUsername ? colors.spGreen : colors.spDarkGray,
-                        color: hoverUsername ? colors.spDarkGray : colors.spGreen,
+                        backgroundColor: hoverUsername ? colors.text : colors.background,
+                        color: hoverUsername ? colors.background : colors.text,
                     }}
                     onMouseEnter={() => setHoverUsername(true)}
                     onMouseLeave={() => setHoverUsername(false)}
@@ -42,8 +53,8 @@ const ProfileSidebar = ({ onChangeContent }) => {
                 
                 <Button
                     style={{...buttonStyle,
-                        backgroundColor: hoverPrivacy ? colors.spGreen : colors.spDarkGray,
-                        color: hoverPrivacy ? colors.spDarkGray : colors.spGreen,
+                        backgroundColor: hoverPrivacy ? colors.text : colors.background,
+                        color: hoverPrivacy ? colors.background : colors.text,
                     }}
                     onMouseEnter={() => setHoverPrivacy(true)}
                     onMouseLeave={() => setHoverPrivacy(false)}
@@ -56,8 +67,8 @@ const ProfileSidebar = ({ onChangeContent }) => {
 };
 
 const colors = {
-    spGreen: '#10c674',
-    spDarkGray: '#313131'
+    text: '#10c674',
+    background: '#313131'
 }
 const buttonStyle = {
     width: '100%',

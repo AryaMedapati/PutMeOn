@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, TextArea } from '@blueprintjs/core';
 import { useState } from "react";
 
-const ProfileMain = () => {
+const ViewProfile = () => {
     const [editBio, setEditBio] = useState(false);
 
 
@@ -14,21 +14,22 @@ const ProfileMain = () => {
 
             <div>
                 <TextArea
-                    fill={true}
+                    intent='none'
+                    style={{ 
+                        resize: 'none',
+                        width: '800px',
+                        height: '100px',
+                        borderRadius: 10
+                    }}
                     growVertically={true}
-                    large={true}
+                    small
+
                     placeholder="Put your bio here"
                 />
             </div>
-            <div>
-                <Button
-                    onClick={() => setEditBio(!editBio)}
-                    text="Your Profile" />
-                    
-            </div>
-            <p>Change the username and password here</p>
+
         </div>
     );
 };
 
-export default ProfileMain;
+export default ViewProfile;
