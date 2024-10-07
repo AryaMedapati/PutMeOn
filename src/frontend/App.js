@@ -102,6 +102,7 @@ function App() {
           <Route path="/messages" element={<Messages />} />
           <Route path="/playlists" element={<Playlists />} />
           <Route path="/profile" element={<CreateAccount />} />
+          <Route path="/toptracks" element={<Tracks/>} />
         </Routes>
       </Router>
     );

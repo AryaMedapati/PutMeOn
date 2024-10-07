@@ -1,5 +1,5 @@
 import React from "react"
-import "./Login.css"
+import "./styles/Login.css"
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Link} from "react-router-dom";
 import CreateAccount from "./CreateAccount"
