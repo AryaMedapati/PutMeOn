@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
 import "./Login.css"
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from "react-router-dom";
+import {getAuth, signInWithPopup, GoogleAuthProvider} from "firebase/auth";
 import Login from "./Login";
 
 function CreateAccount() {
@@ -45,6 +46,13 @@ function CreateAccount() {
   const handleSubmit = async (e) => {
     console.log("good");
     e.preventDefault();
+    // try {
+    //   await fetch("http://localhost:3001/fetchUsers");
+    //   console.log("inside");
+
+    // } catch (error) {
+    //   console.log(error);
+    // }
     try {
       const res = await fetch("http://localhost:3001/insertUser", {
         method: "POST",
@@ -65,6 +73,25 @@ function CreateAccount() {
       console.log("Error: " + error)
     }
   
+  }
+
+  const handleSubmitWithGoogle = async(e) => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+      .then ((res) => {
+        const cred = GoogleAuthProvider.credentialFromResult(res);
+        // console.log(res.user);
+        nav("/");
+      }).catch((error) => {
+        console.log(error);
+      });
+  }
+  const handleSubmitWithSpotify = async(e) => {
+    e.preventDefault();
+    window.location.href = "http://localhost:3001/spotify-login";
+      //const returnVal = await res.json();
+    // console.log(returnVal);
   }
 
   return(
@@ -99,6 +126,9 @@ function CreateAccount() {
         <div className="alreadyHaveAccount">
             <Link to =  "/login" >Already have an account? Log in</Link>
         </div>
+        <button type="submit" onClick={handleSubmitWithGoogle}>Create Account with Google</button>
+        <button type="submit" onClick={handleSubmitWithSpotify}>Create Account with Spotify</button>
+
         <Routes>
             <Route path = "../login" element = {<Login />}></Route>
         </Routes>
