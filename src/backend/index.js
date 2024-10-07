@@ -2,7 +2,13 @@ const express = require("express");
 // const functions = require('firebase-functions');
 const bp = require("body-parser");
 const db = require("./firebaseConfig");
+const request = require('request');
+const querystring = require("querystring");
 const cors = require("cors")
+const clientID = '6e24baf59c484801a146e21891775723';
+const clientSecret = '177482208fff40f7991ac0b139b2627e';
+let accessToken = "";
+let refreshToken = "";
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -12,7 +18,7 @@ app.use(cors())
 app.post("/insertUser", async (req, res) => {
   const{username, password} = req.body;
   try{
-    console.log("Here")
+    // console.log("Here")
     const userInfo = db.collection("UserData").doc();
     await userInfo.set({username, password});
     console.log("success")
@@ -36,6 +42,52 @@ app.post("/insertUser", async (req, res) => {
 //     res.status(500).send(error);
 //   }
 // })
+app.get("/spotify-login", async (req, res) => {
+  // console.log("hello");
+  res.redirect('https://accounts.spotify.com/authorize?' +
+    querystring.stringify({
+      response_type: 'code',
+      client_id: clientID,
+      scope: 'ugc-image-upload user-read-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-modify user-follow-read user-top-read user-read-recently-played user-library-modify user-library-read user-read-email user-read-private',
+      redirect_uri: 'http://localhost:3001/callback'
+    })
+  );
+})
+
+app.get("/callback", function(req, res) {
+  // console.log("here");
+  var authVal = {
+    url: 'https://accounts.spotify.com/api/token',
+    form: {
+      code: req.query.code,
+      redirect_uri: 'http://localhost:3001/callback',
+      grant_type: 'authorization_code'
+    },
+    headers: {
+      'content-type' : 'application/x-www-form-urlencoded',
+      'Authorization': 'Basic ' + (new Buffer.from(clientID + ':' + clientSecret).toString('base64'))
+    },
+    json:true
+  };
+  request.post(authVal, function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      // console.log(body);
+      const access_token = body.access_token;
+      const refresh_token = body.refresh_token;
+      accessToken = body.access_token;
+      refreshToken = body.refreshToken;
+      // Redirect to frontend with tokens
+      res.redirect(`http://localhost:5000/?` +
+        querystring.stringify({
+          access_token: access_token,
+          refresh_token: refresh_token
+        })
+      );
+    } else {
+      console.log("error");
+    }
+  });
+})
 
 app.listen(port, () => {
   console.log("Server running on port " + port)

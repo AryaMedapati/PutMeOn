@@ -80,6 +80,12 @@ function CreateAccount() {
         console.log(error);
       });
   }
+  const handleSubmitWithSpotify = async(e) => {
+    e.preventDefault();
+    window.location.href = "http://localhost:3001/spotify-login";
+      //const returnVal = await res.json();
+    // console.log(returnVal);
+  }
 
   return(
     <div className="loginDiv">
@@ -104,6 +110,8 @@ function CreateAccount() {
             <Link to =  "/login" >Already have an account? Log in</Link>
         </div>
         <button type="submit" onClick={handleSubmitWithGoogle}>Create Account with Google</button>
+        <button type="submit" onClick={handleSubmitWithSpotify}>Create Account with Spotify</button>
+
         <Routes>
             <Route path = "../login" element = {<Login />}></Route>
         </Routes>
