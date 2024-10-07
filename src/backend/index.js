@@ -47,6 +47,66 @@ app.get("/profile", async (req, res) => {
   }
 });
 
+app.post("/api/user-details", async (req, res) => {
+  //const { username, email } = req.body;
+  const { username } = req.body;
+  try {
+    const userRef = db.collection("UserData").where("username", "==", username);
+    const userDoc = await userRef.get();
+
+    if (userDoc.empty) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const userId = userDoc.docs[0].id;
+    //await db.collection("UserData").doc(userId).update({ email });
+    //res.status(200).json({ message: "User details updated!" });
+  } catch (error) {
+    console.error("Error updating user details:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+app.post("/api/privacy", async (req, res) => {
+  const { username, isPublic } = req.body;
+  try {
+    const userRef = db.collection("UserData").where("username", "==", username);
+    const userDoc = await userRef.get();
+
+    if (userDoc.empty) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const userId = userDoc.docs[0].id;
+    await db.collection("UserData").doc(userId).update({ isPublic: isPublic });
+    res.status(200).json({ message: "Privacy settings updated!" });
+  } catch (error) {
+    console.error("Error updating privacy settings:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+app.post("/api/linked-accounts", async (req, res) => {
+  //const { username, linkedAccounts } = req.body;
+  const { username } = req.body;
+  try {
+    const userRef = db.collection("UserData").where("username", "==", username);
+    const userDoc = await userRef.get();
+
+    if (userDoc.empty) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const userId = userDoc.docs[0].id;
+    //await db.collection("UserData").doc(userId).update({ linkedAccounts });
+    //
+    res.status(200).json({ message: "Linked accounts updated!" });
+  } catch (error) {
+    console.error("Error updating linked accounts:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 app.listen(port, () => {
   console.log("Server running on port " + port)
 })

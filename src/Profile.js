@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';  // Import Link from react-router-dom
 import './Profile.css';
 
 function Profile() {
@@ -42,6 +43,13 @@ function Profile() {
             <li key={index}>{friend}</li>
           ))}
         </ul>
+      </div>
+
+      {/* Add a link to the settings page */}
+      <div className="profile-settings-link">
+        <Link to="/settings">
+          <button className="settings-button">Go to Settings</button>
+        </Link>
       </div>
     </div>
   );
