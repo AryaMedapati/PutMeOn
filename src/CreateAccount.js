@@ -8,6 +8,7 @@ function CreateAccount() {
 
   const [userName, setUserName] = useState("");
   const [pass, setPass] = useState("");
+  const [isPublic, setIsPublic] = useState(true); // State to manage account visibility
   const [errorMessage, setErrorMessage] = useState("");
   const [errorMessage2, setErrorMessage2] = useState("");
   const nav = useNavigate();
@@ -38,6 +39,10 @@ function CreateAccount() {
       }
   }
 
+  const handleCheckboxChange = () => {
+    setIsPublic((prevValue) => !prevValue);
+  };
+
   const handleSubmit = async (e) => {
     console.log("good");
     e.preventDefault();
@@ -55,7 +60,9 @@ function CreateAccount() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: userName, password: pass
+          username: userName,
+          password: pass,
+          isPublic: isPublic,
         }),
       });
 
@@ -105,6 +112,16 @@ function CreateAccount() {
         {errorMessage && (
             <p className="error-message">{errorMessage}</p>
           )}
+        <div className="privacyDiv">
+          <label>
+            <input
+              type="checkbox"
+              checked={isPublic}
+              onChange={handleCheckboxChange}
+            />
+            Make my account private
+          </label>
+        </div>
         <button type="submit" onClick={handleSubmit} disabled={!!errorMessage || !!errorMessage}>Create Account</button>
         <div className="alreadyHaveAccount">
             <Link to =  "/login" >Already have an account? Log in</Link>
