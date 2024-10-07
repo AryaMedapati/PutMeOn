@@ -14,6 +14,7 @@ const EditProfile = () => {
 
             <div
                 style={{
+                    width: "100%",
                     backgroundColor: '#c7c7c7',
                     borderRadius: '20px',
                     position: 'relative',
@@ -29,6 +30,8 @@ const EditProfile = () => {
                 <Button
                     intent='primary'
                     style={{ 
+                        position: 'absolute',
+                        right: '30px',
                         marginLeft: '40px',
                         width: '180px',
                         height: '40px',
