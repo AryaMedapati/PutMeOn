@@ -39,14 +39,14 @@ function CreateAccount() {
   }
 
   const handleCheckboxChange = () => {
-    setIsPublic((prevValue) => !prevValue); // Toggle the public/private state
+    setIsPublic((prevValue) => !prevValue);
   };
 
   const handleSubmit = async (e) => {
     console.log("good");
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5002/insertUser", {
+      const res = await fetch("http://localhost:3001/insertUser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
