@@ -14,7 +14,13 @@ const Messages = () => {
   return (
     <div className="sidebar-container" style={{ display: 'flex' }}>
       <ProfileSidebar onChangeContent={setActiveContent} />
-      <div className="main-content" style={{ marginLeft: '20px' }}>
+      <div className="main-content" 
+        style={{ 
+          marginLeft: '20px',
+          display: 'flex',
+          justifyContent: 'center'
+        }}
+      >
         <ProfileContent activeContent={activeContent} />
       </div>
     </div>

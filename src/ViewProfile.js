@@ -1,6 +1,8 @@
 import React from 'react';
 import { Button, TextArea } from '@blueprintjs/core';
 import { useState } from "react";
+import '@blueprintjs/core/lib/css/blueprint.css';
+import { Icon } from "@blueprintjs/core";
 
 const ViewProfile = () => {
     const [editBio, setEditBio] = useState(false);
@@ -8,9 +10,10 @@ const ViewProfile = () => {
 
     return (
         <div>
-            <h1>Set Profile here</h1>
+            <h1>Your Profile</h1>
+            
+            <Icon style={{padding: 20}} iconSize={80} icon="user"/>
 
-            <h2>Bio</h2>
 
             <div>
                 <TextArea
@@ -23,6 +26,7 @@ const ViewProfile = () => {
                     }}
                     growVertically={true}
                     small
+                    readOnly
 
                     placeholder="Put your bio here"
                 />
