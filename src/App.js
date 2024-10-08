@@ -124,6 +124,9 @@ function App() {
           <Route path="/stats" element={<Stats />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/playlists" element={<Playlists />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/create-account" element={<CreateAccount />} />
+
           <Route
             path="/profile"
             element={isLoggedIn ? <Profile user={user} /> : <CreateAccount />}
