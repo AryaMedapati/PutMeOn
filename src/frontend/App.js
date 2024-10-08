@@ -126,13 +126,12 @@ function App() {
           <Route path="/playlists" element={<Playlists />} />
           <Route path="/login" element={<Login />} />
           <Route path="/create-account" element={<CreateAccount />} />
-
+          <Route path="/toptracks" element={<Tracks/>} />
           <Route
             path="/profile"
             element={isLoggedIn ? <Profile user={user} /> : <CreateAccount />}
           />
-          
-          <Route path="/toptracks" element={<Tracks/>} />
+
         </Routes>
       </Router>
     );
