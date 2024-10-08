@@ -85,7 +85,7 @@ app.get("/callback", function(req, res) {
       accessToken = body.access_token;
       refreshToken = body.refreshToken;
       // Redirect to frontend with tokens
-      res.redirect(`http://localhost:5000/?` +
+      res.redirect('https://put-me-on-418b7.web.app/?' +
         querystring.stringify({
           access_token: access_token,
           refresh_token: refresh_token
