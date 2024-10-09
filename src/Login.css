@@ -92,6 +92,7 @@ button:disabled {
 .alreadyHaveAccount {
   margin-top: 20px;
   text-align: center;
+  padding-bottom: 10px;
 }
 
 .alreadyHaveAccount a {
@@ -104,4 +105,34 @@ button:disabled {
 .alreadyHaveAccount a:hover {
   color: #0056b3;
   text-decoration: underline;
+}
+
+.spoButton {
+  width: 100%;
+  background-color: rgb(121, 121, 121);
+  color: white;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  padding: 16px;
+}
+.spoButton:hover {
+  background-color: #000000;
+}
+
+.gButton {
+  width: 100%;
+  background-color: rgb(46, 175, 254);
+  color: white;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  padding: 16px;
+}
+.gButton:hover {
+  background-color: #005792;
+}
+
+.buttonDiv {
+  padding: 8px;
 }

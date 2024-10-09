@@ -17,9 +17,9 @@ function CreateAccount() {
   const handleUser = (e) => {
     const inputUser = e.target.value;
     setUserName(inputUser);
-    if (userName.length < 8){
+    if (userName.search("@") == -1){
       setErrorMessage2(
-        "Username must be at least 8 characters long."
+        "Please enter a valid email address."
       );
     } else {
       setErrorMessage2("");
@@ -99,7 +99,7 @@ function CreateAccount() {
       <form className="loginForm"  onSubmit={handleSubmit}>
         <h2>Create Account</h2>
         <div className="userNameDiv">
-          <label htmlFor="user" >Username</label>
+          <label htmlFor="user" >Email</label>
           <input type = "text" id="user" name="user" required onChange={handleUser}></input>
         </div>
         {errorMessage2 && (
@@ -126,8 +126,12 @@ function CreateAccount() {
         <div className="alreadyHaveAccount">
             <Link to =  "/login" >Already have an account? Log in</Link>
         </div>
-        <button type="submit" onClick={handleSubmitWithGoogle}>Create Account with Google</button>
-        <button type="submit" onClick={handleSubmitWithSpotify}>Create Account with Spotify</button>
+        <div className="buttonDiv">
+          <button type="submit" className = "gButton" onClick={handleSubmitWithGoogle}>Create Account with Google</button>
+        </div>
+        <div className="buttonDiv">
+          <button type="submit" className = "spoButton"onClick={handleSubmitWithSpotify}>Create Account with Spotify</button>
+        </div>
 
         <Routes>
             <Route path = "../login" element = {<Login />}></Route>
