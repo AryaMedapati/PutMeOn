@@ -11,8 +11,8 @@ let accessToken = "";
 let refreshToken = "";
 
 const app = express();
-const port = process.env.PORT || 3001;
-app.use(bp.json());
+const port = process.env.PORT || 3002;
+// app.use(bp.json());
 app.use(cors())
 
 const userProfile = {
@@ -23,7 +23,7 @@ const userProfile = {
   isPublic: false
 };
 
-app.post("/insertUser", async (req, res) => {
+app.post("/insertUser", bp.json(), async (req, res) => {
   const{username, password, isPublic} = req.body;
   try{
     // console.log("Here")
