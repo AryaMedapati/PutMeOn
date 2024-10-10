@@ -33,7 +33,7 @@ const Tracks = () => {
               }}
             >
               <div style={{ display: "flex", alignItems: "center" }}>
-                <span style={{ marginRight: "10px", fontWeight: "bold" }}>
+                <span style={{ width: "50px", marginRight: "10px", fontWeight: "bold", paddingLeft: "20px", paddingRight: "20px" }}>
                   {index + 1}
                 </span>
                 <img
@@ -53,7 +53,7 @@ const Tracks = () => {
                 </div>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", paddingRight: "20px" }}>
                 <a
                   href={track.external_urls.spotify}
                   target="_blank"
