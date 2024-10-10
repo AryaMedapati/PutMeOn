@@ -6,18 +6,17 @@ const cors = require("cors");
 const axios = require("axios");
 const request = require('request');
 const querystring = require("querystring");
-const clientID = '7a37fde68f1a48df8e71e42f6415b1a1';
-const clientSecret = 'dc9a38df3b6a4c35b01cc538ad66d460';
+const clientID = '6e24baf59c484801a146e21891775723';
+const clientSecret = '177482208fff40f7991ac0b139b2627e';
 let accessToken = "";
 let refreshToken = "";
 
 const app = express();
 const port = process.env.PORT || 3001;
-const frontPort = 5002;
+const frontPort = 3000;
 const url = `http://localhost:${port}`;
 const frontUrl = `http://localhost:${frontPort}`;
-// const url = "https://put-me-on-418b7.web.app"
-// const port = 5002;
+const mainUrl = "https://put-me-on-418b7.web.app"
 // app.use(express.json());
 // app.use(json());
 app.use(cors());
@@ -114,7 +113,7 @@ app.get("/callback", function(req, res) {
       accessToken = body.access_token;
       refreshToken = body.refreshToken;
       // Redirect to frontend with tokens
-      res.redirect(`${frontUrl}/?` +
+      res.redirect(`${mainUrl}/?` +
         querystring.stringify({
           access_token: access_token,
           refresh_token: refresh_token
