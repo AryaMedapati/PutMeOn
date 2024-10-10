@@ -44,7 +44,7 @@ function Login() {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
     signInWithPopup(auth, provider)
-      .then ((res) => {
+      .then (async (res) => {
         const cred = GoogleAuthProvider.credentialFromResult(res);
         try {
           const res = await fetch("http://localhost:3001/insertUser", {
