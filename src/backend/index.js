@@ -44,6 +44,18 @@ app.post("/insertUser", async (req, res) => {
   }
 });
 
+app.get("/fetchUsers", async (req, res) => {
+  try {
+    const getUsers = db.collection("UserData");
+    const snapshot = await getUsers.get();
+    const users = snapshot.docs.map(doc => doc.data());
+    res.status(200).json(users);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+})
+
 app.get("/topTracks", async (req, res) => {
   try {
     const token = accessToken;
@@ -65,7 +77,6 @@ app.get("/topTracks", async (req, res) => {
     res.status(500).json({ message: error });
   }
 });
-
 
 app.get("/spotify-login", async (req, res) => {
   // console.log("hello");
