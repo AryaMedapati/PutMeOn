@@ -55,7 +55,7 @@ function Login() {
             body: JSON.stringify({
               username: auth.currentUser.email,
               password: "google",
-              isPublic: isPublic,
+              isPublic: false,
             }),
           });
     
