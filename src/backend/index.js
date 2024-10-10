@@ -19,6 +19,7 @@ const frontUrl = `http://localhost:${frontPort}`;
 const mainUrl = "https://put-me-on-418b7.web.app"
 // app.use(express.json());
 // app.use(json());
+app.use(bp.json());
 app.use(cors());
 
 const userProfile = {
@@ -30,6 +31,8 @@ const userProfile = {
 };
 
 app.post("/insertUser", async (req, res) => {
+  console.log(req);
+  console.log(req.body);
   const{username, password, isPublic} = req.body;
   try{
     // console.log("Here")
