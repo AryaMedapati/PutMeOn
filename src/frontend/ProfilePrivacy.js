@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { getAuth } from "firebase/auth";
+import React, { useState, useEffect, useContext } from "react";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { UserContext } from "./UserContext";
 
 const ProfilePrivacy = () => {
   const [isPrivate, setIsPrivate] = useState(false); 
@@ -13,14 +13,13 @@ const ProfilePrivacy = () => {
   });
   const [twoStepAuth, setTwoStepAuth] = useState(false);
 
-  const auth = getAuth();
   const db = getFirestore();
-  const user = auth.currentUser;
+  const { username } = useContext(UserContext);
 
   useEffect(() => {
     const fetchPrivacySettings = async () => {
-      if (user) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (username) {
+        const userDoc = await getDoc(doc(db, "users", username));
         if (userDoc.exists()) {
           const data = userDoc.data();
           setPrivacySettings(data.privacySettings || privacySettings);
@@ -30,7 +29,7 @@ const ProfilePrivacy = () => {
       }
     };
     fetchPrivacySettings();
-  }, [user]);
+  }, [username]);
 
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
@@ -49,9 +48,10 @@ const ProfilePrivacy = () => {
   };
 
   const handleSaveSettings = async () => {
-    if (user) {
+    if (username) {
       try {
-        await setDoc(doc(db, "users", user.uid), {
+        console.log("user = " + username);
+        await setDoc(doc(db, "users", username), {
           privacySettings: privacySettings,
           isPrivate: isPrivate,
           twoStepAuth: twoStepAuth,
