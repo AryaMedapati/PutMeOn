@@ -19,6 +19,7 @@ const frontUrl = `http://localhost:${frontPort}`;
 const mainUrl = "https://put-me-on-418b7.web.app"
 // app.use(express.json());
 // app.use(json());
+app.use(bp.json());
 app.use(cors());
 
 const userProfile = {
@@ -26,15 +27,15 @@ const userProfile = {
   profilePic: '',
   bio: '',
   friends: [], 
-  isPublic: false
+  isPrivate: false
 };
 
 app.post("/insertUser", async (req, res) => {
-  const{username, password, isPublic} = req.body;
+  const{username, password, isPrivate} = req.body;
   try{
     // console.log("Here")
     const userInfo = db.collection("UserData").doc();
-    await userInfo.set({username, password, isPublic});
+    await userInfo.set({username, password, isPrivate});
     console.log("success")
     res.status(200).json({message: "Success"});
   } catch (error) {

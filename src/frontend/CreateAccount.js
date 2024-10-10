@@ -8,7 +8,7 @@ function CreateAccount() {
 
   const [userName, setUserName] = useState("");
   const [pass, setPass] = useState("");
-  const [isPublic, setIsPublic] = useState(true); // State to manage account visibility
+  const [isPrivate, setIsPrivate] = useState(false); // State to manage account visibility
   const [errorMessage, setErrorMessage] = useState("");
   const [errorMessage2, setErrorMessage2] = useState("");
   const nav = useNavigate();
@@ -40,7 +40,7 @@ function CreateAccount() {
   }
 
   const handleCheckboxChange = () => {
-    setIsPublic((prevValue) => !prevValue);
+    setIsPrivate((prevValue) => !prevValue);
   };
 
   const handleSubmit = async (e) => {
@@ -62,7 +62,7 @@ function CreateAccount() {
         body: JSON.stringify({
           username: userName,
           password: pass,
-          isPublic: isPublic,
+          isPrivate: isPrivate,
         }),
       });
 
@@ -90,7 +90,7 @@ function CreateAccount() {
             body: JSON.stringify({
               username: auth.currentUser.email,
               password: "google",
-              isPublic: isPublic,
+              isPrivate: isPrivate,
             }),
           });
     
@@ -136,7 +136,7 @@ function CreateAccount() {
           <label>
             <input
               type="checkbox"
-              checked={isPublic}
+              checked={isPrivate}
               onChange={handleCheckboxChange}
             />
             Make my account private

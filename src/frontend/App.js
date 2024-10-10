@@ -3,7 +3,7 @@ import "./styles/App.css";
 import { app } from "./firebase";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Link, useLocation, useNavigate, Switch} from "react-router-dom";
 import { IoStatsChartOutline, IoStatsChart } from "react-icons/io5";
 import { GoHome, GoHomeFill } from "react-icons/go";
@@ -27,39 +27,14 @@ function App(props) {
   const [isPlayHovered, setIsPlayHovered] = useState(false);
   const [isMesHovered, setIsMesHovered] = useState(false);
   const [isProfHovered, setIsProfHovered] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState(null);
-
-
   const {location} = useLocation();
   const nav = useNavigate();
- 
   useEffect(() => {
     // Confirm Firebase is initialized
     console.log("Firebase App:", app);
     if (location == null) {
       nav("/login");
     }
-    // Listen for authentication state changes
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        // User is logged in
-        setIsLoggedIn(true);
-        setUser(currentUser); // Store user information if needed
-      } else {
-        // User is logged out
-        setIsLoggedIn(false);
-        setUser(null);
-      }
-
-      // Testing purposes, delete later
-      // setIsLoggedIn(true);
-      // setUser("dummy");
-
-    });
-
-    // Cleanup the listener on component unmount
-    return () => unsubscribe();
   }, []);
 
     return (
@@ -127,7 +102,6 @@ function App(props) {
                 </Link>
               </nav>)
                 }
-
         <Routes>
           <Route path="/stats" element={<Stats />} />
           <Route path="/messages" element={<Messages />} />
@@ -136,15 +110,10 @@ function App(props) {
           <Route path="/login" element={<Login />} />       
           <Route path="/toptracks" element={<Tracks/>} />
           <Route path="/" element={<Home />} />
-          <Route
-            path="/profile"
-            element={isLoggedIn ? <Profile user={user} /> : <CreateAccount />}
-          />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
-       </div>
+      </div>
     );
-
-  
 }
 
 export default App;
