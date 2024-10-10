@@ -58,11 +58,12 @@ app.get("/fetchUsers", async (req, res) => {
 
 app.get("/topTracks", async (req, res) => {
   try {
+    const timeline = req.query.timeline;
     const token = accessToken;
     const limit = 50;
     console.log(token);
     const topTracksResponse = await axios.get(
-      `https://api.spotify.com/v1/me/top/tracks?limit=${limit}`,
+      `https://api.spotify.com/v1/me/top/tracks?time_range=${timeline}&limit=${limit}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

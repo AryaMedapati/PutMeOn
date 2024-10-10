@@ -3,25 +3,115 @@ import { AiFillSpotify } from "react-icons/ai";
 
 const Tracks = () => {
   const [tracks, setTracks] = useState([]);
+  const [trackTimeline, setTrackTimeline] = useState("Last 4 Weeks");
 
-  const fetchTopTracks = async () => {
-    const response = await fetch("http://localhost:3001/topTracks");
+  const fetchTopTracks = async (timeline) => {
+    const url = "http://localhost:3001";
+    // const url = "https://put-me-on-418b7.web.app";
+    const response = await fetch(
+      `${url}/topTracks?timeline=${timeline}`
+    );
     const data = await response.json();
     setTracks(data.data);
     console.log(data);
   };
 
   useEffect(() => {
-    fetchTopTracks();
+    const timeline = "short_term";
+    fetchTopTracks(timeline);
   }, []);
 
+  const handleButtonClick = (action) => {
+    const mapper = {
+      short_term: "Last 4 Weeks",
+      medium_term: "Last 6 Months",
+      long_term: "Last 12 Months",
+    };
+    setTrackTimeline(mapper[action]);
+    fetchTopTracks(action);
+  };
+
+  const buttonStyle = {
+    padding: "10px",
+    fontSize: "1rem",
+    backgroundColor: "#1DB954",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    transition: "background-color 0.3s ease",
+  };
+
+  const buttonHoverStyle = {
+    ...buttonStyle,
+    backgroundColor: "#1aa34a",
+  };
+
   return (
-    // <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflowY: "auto" }}>
-      {/* <div style={{ padding: "20px " }}> */}
-      <h1>Your Top Tracks</h1>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        overflowY: "auto",
+      }}
+    >
+      <h1 style={{ padding: "20px", textAlign: "center" }}>Your Top Tracks from the {trackTimeline}</h1>
+      <div
+        style={{
+          marginBottom: "20px",
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "0 20px",
+        }}
+      >
+        <button
+          onClick={() => handleButtonClick("short_term")}
+          style={buttonStyle}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.backgroundColor =
+              buttonHoverStyle.backgroundColor)
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.backgroundColor =
+              buttonStyle.backgroundColor)
+          }
+        >
+          Last 4 Weeks
+        </button>
+        <button
+          onClick={() => handleButtonClick("medium_term")}
+          style={buttonStyle}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.backgroundColor =
+              buttonHoverStyle.backgroundColor)
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.backgroundColor =
+              buttonStyle.backgroundColor)
+          }
+        >
+          Last 6 Months
+        </button>
+        <button
+          onClick={() => handleButtonClick("long_term")}
+          style={buttonStyle}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.backgroundColor =
+              buttonHoverStyle.backgroundColor)
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.backgroundColor =
+              buttonStyle.backgroundColor)
+          }
+        >
+          Last 12 Months
+        </button>
+      </div>
       {tracks.length > 0 ? (
-        <ul style={{ listStyleType: "none", padding: 0, paddingBottom: "60px" }}>
+        <ul
+          style={{ listStyleType: "none", padding: 0, paddingBottom: "60px" }}
+        >
           {tracks.map((track, index) => (
             <li
               key={index}
@@ -33,7 +123,15 @@ const Tracks = () => {
               }}
             >
               <div style={{ display: "flex", alignItems: "center" }}>
-                <span style={{ width: "50px", marginRight: "10px", fontWeight: "bold", paddingLeft: "20px", paddingRight: "20px" }}>
+                <span
+                  style={{
+                    width: "50px",
+                    marginRight: "10px",
+                    fontWeight: "bold",
+                    paddingLeft: "20px",
+                    paddingRight: "20px",
+                  }}
+                >
                   {index + 1}
                 </span>
                 <img
@@ -53,7 +151,13 @@ const Tracks = () => {
                 </div>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", paddingRight: "20px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  paddingRight: "20px",
+                }}
+              >
                 <a
                   href={track.external_urls.spotify}
                   target="_blank"
@@ -71,7 +175,6 @@ const Tracks = () => {
       ) : (
         <p>No top tracks available.</p>
       )}
-      {/* </div> */}
     </div>
   );
 };
