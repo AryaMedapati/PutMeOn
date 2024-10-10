@@ -16,6 +16,7 @@ import Stats from "./Stats";
 import Messages from "./Messages";
 import Playlists from "./Playlists";
 import Profile from "./Profile";
+import Tracks from "./TopTracks"
 import Login from "./Login";
 import CreateAccount from "./CreateAccount";
 
@@ -128,18 +129,17 @@ function App(props) {
                 }
 
         <Routes>
-
           <Route path="/stats" element={<Stats />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/playlists" element={<Playlists />} />
           <Route path="/create-account" element={<CreateAccount />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login />} />       
+          <Route path="/toptracks" element={<Tracks/>} />
           <Route path="/" element={<Home />} />
           <Route
             path="/profile"
             element={isLoggedIn ? <Profile user={user} /> : <CreateAccount />}
           />
-          
         </Routes>
        </div>
     );
