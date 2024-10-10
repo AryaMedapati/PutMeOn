@@ -17,10 +17,11 @@ const Tracks = () => {
 
   return (
     // <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-    <div style={{ padding: "20px" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflowY: "auto" }}>
+      {/* <div style={{ padding: "20px " }}> */}
       <h1>Your Top Tracks</h1>
       {tracks.length > 0 ? (
-        <ul style={{ listStyleType: "none", padding: 0 }}>
+        <ul style={{ listStyleType: "none", padding: 0, paddingBottom: "40px" }}>
           {tracks.map((track, index) => (
             <li
               key={index}
@@ -70,6 +71,7 @@ const Tracks = () => {
       ) : (
         <p>No top tracks available.</p>
       )}
+      {/* </div> */}
     </div>
   );
 };
