@@ -1,3 +1,4 @@
+import logo from "./images/logo.svg";
 import "./styles/App.css";
 import { app } from "./firebase";
 import { auth } from "./firebase";
@@ -128,18 +129,17 @@ function App(props) {
                 }
 
         <Routes>
-          <Route path="/" element={<Home />} />   
           <Route path="/stats" element={<Stats />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/playlists" element={<Playlists />} />
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/login" element={<Login />} />       
           <Route path="/toptracks" element={<Tracks/>} />
+          <Route path="/" element={<Home />} />
           <Route
             path="/profile"
             element={isLoggedIn ? <Profile user={user} /> : <CreateAccount />}
           />
-
         </Routes>
        </div>
     );
