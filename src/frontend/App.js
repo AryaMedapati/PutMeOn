@@ -128,13 +128,12 @@ function App(props) {
                 }
 
         <Routes>
-
+          <Route path="/" element={<Home />} />   
           <Route path="/stats" element={<Stats />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/playlists" element={<Playlists />} />
           <Route path="/create-account" element={<CreateAccount />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Home />} />          
+          <Route path="/login" element={<Login />} />       
           <Route path="/toptracks" element={<Tracks/>} />
           <Route
             path="/profile"
