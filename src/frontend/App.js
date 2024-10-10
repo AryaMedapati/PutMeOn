@@ -17,6 +17,7 @@ import Stats from "./Stats";
 import Messages from "./Messages";
 import Playlists from "./Playlists";
 import Profile from "./Profile";
+import Tracks from "./TopTracks"
 import Login from "./Login";
 import CreateAccount from "./CreateAccount";
 
@@ -64,83 +65,85 @@ function App(props) {
 
     return (
       <UserProvider>
-        <div>
-          {window.location.pathname !== '/login' && window.location.pathname !== '/create-account' && (<nav>
-                  <Link to="/">
-                    <div
-                      onMouseEnter={() => setIsHomeHovered(true)}
-                      onMouseLeave={() => setIsHomeHovered(false)}
-                    >
-                      {isHomeHovered ? (
-                        <GoHomeFill className="icon" />
-                      ) : (
-                        <GoHome className="icon" />
-                      )}
-                    </div>
-                  </Link>
-                  <Link to="/stats">
-                    <div
-                      onMouseEnter={() => setIsStatHovered(true)}
-                      onMouseLeave={() => setIsStatHovered(false)}
-                    >
-                      {isStatHovered ? (
-                        <IoStatsChart className="icon" />
-                      ) : (
-                        <IoStatsChartOutline className="icon" />
-                      )}
-                    </div>
-                  </Link>
-                  <Link to="/playlists">
-                    <div
-                      onMouseEnter={() => setIsPlayHovered(true)}
-                      onMouseLeave={() => setIsPlayHovered(false)}
-                    >
-                      {isPlayHovered ? (
-                        <PiPlaylistFill className="icon" />
-                      ) : (
-                        <PiPlaylist className="icon" />
-                      )}
-                    </div>
-                  </Link>
-                  <Link to="/messages">
-                    <div
-                      onMouseEnter={() => setIsMesHovered(true)}
-                      onMouseLeave={() => setIsMesHovered(false)}
-                    >
-                      {isMesHovered ? (
-                        <TbMessageCircleFilled className="icon" />
-                      ) : (
-                        <TbMessageCircle className="icon" />
-                      )}
-                    </div>
-                  </Link>
-                  <Link to="/profile">
-                    <div
-                      onMouseEnter={() => setIsProfHovered(true)}
-                      onMouseLeave={() => setIsProfHovered(false)}
-                    >
-                      {isProfHovered ? (
-                        <FaUserCircle className="icon" />
-                      ) : (
-                        <FaRegUserCircle className="icon" />
-                      )}
-                    </div>
-                  </Link>
-                </nav>)
-                  }
-          <Routes>
-            <Route path="/stats" element={<Stats />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/playlists" element={<Playlists />} />
-            <Route path="/create-account" element={<CreateAccount />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Home />} />
-            <Route
-              path="/profile"
-              element={isLoggedIn ? <Profile user={user} /> : <CreateAccount />}
-            />
-          </Routes>
-        </div>
+      <div>
+        {window.location.pathname !== '/login' && window.location.pathname !== '/create-account' && (<nav>
+                <Link to="/">
+                  <div
+                    onMouseEnter={() => setIsHomeHovered(true)}
+                    onMouseLeave={() => setIsHomeHovered(false)}
+                  >
+                    {isHomeHovered ? (
+                      <GoHomeFill className="icon" />
+                    ) : (
+                      <GoHome className="icon" />
+                    )}
+                  </div>
+                </Link>
+                <Link to="/stats">
+                  <div
+                    onMouseEnter={() => setIsStatHovered(true)}
+                    onMouseLeave={() => setIsStatHovered(false)}
+                  >
+                    {isStatHovered ? (
+                      <IoStatsChart className="icon" />
+                    ) : (
+                      <IoStatsChartOutline className="icon" />
+                    )}
+                  </div>
+                </Link>
+                <Link to="/playlists">
+                  <div
+                    onMouseEnter={() => setIsPlayHovered(true)}
+                    onMouseLeave={() => setIsPlayHovered(false)}
+                  >
+                    {isPlayHovered ? (
+                      <PiPlaylistFill className="icon" />
+                    ) : (
+                      <PiPlaylist className="icon" />
+                    )}
+                  </div>
+                </Link>
+                <Link to="/messages">
+                  <div
+                    onMouseEnter={() => setIsMesHovered(true)}
+                    onMouseLeave={() => setIsMesHovered(false)}
+                  >
+                    {isMesHovered ? (
+                      <TbMessageCircleFilled className="icon" />
+                    ) : (
+                      <TbMessageCircle className="icon" />
+                    )}
+                  </div>
+                </Link>
+                <Link to="/profile">
+                  <div
+                    onMouseEnter={() => setIsProfHovered(true)}
+                    onMouseLeave={() => setIsProfHovered(false)}
+                  >
+                    {isProfHovered ? (
+                      <FaUserCircle className="icon" />
+                    ) : (
+                      <FaRegUserCircle className="icon" />
+                    )}
+                  </div>
+                </Link>
+              </nav>)
+                }
+
+        <Routes>
+          <Route path="/stats" element={<Stats />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/playlists" element={<Playlists />} />
+          <Route path="/create-account" element={<CreateAccount />} />
+          <Route path="/login" element={<Login />} />       
+          <Route path="/toptracks" element={<Tracks/>} />
+          <Route path="/" element={<Home />} />
+          <Route
+            path="/profile"
+            element={isLoggedIn ? <Profile user={user} /> : <CreateAccount />}
+          />
+        </Routes>
+       </div>
        </UserProvider>
     );
 
