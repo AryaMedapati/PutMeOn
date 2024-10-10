@@ -4,7 +4,7 @@ import './frontend/styles/index.css';
 import App from './frontend/App';
 import reportWebVitals from './frontend/reportWebVitals';
 import {BrowserRouter} from 'react-router-dom';
-import { UserProvider } from "./UserContext";
+import { UserProvider } from "./frontend/UserContext";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
