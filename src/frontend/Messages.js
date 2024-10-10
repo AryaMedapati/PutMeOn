@@ -4,7 +4,7 @@ import "@blueprintjs/core/lib/css/blueprint.css";
 import { Button, ButtonGroup, Card } from "@blueprintjs/core";
 import { useState, useEffect } from "react";
 
-import "./Profile.css"
+import "./styles/Profile.css"
 import ProfileSidebar from './ProfileSidebar';
 import ProfileContent from './ProfileContent';
 

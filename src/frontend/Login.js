@@ -1,5 +1,5 @@
 import React from "react"
-import "./Login.css"
+import "./styles/Login.css"
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from "react-router-dom";
 import {getAuth, signInWithPopup, GoogleAuthProvider} from "firebase/auth";

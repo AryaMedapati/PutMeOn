@@ -1,5 +1,5 @@
-import logo from "./logo.svg";
-import "./App.css";
+import logo from "./images/logo.svg";
+import "./styles/App.css";
 import { app } from "./firebase";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
