@@ -24,8 +24,6 @@ body {
     padding: 20px;
 }
 
-
- 
 /* Profile Container */
 .profile-container {
     width: 80%;
@@ -95,4 +93,9 @@ body {
   .profile-friends li::before {
     content: "👤";
     margin-right: 8px;
+  }
+
+  .multiselect-wrapper .bp5-tag-remove {
+    width: auto;
+    display: inline-block;
   }
