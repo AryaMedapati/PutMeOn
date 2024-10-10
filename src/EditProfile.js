@@ -1,12 +1,54 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Button, TextArea } from '@blueprintjs/core';
 import { useState } from "react";
 import '@blueprintjs/core/lib/css/blueprint.css';
 import { Icon } from "@blueprintjs/core";
+import { getAuth } from "firebase/auth";
 
 const EditProfile = () => {
     const [editBio, setEditBio] = useState(false);
 
+
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    const fileInputRef = useRef(null);
+    const imageContainerRef = useRef(null);
+
+    const handleEditpfp = () => {
+        fileInputRef.current.click();
+    };
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64String = reader.result;
+            displayImage(base64String);
+            console.log('Base64 String:', base64String);
+        };
+        reader.readAsDataURL(file);
+        }
+        debugger;
+        console.log(user.uid)
+        console.log(user.displayName)
+        console.log(user.getIdTokenResult.name)
+        debugger;
+    };
+
+    const displayImage = (base64String) => {
+        const img = document.createElement('img');
+        img.src = base64String;
+        img.style.width = '80px';
+        img.style.height = '80px';
+        img.style.borderRadius = '50%';
+        img.style.objectFit = 'cover';
+
+        const container = imageContainerRef.current;
+        container.innerHTML = '';
+        container.appendChild(img);
+      };
 
     return (
         <div>
@@ -23,8 +65,10 @@ const EditProfile = () => {
                     paddingRight: '30px',
                 }}
             >
-                <Icon style={{padding: 30}} iconSize={80} icon="user"/>
-                
+                <div ref={imageContainerRef} 
+                    style={{ padding: '30px', border: '30px'}}
+                />
+
                 Username
 
                 <Button
@@ -32,13 +76,29 @@ const EditProfile = () => {
                     style={{ 
                         position: 'absolute',
                         right: '30px',
-                        marginLeft: '40px',
                         width: '180px',
                         height: '40px',
                         borderRadius: 10
                     }}
-                    // onClick={() => setEditBio(!editBio)}
-                    text="Change Photo" />
+                    onClick={handleEditpfp}
+                    text="Change Photo"
+                />
+                <input
+                    style={{ 
+                        position: 'absolute',
+                        right: '30px',
+                        width: '180px',
+                        height: '40px',
+                        borderRadius: 10,
+                        display: 'none'
+                    }}
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                />
+                
+
             </div>
 
 
@@ -65,6 +125,8 @@ const EditProfile = () => {
                     placeholder="Put your bio here"
                 />
             </div>
+
+
 
             <div>
                 <Button
