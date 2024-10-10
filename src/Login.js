@@ -46,6 +46,25 @@ function Login() {
     signInWithPopup(auth, provider)
       .then ((res) => {
         const cred = GoogleAuthProvider.credentialFromResult(res);
+        try {
+          const res = await fetch("http://localhost:3001/insertUser", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username: auth.currentUser.email,
+              password: "google",
+              isPublic: isPublic,
+            }),
+          });
+    
+          const returnVal = await res.json();
+          console.log(returnVal)
+          nav("/");
+        } catch (error) {
+          console.log("Error: " + error)
+        }
         // console.log(res.user);
         nav("/");
       }).catch((error) => {
