@@ -18,23 +18,6 @@ function Login() {
   const nav = useNavigate();
   const { setUsername } = useContext(UserContext);
 
-  /*
-  useEffect(() => {
-    // Check if login data exists in localStorage
-    console.log("local storage check = " + localStorage.getItem("username") + " " + localStorage.getItem("password"));
-    const storedUsername = localStorage.getItem("username");
-    const storedPassword = localStorage.getItem("password");
-    if (storedUsername && storedPassword) {
-      setTimeout(() => {
-        console.log("stored items = " + storedUsername + " " + storedPassword);
-        setUserName(storedUsername);
-        setPass(storedPassword);
-        setRememberMe(true);  // Set remember me checkbox to true
-        console.log("after set = " + username + " " + pass);
-      }, 2);
-    }
-  }, []);
-*/
   const handleUser = (e) => {
     setUserName(e.target.value);
   }
