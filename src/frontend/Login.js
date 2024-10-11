@@ -1,14 +1,17 @@
-import React from "react"
+import React, { useContext } from "react";
 import "./styles/Login.css"
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from "react-router-dom";
+
 import {getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth";
+import { UserContext } from "./UserContext";
 import CreateAccount from "./CreateAccount"
 
 function Login() {
   const [username, setUserName] = useState("");
   const [pass, setPass] = useState("");
   const nav = useNavigate();
+  const { setUsername } = useContext(UserContext);
 
   const handleUser = (e) => {
     setUserName(e.target.value);
@@ -27,6 +30,7 @@ function Login() {
       for (let i = 0; i < users.length; i++) {
         if(users[i].username === username && users[i].password === pass) {
           track = true;
+
           try {
             const auth = getAuth();
             signInWithEmailAndPassword(auth, username, pass)
@@ -42,6 +46,10 @@ function Login() {
               console.log(error);
             }
           }
+
+          setUsername(username);
+          nav("/", {state:true});
+        }
       }
       if (!track) {
         document.getElementById("error-message").innerHTML = "Incorrect email or password."
@@ -55,6 +63,7 @@ function Login() {
   const handleSubmitWithGoogle = async(e) => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
+    setUsername(auth.currentUser.email);
     signInWithPopup(auth, provider)
       .then (async (res) => {
         const cred = GoogleAuthProvider.credentialFromResult(res);

@@ -27,15 +27,15 @@ const userProfile = {
   profilePic: '',
   bio: '',
   friends: [], 
-  isPublic: false
+  isPrivate: false
 };
 
 app.post("/insertUser", async (req, res) => {
-  const{username, password, isPublic} = req.body;
+  const{username, password, isPrivate} = req.body;
   try{
     // console.log("Here")
     const userInfo = db.collection("UserData").doc();
-    await userInfo.set({username, password, isPublic});
+    await userInfo.set({username, password, isPrivate});
     console.log("success")
     res.status(200).json({message: "Success"});
   } catch (error) {
@@ -73,6 +73,29 @@ app.get("/topTracks", async (req, res) => {
     //console.log(topTracksResponse)
 
     res.status(200).json({ data: topTracksResponse.data.items });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
+app.get("/topArtists", async (req, res) => {
+  try {
+    const timeline = req.query.timeline;
+    const token = accessToken;
+    const limit = 50;
+    console.log(token);
+    const topArtistsResponse = await axios.get(
+      `https://api.spotify.com/v1/me/top/artists?time_range=${timeline}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log(topArtistsResponse)
+
+    res.status(200).json({ data: topArtistsResponse.data.items });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error });
