@@ -4,7 +4,7 @@ const TH = () => {
     const [chartUrl, setChartUrl] = useState("");
 
     const fetchHistogram = async (timeline) => {
-        const url = "http://localhost:3000"; // Adjust to your backend URL
+        const url = "http://localhost:3001"; 
         const response = await fetch(`${url}/trackChart?timeline=${timeline}`);
 
         if (response.ok) {
@@ -17,7 +17,7 @@ const TH = () => {
     };
 
     useEffect(() => {
-        const timeline = "medium_term"; // Set your default timeline
+        const timeline = "medium_term";
         fetchHistogram(timeline);
     }, []);
 
