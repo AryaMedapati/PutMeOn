@@ -105,8 +105,6 @@ const Playlists = (props) => {
             // setPdf(downloadUrl);
             await handleSaveSettings(downloadUrl);
           });
-        
-      
       if (username) {
         const userDoc = await getDoc(doc(db, "UserData", username));
         if (userDoc.exists()) {

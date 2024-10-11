@@ -137,6 +137,10 @@ button:disabled {
   padding: 8px;
 }
 
+.saveFile {
+  width: 200px;
+}
+
 .modal {
   display: block; 
   position: fixed; 
