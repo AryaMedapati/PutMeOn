@@ -166,7 +166,7 @@ function CreateAccount() {
           )}
         <div className="passDiv">
           <label htmlFor="pass" onChange={handlePass}>Password</label>
-          <input type = "text" id="pass" name="pass" required onChange={handlePass}></input>
+          <input type = "password" id="pass" name="pass" required onChange={handlePass}></input>
         </div>
         {errorMessage && (
             <p className="error-message">{errorMessage}</p>
