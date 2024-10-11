@@ -34,7 +34,7 @@ app.post("/insertUser", async (req, res) => {
   const { username, password, isPrivate } = req.body;
   try {
     // console.log("Here")
-    const userInfo = db.collection("UserData").doc();
+    const userInfo = db.collection("UserData").doc(username);
     await userInfo.set({ username, password, isPrivate });
     console.log("success")
     res.status(200).json({ message: "Success" });
@@ -213,7 +213,6 @@ app.post("/generate2FACode", async (req, res) => {
 
     // Send the email
     await transporter.sendMail(mailOptions);
-
     return res.status(200).json({ message: 'Verification code sent to your email.' });
   } catch (error) {
     console.error('Error generating 2FA code:', error);
@@ -222,6 +221,8 @@ app.post("/generate2FACode", async (req, res) => {
 });
 
 app.post("/verify2FACode", (req, res) => {
+  console.log("we got here");
+  //console.log("dict = " + tempCodeStore);
   const { username, code } = req.body;
 
   // Validate input

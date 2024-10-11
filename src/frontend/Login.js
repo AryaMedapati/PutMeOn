@@ -1,18 +1,19 @@
 import React, { useContext } from "react";
 import "./styles/Login.css"
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from "react-router-dom";
-import {getAuth, signInWithPopup, GoogleAuthProvider} from "firebase/auth";
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from "react-router-dom";
+
+import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth";
 import { UserContext } from "./UserContext";
 import CreateAccount from "./CreateAccount"
+
+let tempUser = "";
 
 function Login() {
   const [username, setUserName] = useState("");
   const [pass, setPass] = useState("");
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false); // Flag for 2FA
-  const [verificationCode, setVerificationCode] = useState(""); // Store the verification code
-  const [showCodeInput, setShowCodeInput] = useState(false); // Toggle code input form
-  const [tempUsername, setTempUsername] = useState(""); // Temporary store of username for 2FA
+  const [showCodeInput, setShowCodeInput] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
   const nav = useNavigate();
   const { setUsername } = useContext(UserContext);
 
@@ -28,45 +29,62 @@ function Login() {
     setVerificationCode(e.target.value);
   };
 
+  const closeModal = () => {
+    setShowCodeInput(false); // Close the 2FA modal
+  };
+
   const checkUser = async (e) => {
     e.preventDefault();
-    console.log(1);
     try {
       const returnVal = await fetch("http://localhost:3001/fetchUsers");
       const users = await returnVal.json();
-      let isValidUser = false;
-      // let track = false;
+      let track = false;
       for (let i = 0; i < users.length; i++) {
-        if(users[i].username === username && users[i].password === pass) {
-          isValidUser = true;
-          setTempUsername(username); // Save username temporarily for 2FA
-          
-          // Check if the user has 2FA enabled
-          if (users[i].TwoFactor) {
-            setIsTwoFactorEnabled(true); // Enable 2FA if true
+        if (users[i].username === username && users[i].password === pass) {
+          tempUser = users[i];
+          console.log("here");
+          console.log("two factor = " + users[i].twoStepAuth);
+          track = true;
+          if (users[i].twoStepAuth) {
+            const generateCodeResponse = await fetch("http://localhost:3001/generate2FACode", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username }),
+            });
+            const result = await generateCodeResponse.json();
+            if (generateCodeResponse.ok) {
+              // Display input field for verification code
+              setShowCodeInput(true);
+            } else {
+              document.getElementById("error-message").innerText = result.message || "Error generating 2FA code.";
+            }
           } else {
-            // Directly log in if 2FA is not enabled
-            setUsername(username);
-            nav("/", { state: true }); // Redirect after successful login
+            console.log("no twofactor");
+            // If no 2FA, log in directly
+            try {
+              const auth = getAuth();
+              signInWithEmailAndPassword(auth, username, pass)
+                .then((userCredential) => {
+                  const user = userCredential.user;
+                })
+                .catch((error) => {
+                  const errorCode = error.code;
+                  const errorMessage = error.message;
+                });
+              setUsername(username);
+              nav("/", { user: users[i] })
+            } catch (error) {
+              console.log(error);
+            }
           }
+          break;
         }
       }
-      if (isValidUser && isTwoFactorEnabled) {
-        // Generate 2FA code
-        const generateCodeRes = await fetch("http://localhost:3001/generate2FACode", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username }),
-        });
 
-        const result = await generateCodeRes.json();
-        if (generateCodeRes.ok) {
-          setShowCodeInput(true); // Show code input form
-        } else {
-          document.getElementById("error-message").innerHTML = result.message || "Error generating 2FA code.";
-        }
-      } else if (!isValidUser) {
-        document.getElementById("error-message").innerHTML = "Incorrect email or password.";
+      if (!track) {
+        document.getElementById("error-message").innerHTML = "Incorrect email or password."
       }
       // console.log(users[0]);
 
@@ -78,60 +96,64 @@ function Login() {
   const verify2FACode = async (e) => {
     e.preventDefault();
     try {
-      const verifyRes = await fetch("http://localhost:3001/verify2FACode", {
+      const response = await fetch("http://localhost:3001/verify2FACode", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: tempUsername, code: verificationCode }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          code: verificationCode,
+        }),
       });
 
-      const result = await verifyRes.json();
-      if (verifyRes.ok) {
-        setUsername(tempUsername);
-        nav("/", { state: true }); // Redirect after successful 2FA
+      const result = await response.json();
+      if (response.ok) {
+        try {
+          const auth = getAuth();
+          console.log("username = " + username + " pass = " + pass);
+          signInWithEmailAndPassword(auth, username, pass)
+            .then((userCredential) => {
+              const user = userCredential.user;
+            })
+            .catch((error) => {
+              const errorCode = error.code;
+              const errorMessage = error.message;
+            });
+          setUsername(username);
+          closeModal(); // Close the 2FA modal on successful verification
+          const returnVal = await fetch("http://localhost:3001/fetchUsers");
+          const users = await returnVal.json();
+          nav("/", { user: tempUser })
+        } catch (error) {
+          console.log(error);
+        }
       } else {
-        document.getElementById("error-message").innerHTML = result.message || "Invalid verification code.";
+        document.getElementById("2fa-error-message").innerText = result.message || "Invalid verification code.";
       }
     } catch (error) {
-      console.log("Error verifying code: ", error);
+      console.log(error);
     }
   };
 
-  const handleSubmitWithGoogle = async(e) => {
+
+  const handleSubmitWithGoogle = async (e) => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
     setUsername(auth.currentUser.email);
     signInWithPopup(auth, provider)
-      .then (async (res) => {
+      .then(async (res) => {
         const cred = GoogleAuthProvider.credentialFromResult(res);
-        try {
-          const res = await fetch("http://localhost:3001/insertUser", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              username: auth.currentUser.email,
-              password: "google",
-              isPublic: false,
-            }),
-          });
-    
-          const returnVal = await res.json();
-          console.log(returnVal)
-          nav("/");
-        } catch (error) {
-          console.log("Error: " + error)
-        }
         // console.log(res.user);
         nav("/");
       }).catch((error) => {
         console.log(error);
       });
   }
-  const handleSubmitWithSpotify = async(e) => {
+  const handleSubmitWithSpotify = async (e) => {
     e.preventDefault();
     window.location.href = "http://localhost:3001/spotify-login";
-      //const returnVal = await res.json();
+    //const returnVal = await res.json();
     // console.log(returnVal);
   }
 
@@ -163,23 +185,6 @@ function Login() {
           />
         </div>
         <button type="submit">Login</button>
-
-        {showCodeInput && (
-          <form className="verificationForm" onSubmit={verify2FACode}>
-            <div className="verificationCodeDiv">
-              <label htmlFor="verificationCode">Enter 2FA Code</label>
-              <input
-                type="text"
-                id="verificationCode"
-                name="verificationCode"
-                required
-                onChange={handleVerificationCodeInput}
-              />
-            </div>
-            <button type="submit">Verify Code</button>
-          </form>
-        )}
-
         <div className="alreadyHaveAccount">
           <Link to="/create-account">Don't have an account? Sign up</Link>
         </div>
@@ -197,8 +202,29 @@ function Login() {
           <Route path="/create-account" element={<CreateAccount />}></Route>
         </Routes>
       </form>
+      {showCodeInput && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Enter 2FA Code</h3>
+            <div className="errorDiv">
+              <p id="2fa-error-message" className="error-message"></p>
+            </div>
+            <input
+              type="text"
+              id="verificationCode"
+              name="verificationCode"
+              required
+              onChange={handleVerificationCodeInput}
+            />
+            <button onClick={verify2FACode}>Verify Code</button>
+            <button onClick={closeModal} className="close-button">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export default Login
+export default Login;
