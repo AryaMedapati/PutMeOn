@@ -234,7 +234,7 @@ app.post("/generate2FACode", async (req, res) => {
       from: 'putmeonproject@gmail.com',
       to: userEmail,
       subject: 'Your 2FA Verification Code',
-      text: `Hello ${username},\n\nYour verification code is: ${verificationCode}\nThis code will expire in 5 minutes.\n\nBest regards,\nYour Team`,
+      text: `Hello,\n\nYour verification code is: ${verificationCode}\nThis code will expire in 5 minutes.\n\nBest regards,\nYour Team`,
     };
 
     // Send the email
