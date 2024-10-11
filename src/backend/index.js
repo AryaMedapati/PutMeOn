@@ -269,6 +269,25 @@ app.get("/trackChart", async (req, res) => {
   res.send(histogramBuffer);
 });
 
+app.get("/artistChart", async (req, res) => {
+  const timeline = req.query.timeline;
+  const token = accessToken;
+  const limit = 50;
+  const topTracksResponse = await axios.get(
+    `https://api.spotify.com/v1/me/top/artists?time_range=${timeline}&limit=${limit}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  const data = await topTracksResponse.data.items;
+  const popularityData = data.map((artist) => artist.popularity);
+  const histogramBuffer = generateHistogram(popularityData);
+  res.set("Content-Type", "image/png");
+  res.send(histogramBuffer);
+});
+
 app.get("/spotify-login", async (req, res) => {
   // console.log("hello");
   res.redirect(
