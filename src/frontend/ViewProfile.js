@@ -12,6 +12,7 @@ const ViewProfile = () => {
     window.open(spotifyAuthUrl, '_blank', 'noopener,noreferrer');
 };
 
+
   return (
     <div>
       <h1>Your Profile</h1>
