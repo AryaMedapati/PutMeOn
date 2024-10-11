@@ -32,6 +32,7 @@ const ViewProfile = () => {
                 />
             </div>
 
+
         </div>
     );
 };

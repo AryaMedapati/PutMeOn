@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import "./styles/Login.css"
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from "react-router-dom";
-import {getAuth, signInWithPopup, GoogleAuthProvider} from "firebase/auth";
+import {getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword } from "firebase/auth";
 import Login from "./Login";
 
 function CreateAccount() {
@@ -54,25 +54,49 @@ function CreateAccount() {
     //   console.log(error);
     // }
     try {
-      const res = await fetch("http://localhost:3001/insertUser", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: userName,
-          password: pass,
-          isPublic: isPublic,
-        }),
-      });
+      const returnVal = await fetch("http://localhost:3001/fetchUsers");
+      const users = await returnVal.json();
+      let track = false;
+      for (let i = 0; i < users.length; i++) {
+        if(users[i].username === userName) {
+          track = true;
+        }
 
-      const returnVal = await res.json();
-      console.log(returnVal)
-      nav("/");
+      }
+      if (track) {
+        document.getElementById("error-message").innerHTML = "Account already exists with email."
+      }
+      else {
+        const res = await fetch("http://localhost:3001/insertUser", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: userName,
+            password: pass,
+            isPublic: isPublic,
+          }),
+        });
+        try {
+          const auth = getAuth();
+          createUserWithEmailAndPassword(auth, userName, pass)
+            .then((userCredential) => {
+              const user = userCredential.user;
+            })
+            .catch((error) => {
+              const errorCode = error.code;
+              const errorMessage = error.message;
+            });
+            nav("/", {user:userName})
+        } catch (error) {
+          console.log(error);
+        }
+      } 
     } catch (error) {
       console.log("Error: " + error)
     }
-  
+    
   }
 
   const handleSubmitWithGoogle = async(e) => {
@@ -118,6 +142,9 @@ function CreateAccount() {
     <div className="loginDiv">
       <form className="loginForm"  onSubmit={handleSubmit}>
         <h2>Create Account</h2>
+        <div className="errorDiv">
+          <p id="error-message"  className="error-message"></p>
+        </div>
         <div className="userNameDiv">
           <label htmlFor="user" >Email</label>
           <input type = "text" id="user" name="user" required onChange={handleUser}></input>
@@ -149,9 +176,9 @@ function CreateAccount() {
         <div className="buttonDiv">
           <button type="submit" className = "gButton" onClick={handleSubmitWithGoogle}>Create Account with Google</button>
         </div>
-        <div className="buttonDiv">
+        {/* <div className="buttonDiv">
           <button type="submit" className = "spoButton"onClick={handleSubmitWithSpotify}>Create Account with Spotify</button>
-        </div>
+        </div> */}
 
         <Routes>
             <Route path = "../login" element = {<Login />}></Route>
