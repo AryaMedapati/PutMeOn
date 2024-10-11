@@ -19,6 +19,8 @@ import Profile from "./Profile";
 import Tracks from "./TopTracks";
 import Artists from "./TopArtists";
 import Genres from "./TopGenres";
+import GV from "./GenreVisual"
+import TH from "./TrackVisual"
 import Login from "./Login";
 import CreateAccount from "./CreateAccount";
 
@@ -116,7 +118,8 @@ function App(props) {
           <Route path="/topartists" element={<Artists/>} />
           <Route path="/topgenres" element={<Genres/>} />
           <Route path="/profile" element={<Profile />} />
-
+          <Route path="/genrevis" element={<GV/>} />
+          <Route path="/trackvis" element={<TH/>} />
         </Routes>
       </div>
     );
