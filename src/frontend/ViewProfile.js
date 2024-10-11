@@ -1,50 +1,79 @@
-import React from "react";
-import { Button, TextArea } from "@blueprintjs/core";
-import { useState } from "react";
+import React, { useRef } from 'react';
+import { Button, TextArea } from '@blueprintjs/core';
+import { useState, useEffect, useContext } from "react";
+import '@blueprintjs/core/lib/css/blueprint.css';
 import "@blueprintjs/core/lib/css/blueprint.css";
 import { Icon } from "@blueprintjs/core";
+import { getAuth } from "firebase/auth";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { UserContext } from './UserContext';
 
 const ViewProfile = () => {
-  const [editBio, setEditBio] = useState(false);
+    const [pfp, setPfp] = useState("");
+    const [email, setEmail] = useState("");
 
-  const linkSpotifyAccount = () => {
-    const spotifyAuthUrl = `http://localhost:3001/spotify-login`; // This is the backend route
-    window.open(spotifyAuthUrl, '_blank', 'noopener,noreferrer');
-};
+    const fileInputRef = useRef(null);
+    const imageContainerRef = useRef(null);
 
+    const db = getFirestore();
+    const { username } = useContext(UserContext);
 
-  return (
-    <div>
-      <h1>Your Profile</h1>
+    const displayImage = (base64String) => {
+        const img = document.createElement('img');
+        img.src = base64String;
+        img.style.width = '80px';
+        img.style.height = '80px';
+        img.style.borderRadius = '50%';
+        img.style.objectFit = 'cover';
 
-      <Icon style={{ padding: 20 }} iconSize={80} icon="user" />
+        const container = imageContainerRef.current;
+        container.innerHTML = '';
+        container.appendChild(img);
+    };
 
-      <div>
-        <TextArea
-          intent="none"
-          style={{
-            resize: "none",
-            width: "800px",
-            height: "100px",
-            borderRadius: 10,
-          }}
-          growVertically={true}
-          small
-          readOnly
-          placeholder="Put your bio here"
-        />
-      </div>
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            if (username) {
+                const userDoc = await getDoc(doc(db, "UserData", username));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    setPfp(data.pfp);
+                    setEmail(data.email);
+                }
+            }
+        };
+        fetchProfileData();
+    }, [username]);
 
-      <div style={{ marginTop: "20px" }}>
-        <Button
-          text="Link Account with Spotify"
-          intent="primary"
-          icon="music"
-          onClick={linkSpotifyAccount}
-        />
-      </div>
-    </div>
-  );
+    useEffect(() => {
+        displayImage(pfp);
+    }, [pfp]);
+
+    return (
+        <div>
+            <h1>Edit Profile</h1>
+
+            <div
+                style={{
+                    width: "800px",
+                    borderRadius: '20px',
+                    position: 'relative',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    paddingRight: '30px',
+                }}
+            >
+                <div ref={imageContainerRef} 
+                    style={{ padding: '30px', border: '30px'}}
+                />
+
+                <div style={{ paddingLeft: '20px', fontSize: '16px' }}>
+                    {email || 'Loading email...'}
+                </div>
+            </div>
+        </div>
+    );
+
 };
 
 export default ViewProfile;

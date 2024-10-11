@@ -1,3 +1,4 @@
+const { getFirestore, doc, getDoc, setDoc } = require("firebase/firestore");
 const express = require("express");
 // const functions = require('firebase-functions');
 const bp = require("body-parser");
@@ -19,7 +20,7 @@ const frontUrl = `http://localhost:${frontPort}`;
 const mainUrl = "https://put-me-on-418b7.web.app"
 // app.use(express.json());
 // app.use(json());
-app.use(bp.json());
+app.use(bp.json({ limit: '10mb' }));
 app.use(cors());
 
 const userProfile = {
@@ -31,11 +32,10 @@ const userProfile = {
 };
 
 app.post("/insertUser", async (req, res) => {
-  const{username, password, isPrivate} = req.body;
   try{
     // console.log("Here")
     const userInfo = db.collection("UserData").doc();
-    await userInfo.set({username, password, isPrivate});
+    await userInfo.set(req.body);
     console.log("success")
     res.status(200).json({message: "Success"});
   } catch (error) {
@@ -55,6 +55,32 @@ app.get("/fetchUsers", async (req, res) => {
     res.status(500).send(error);
   }
 })
+
+//this doesn't work -jason
+app.post("/updateUser", async (req, res) => {
+  const { username, pfp } = req.body;
+
+  try {
+    const userRef = doc(db, "UserData");
+    const userSnapshot = await getDoc(userRef);
+
+    if (userSnapshot.exists()) {
+      const userData = userSnapshot.data();
+
+      const updatedData = {
+        username: username || userData.username,
+        pfp: pfp || userData.pfp
+      };
+      await setDoc(userRef, updatedData);
+      res.status(200).send("User data updated successfully.");
+    } else {
+      res.status(404).send("User not found.");
+    }
+  } catch (error) {
+    console.error("Error updating user data:", error);
+    res.status(500).send("Failed to update user data.");
+  }
+});
 
 app.get("/topTracks", async (req, res) => {
   try {
