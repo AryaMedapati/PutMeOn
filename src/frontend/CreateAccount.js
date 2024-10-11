@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useContext } from "react"
 import "./styles/Login.css"
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from "react-router-dom";
 import {getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword } from "firebase/auth";
 import Login from "./Login";
+
+import { UserContext } from "./UserContext";
+
+
 import defaultPfp from "./images/defaultPfp";
+
 
 function CreateAccount() {
 
@@ -13,6 +18,8 @@ function CreateAccount() {
   const [errorMessage, setErrorMessage] = useState("");
   const [errorMessage2, setErrorMessage2] = useState("");
   const nav = useNavigate();
+  const { setUsername } = useContext(UserContext);
+
 
 
   const handleUser = (e) => {
@@ -110,7 +117,7 @@ function CreateAccount() {
               const errorCode = error.code;
               const errorMessage = error.message;
             });
-            nav("/", {user:userName})
+            nav("/", {state:{user: userName}});
         } catch (error) {
           console.log(error);
         }
@@ -145,8 +152,8 @@ function CreateAccount() {
           });
     
           const returnVal = await res.json();
-          console.log(returnVal)
-          nav("/");
+          // console.log(returnVal)
+          nav("/", {user: auth.currentUser.email});
         } catch (error) {
           console.log("Error: " + error)
         }
@@ -180,7 +187,7 @@ function CreateAccount() {
           )}
         <div className="passDiv">
           <label htmlFor="pass" onChange={handlePass}>Password</label>
-          <input type = "text" id="pass" name="pass" required onChange={handlePass}></input>
+          <input type = "password" id="pass" name="pass" required onChange={handlePass}></input>
         </div>
         {errorMessage && (
             <p className="error-message">{errorMessage}</p>
