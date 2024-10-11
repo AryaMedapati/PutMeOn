@@ -136,3 +136,7 @@ button:disabled {
 .buttonDiv {
   padding: 8px;
 }
+
+.saveFile {
+  width: 200px;
+}
