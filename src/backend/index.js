@@ -1,10 +1,12 @@
+const { getFirestore, doc, getDoc, setDoc } = require("firebase/firestore");
 const express = require("express");
 // const functions = require('firebase-functions');
 const bp = require("body-parser");
 const db = require("./firebaseConfig");
+const cors = require("cors");
+const axios = require("axios");
 const request = require('request');
 const querystring = require("querystring");
-const cors = require("cors")
 const clientID = '6e24baf59c484801a146e21891775723';
 const clientSecret = '177482208fff40f7991ac0b139b2627e';
 let accessToken = "";
@@ -12,28 +14,33 @@ let refreshToken = "";
 
 const app = express();
 const port = process.env.PORT || 3001;
-app.use(bp.json());
-app.use(cors())
+const frontPort = 3000;
+const url = `http://localhost:${port}`;
+const frontUrl = `http://localhost:${frontPort}`;
+const mainUrl = "https://put-me-on-418b7.web.app"
+// app.use(express.json());
+// app.use(json());
+app.use(bp.json({ limit: '10mb' }));
+app.use(cors());
 
 const userProfile = {
   username: '',
   profilePic: '',
   bio: '',
   friends: [], 
-  isPublic: false
+  isPrivate: false
 };
 
 app.post("/insertUser", async (req, res) => {
-  const{username, password, isPublic} = req.body;
   try{
     // console.log("Here")
     const userInfo = db.collection("UserData").doc();
-    await userInfo.set({username, password, isPublic});
+    await userInfo.set(req.body);
     console.log("success")
     res.status(200).json({message: "Success"});
   } catch (error) {
-      console.log(error)
-      res.status(500).json({message: error})
+    console.log(error);
+    res.status(500).json({ message: error });
   }
 });
 
@@ -48,6 +55,79 @@ app.get("/fetchUsers", async (req, res) => {
     res.status(500).send(error);
   }
 })
+
+//this doesn't work -jason
+app.post("/updateUser", async (req, res) => {
+  const { username, pfp } = req.body;
+
+  try {
+    const userRef = doc(db, "UserData");
+    const userSnapshot = await getDoc(userRef);
+
+    if (userSnapshot.exists()) {
+      const userData = userSnapshot.data();
+
+      const updatedData = {
+        username: username || userData.username,
+        pfp: pfp || userData.pfp
+      };
+      await setDoc(userRef, updatedData);
+      res.status(200).send("User data updated successfully.");
+    } else {
+      res.status(404).send("User not found.");
+    }
+  } catch (error) {
+    console.error("Error updating user data:", error);
+    res.status(500).send("Failed to update user data.");
+  }
+});
+
+app.get("/topTracks", async (req, res) => {
+  try {
+    const timeline = req.query.timeline;
+    const token = accessToken;
+    const limit = 50;
+    console.log(token);
+    const topTracksResponse = await axios.get(
+      `https://api.spotify.com/v1/me/top/tracks?time_range=${timeline}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    //console.log(topTracksResponse)
+
+    res.status(200).json({ data: topTracksResponse.data.items });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
+app.get("/topArtists", async (req, res) => {
+  try {
+    const timeline = req.query.timeline;
+    const token = accessToken;
+    const limit = 50;
+    console.log(token);
+    const topArtistsResponse = await axios.get(
+      `https://api.spotify.com/v1/me/top/artists?time_range=${timeline}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log(topArtistsResponse)
+
+    res.status(200).json({ data: topArtistsResponse.data.items });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
 app.get("/spotify-login", async (req, res) => {
   // console.log("hello");
   res.redirect('https://accounts.spotify.com/authorize?' +
@@ -55,7 +135,7 @@ app.get("/spotify-login", async (req, res) => {
       response_type: 'code',
       client_id: clientID,
       scope: 'ugc-image-upload user-read-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-modify user-follow-read user-top-read user-read-recently-played user-library-modify user-library-read user-read-email user-read-private',
-      redirect_uri: 'http://localhost:3001/callback'
+      redirect_uri: `${url}/callback`
     })
   );
 })
@@ -66,7 +146,7 @@ app.get("/callback", function(req, res) {
     url: 'https://accounts.spotify.com/api/token',
     form: {
       code: req.query.code,
-      redirect_uri: 'http://localhost:3001/callback',
+      redirect_uri: `${url}/callback`,
       grant_type: 'authorization_code'
     },
     headers: {
@@ -83,7 +163,7 @@ app.get("/callback", function(req, res) {
       accessToken = body.access_token;
       refreshToken = body.refreshToken;
       // Redirect to frontend with tokens
-      res.redirect('https://put-me-on-418b7.web.app/?' +
+      res.redirect(`${mainUrl}/?` +
         querystring.stringify({
           access_token: access_token,
           refresh_token: refresh_token
@@ -94,6 +174,7 @@ app.get("/callback", function(req, res) {
     }
   });
 })
+
 app.get("/profile", async (req, res) => {
   const { username } = req.query;
   try {
@@ -113,4 +194,4 @@ app.get("/profile", async (req, res) => {
 
 app.listen(port, () => {
   console.log("Server running on port " + port)
-})
+});

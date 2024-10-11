@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react"
-import "./Login.css"
+import "./styles/Login.css"
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from "react-router-dom";
-import {getAuth, signInWithPopup, GoogleAuthProvider} from "firebase/auth";
+import {getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword } from "firebase/auth";
 import Login from "./Login";
+import defaultPfp from "./images/defaultPfp";
 
 function CreateAccount() {
 
   const [userName, setUserName] = useState("");
   const [pass, setPass] = useState("");
-  const [isPublic, setIsPublic] = useState(true); // State to manage account visibility
+  const [isPrivate, setIsPrivate] = useState(false); // State to manage account visibility
   const [errorMessage, setErrorMessage] = useState("");
   const [errorMessage2, setErrorMessage2] = useState("");
   const nav = useNavigate();
@@ -17,9 +18,9 @@ function CreateAccount() {
   const handleUser = (e) => {
     const inputUser = e.target.value;
     setUserName(inputUser);
-    if (userName.length < 8){
+    if (userName.search("@") == -1){
       setErrorMessage2(
-        "Username must be at least 8 characters long."
+        "Please enter a valid email address."
       );
     } else {
       setErrorMessage2("");
@@ -40,7 +41,7 @@ function CreateAccount() {
   }
 
   const handleCheckboxChange = () => {
-    setIsPublic((prevValue) => !prevValue);
+    setIsPrivate((prevValue) => !prevValue);
   };
 
   const handleSubmit = async (e) => {
@@ -54,6 +55,15 @@ function CreateAccount() {
     //   console.log(error);
     // }
     try {
+
+      const returnVal = await fetch("http://localhost:3001/fetchUsers");
+      const users = await returnVal.json();
+      let track = false;
+      for (let i = 0; i < users.length; i++) {
+        if(users[i].username === userName) {
+          track = true;
+        }
+
       const res = await fetch("http://localhost:3001/insertUser", {
         method: "POST",
         headers: {
@@ -62,26 +72,76 @@ function CreateAccount() {
         body: JSON.stringify({
           username: userName,
           password: pass,
-          isPublic: isPublic,
+          isPrivate: isPrivate,
+          pfp: defaultPfp
         }),
       });
 
-      const returnVal = await res.json();
-      console.log(returnVal)
-      nav("/");
+
+      }
+      if (track) {
+        document.getElementById("error-message").innerHTML = "Account already exists with email."
+      }
+      else {
+        const res = await fetch("http://localhost:3001/insertUser", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: userName,
+            password: pass,
+            isPrivate: isPrivate,
+          }),
+        });
+        try {
+          const auth = getAuth();
+          createUserWithEmailAndPassword(auth, userName, pass)
+            .then((userCredential) => {
+              const user = userCredential.user;
+            })
+            .catch((error) => {
+              const errorCode = error.code;
+              const errorMessage = error.message;
+            });
+            nav("/", {user:userName})
+        } catch (error) {
+          console.log(error);
+        }
+      } 
     } catch (error) {
       console.log("Error: " + error)
     }
-  
+    
   }
 
   const handleSubmitWithGoogle = async(e) => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
     signInWithPopup(auth, provider)
-      .then ((res) => {
+      .then (async(res) => {
         const cred = GoogleAuthProvider.credentialFromResult(res);
+        try {
+          const res = await fetch("http://localhost:3001/insertUser", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username: auth.currentUser.email,
+              password: "google",
+              isPrivate: isPrivate,
+            }),
+          });
+    
+          const returnVal = await res.json();
+          console.log(returnVal)
+          nav("/");
+        } catch (error) {
+          console.log("Error: " + error)
+        }
         // console.log(res.user);
+        
         nav("/");
       }).catch((error) => {
         console.log(error);
@@ -98,8 +158,11 @@ function CreateAccount() {
     <div className="loginDiv">
       <form className="loginForm"  onSubmit={handleSubmit}>
         <h2>Create Account</h2>
+        <div className="errorDiv">
+          <p id="error-message"  className="error-message"></p>
+        </div>
         <div className="userNameDiv">
-          <label htmlFor="user" >Username</label>
+          <label htmlFor="user" >Email</label>
           <input type = "text" id="user" name="user" required onChange={handleUser}></input>
         </div>
         {errorMessage2 && (
@@ -116,7 +179,7 @@ function CreateAccount() {
           <label>
             <input
               type="checkbox"
-              checked={isPublic}
+              checked={isPrivate}
               onChange={handleCheckboxChange}
             />
             Make my account private
@@ -126,8 +189,12 @@ function CreateAccount() {
         <div className="alreadyHaveAccount">
             <Link to =  "/login" >Already have an account? Log in</Link>
         </div>
-        <button type="submit" onClick={handleSubmitWithGoogle}>Create Account with Google</button>
-        <button type="submit" onClick={handleSubmitWithSpotify}>Create Account with Spotify</button>
+        <div className="buttonDiv">
+          <button type="submit" className = "gButton" onClick={handleSubmitWithGoogle}>Create Account with Google</button>
+        </div>
+        {/* <div className="buttonDiv">
+          <button type="submit" className = "spoButton"onClick={handleSubmitWithSpotify}>Create Account with Spotify</button>
+        </div> */}
 
         <Routes>
             <Route path = "../login" element = {<Login />}></Route>

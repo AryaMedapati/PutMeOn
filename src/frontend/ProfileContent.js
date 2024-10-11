@@ -2,6 +2,7 @@ import React from 'react';
 import ProfileUsername from './ProfileUsername';
 import ViewProfile from './ViewProfile';
 import EditProfile from './EditProfile';
+import ProfilePrivacy from './ProfilePrivacy';
 
 const ProfileContent = ({ activeContent }) => {
   switch (activeContent) {
@@ -12,7 +13,7 @@ const ProfileContent = ({ activeContent }) => {
     case 'username':
       return <div><ProfileUsername/></div>;
     case 'privacy':
-      return <div>Here are your Privacy settings.</div>;
+      return <div><ProfilePrivacy/></div>;
     default:
         return <div><ViewProfile/></div>;
     }

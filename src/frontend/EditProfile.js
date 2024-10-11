@@ -1,25 +1,13 @@
 import React, { useRef } from 'react';
-import { MultiSelect } from "@blueprintjs/select";
-import { MenuItem, Tag, Button, TextArea } from '@blueprintjs/core';
 import { useState } from "react";
 import '@blueprintjs/core/lib/css/blueprint.css';
 import { Icon } from "@blueprintjs/core";
 import { getAuth } from "firebase/auth";
-import { Minimize } from '@blueprintjs/icons';
+import { MultiSelect } from "@blueprintjs/select";
+import { MenuItem, Tag, Button, TextArea } from '@blueprintjs/core';
 
 const EditProfile = () => {
     const [editBio, setEditBio] = useState(false);
-
-
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    const fileInputRef = useRef(null);
-    const imageContainerRef = useRef(null);
-
-    const handleEditpfp = () => {
-        fileInputRef.current.click();
-    };
 
     const items = [
         "test123",
@@ -30,6 +18,56 @@ const EditProfile = () => {
         "nottest",
         "Test",
     ];
+
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    const fileInputRef = useRef(null);
+    const imageContainerRef = useRef(null);
+
+    const [selectedItems, setSelectedItems] = useState([]);
+    const [songQuery, setSongQuery] = useState("");
+    const handleItemSelect = (item) => {
+        if (!selectedItems.some((selectedItem) => selectedItem === item)) {
+            setSelectedItems([...selectedItems, item]);
+        }
+    };
+    const handleTagRemove = (tag, index) => {
+        setSelectedItems(selectedItems.filter((_, i) => i !== index));
+    };
+    const renderItem = (item, { handleClick, modifiers }) => {
+        return (
+            <MenuItem
+                key={item}
+                text={item}
+                onClick={handleClick}
+                active={modifiers.active}
+                selected={selectedItems.includes(item)}
+            />
+        );
+    };
+    const itemPredicate = (songQuery, item) => {
+        const normalizedFruit = item.toLowerCase();
+        const normalizedQuery = songQuery.toLowerCase();
+        return normalizedFruit.includes(normalizedQuery);
+    };
+    const createNewItemFromQuery = (songQuery) => songQuery;
+    const createNewItemRenderer = (songQuery, active, handleClick) => {
+        if (!songQuery) return null;
+        return (
+            <MenuItem
+                key={`create-new-${songQuery}`}
+                text={`Create "${songQuery}"`}
+                active={active}
+                onClick={handleClick}
+                icon="add"
+            />
+        );
+    };
+
+    const handleEditpfp = () => {
+        fileInputRef.current.click();
+    };
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
@@ -62,53 +100,6 @@ const EditProfile = () => {
         container.appendChild(img);
     };
 
-    const [selectedItems, setSelectedItems] = useState([]);
-    const [songQuery, setSongQuery] = useState("");
-
-    const handleItemSelect = (item) => {
-        if (!selectedItems.some((selectedItem) => selectedItem === item)) {
-            setSelectedItems([...selectedItems, item]);
-        }
-    };
-
-    const handleTagRemove = (tag, index) => {
-        setSelectedItems(selectedItems.filter((_, i) => i !== index));
-    };
-
-    const renderItem = (item, { handleClick, modifiers }) => {
-        return (
-            <MenuItem
-                key={item}
-                text={item}
-                onClick={handleClick}
-                active={modifiers.active}
-                selected={selectedItems.includes(item)}
-            />
-        );
-    };
-
-    const itemPredicate = (songQuery, item) => {
-        const normalizedFruit = item.toLowerCase();
-        const normalizedQuery = songQuery.toLowerCase();
-        return normalizedFruit.includes(normalizedQuery);
-    };
-
-    const createNewItemFromQuery = (songQuery) => songQuery;
-
-    const createNewItemRenderer = (songQuery, active, handleClick) => {
-        if (!songQuery) return null;
-
-        return (
-            <MenuItem
-                key={`create-new-${songQuery}`}
-                text={`Create "${songQuery}"`}
-                active={active}
-                onClick={handleClick}
-                icon="add"
-            />
-        );
-    };
-
     return (
         <div>
             <h1>Edit Profile</h1>
@@ -128,8 +119,7 @@ const EditProfile = () => {
                     style={{ padding: '30px', border: '30px' }}
                 />
 
-                {user.displayName}
-                {user.email}
+                Username
 
                 <Button
                     intent='primary'
@@ -157,7 +147,10 @@ const EditProfile = () => {
                     ref={fileInputRef}
                     onChange={handleFileChange}
                 />
+
+
             </div>
+
 
             <div
                 style={{
@@ -183,17 +176,6 @@ const EditProfile = () => {
                 />
             </div>
 
-            <div>
-                <Button
-                    intent='primary'
-                    style={{
-                        width: '160px',
-                        height: '35px',
-                        borderRadius: 20
-                    }}
-                    onClick={() => setEditBio(!editBio)}
-                    text="Save Changes" />
-            </div>
             <div
                 style={{
                     fontWeight: 'bold',
@@ -225,7 +207,18 @@ const EditProfile = () => {
                 />
             </div>
 
+            <div>
+                <Button
+                    intent='primary'
+                    style={{
+                        width: '160px',
+                        height: '35px',
+                        borderRadius: 20
+                    }}
+                    onClick={() => setEditBio(!editBio)}
+                    text="Save Changes" />
 
+            </div>
         </div>
     );
 };
