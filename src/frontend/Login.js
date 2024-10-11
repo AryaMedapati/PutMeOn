@@ -9,6 +9,10 @@ import CreateAccount from "./CreateAccount"
 function Login() {
   const [username, setUserName] = useState("");
   const [pass, setPass] = useState("");
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false); // Flag for 2FA
+  const [verificationCode, setVerificationCode] = useState(""); // Store the verification code
+  const [showCodeInput, setShowCodeInput] = useState(false); // Toggle code input form
+  const [tempUsername, setTempUsername] = useState(""); // Temporary store of username for 2FA
   const nav = useNavigate();
   const { setUsername } = useContext(UserContext);
 
@@ -29,9 +33,14 @@ function Login() {
       let track = false;
       for (let i = 0; i < users.length; i++) {
         if(users[i].username === username && users[i].password === pass) {
+          isValidUser = true;
+          setTempUsername(username); // Save username temporarily for 2FA
+          setIsTwoFactorEnabled(true); // Enable 2FA
+          /*
           track = true;
           setUsername(username);
           nav("/", {state:true});
+          */
         }
       }
       if (!track) {
@@ -43,6 +52,7 @@ function Login() {
       console.log(error);
     }
   }
+
   const handleSubmitWithGoogle = async(e) => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
