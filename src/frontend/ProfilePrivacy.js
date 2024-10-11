@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, documentId } from "firebase/firestore";
 import { UserContext } from "./UserContext";
 
 const ProfilePrivacy = () => {
@@ -55,7 +55,7 @@ const ProfilePrivacy = () => {
           privacySettings: privacySettings,
           isPrivate: isPrivate,
           twoStepAuth: twoStepAuth,
-        });
+        }, {merge: true});
         alert("Privacy settings saved successfully.");
       } catch (error) {
         console.error("Error saving settings:", error);
