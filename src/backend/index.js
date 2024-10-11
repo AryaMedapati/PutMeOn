@@ -29,7 +29,6 @@ const mainUrl = "https://put-me-on-418b7.web.app";
 app.use(bp.json({limit: '50mb'}));
 app.use(cors());
 
-
 const tempCodeStore = {};
 const userProfile = {
   username: "",
@@ -38,6 +37,9 @@ const userProfile = {
   friends: [],
   isPrivate: false,
 };
+function generateRandomCode(length = 6) {
+  return crypto.randomBytes(length).toString('hex').slice(0, length).toUpperCase();
+}
 
 function generateRandomCode(length = 6) {
   return crypto.randomBytes(length).toString('hex').slice(0, length).toUpperCase();

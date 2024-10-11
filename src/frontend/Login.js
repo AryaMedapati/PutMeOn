@@ -62,8 +62,6 @@ function Login() {
             localStorage.removeItem("password");
           }
           
-          console.log("local storage = " + localStorage.getItem("username") + " " + localStorage.getItem("password"));
-
           if (users[i].twoStepAuth) {
             const generateCodeResponse = await fetch("http://localhost:3001/generate2FACode", {
               method: "POST",
