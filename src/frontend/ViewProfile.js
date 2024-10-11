@@ -10,9 +10,12 @@ import { UserContext } from "./UserContext";
 import axios from "axios";
 
 const ViewProfile = () => {
-  const [pfp, setPfp] = useState("");
-  const [bio, setBio] = useState("");
-  const [email, setEmail] = useState("");
+    const [pfp, setPfp] = useState("");
+    const [bio, setBio] = useState("");
+    const [email, setEmail] = useState("");
+    const [selectedSongs, setSelectedSongs] = useState([]);
+    const [selectedGenres, setSelectedGenres] = useState([]);
+    const [selectedArtists, setSelectedArtists] = useState([]);
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
 
   const fileInputRef = useRef(null);
@@ -58,6 +61,24 @@ const ViewProfile = () => {
     displayImage(pfp);
   }, [pfp]);
 
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            if (username) {
+                const userDoc = await getDoc(doc(db, "UserData", username));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    setPfp(data.pfp);
+                    setBio(data.bio)
+                    setEmail(data.username);
+                    setSelectedGenres(data.topGenres);
+                    setSelectedSongs(data.topSongs);
+                    setSelectedArtists(data.topArtists);
+                }
+            }
+        };
+        fetchProfileData();
+    }, [username]);
+  
   useEffect(() => {
     const fetchCurrentlyPlaying = async () => {
       try {
@@ -75,28 +96,52 @@ const ViewProfile = () => {
     <div>
       <h1>Edit Profile</h1>
 
-      <div
-        style={{
-          width: "800px",
-          borderRadius: "20px",
-          position: "relative",
-          display: "inline-flex",
-          alignItems: "center",
-          paddingRight: "30px",
-        }}
-      >
-        <div
-          ref={imageContainerRef}
-          style={{ padding: "30px", border: "30px" }}
-        />
+            <div
+                style={{
+                    width: "800px",
+                    borderRadius: '20px',
+                    position: 'relative',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    paddingRight: '30px',
+                }}
+            >
+                <div ref={imageContainerRef}
+                    style={{ padding: '30px', border: '30px' }}
+                />
 
-        <div style={{ paddingLeft: "20px", fontSize: "16px" }}>
-          {email || "Loading email..."}
-        </div>
-      </div>
-      <div style={{ paddingLeft: "20px", fontSize: "16px" }}>
-        {bio || "Loading bio..."}
-      </div>
+                <div style={{ paddingLeft: '20px', fontSize: '16px' }}>
+                    {email || 'Loading email...'}
+                </div>
+            </div>
+            <div style={{ paddingLeft: '20px', fontSize: '16px' }}>
+                {bio || 'Loading bio...'}
+            </div>
+            <div
+                style={{
+                    fontWeight: 'bold',
+                    fontSize: 24,
+                    padding: 10
+                }}
+            >
+                Favorites:
+            </div>
+            {selectedSongs.map((item, index) => (
+                    <div key={index}>
+                        {item}
+                    </div>
+                ))}
+            {selectedGenres.map((item, index) => (
+                    <div key={index}>
+                        {item}
+                    </div>
+                ))}
+            {selectedArtists.map((item, index) => (
+                    <div key={index}>
+                        {item}
+                    </div>
+                ))}
+
       <div style={{ marginTop: "20px" }}>
         <Button
           text="Link Account with Spotify"
@@ -117,7 +162,8 @@ const ViewProfile = () => {
       ) : (
         <p>No song is currently playing, or your account is unlinked.</p>
       )}
-    </div>    </div>
+    </div>
+    </div>
 
   );
 };

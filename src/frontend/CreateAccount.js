@@ -71,6 +71,22 @@ function CreateAccount() {
           track = true;
         }
 
+      const res = await fetch("http://localhost:3001/insertUser", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: userName,
+          password: pass,
+          isPrivate: isPrivate,
+          pfp: defaultPfp,
+          bio: "",
+          topSongs: [],
+          topGenres: [],
+          topArtists: []
+        }),
+      });
 
 
       }
@@ -87,6 +103,8 @@ function CreateAccount() {
             username: userName,
             password: pass,
             isPrivate: isPrivate,
+            pfp: defaultPfp,
+            bio: ""
           }),
         });
         try {
@@ -126,7 +144,10 @@ function CreateAccount() {
               username: auth.currentUser.email,
               password: "google",
               isPrivate: isPrivate,
-              bio: ""
+              bio: "",
+              topSongs: [],
+            topGenres: [],
+            topArtists: []
             }),
           });
     
