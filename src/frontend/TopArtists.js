@@ -13,6 +13,17 @@ const Artists = () => {
     );
     const data = await response.json();
     setArtists(data.data);
+    let genreCounts = {};
+    data.data.forEach(entry => {
+        entry.genres.forEach(genre => {
+            if (genreCounts[genre]) {
+              genreCounts[genre]++;
+            } else {
+              genreCounts[genre] = 1;
+            }
+          });
+    });
+    console.log(genreCounts);
     console.log(data);
   };
 
