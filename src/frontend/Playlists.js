@@ -101,8 +101,6 @@ const Playlists = (props) => {
             // setPdf(downloadUrl);
             await handleSaveSettings(downloadUrl);
           });
-        }
-      ;
       if (username) {
         const userDoc = await getDoc(doc(db, "UserData", username));
         if (userDoc.exists()) {
@@ -112,6 +110,7 @@ const Playlists = (props) => {
           setTwoStepAuth(data.twoStepAuth || false);
         }
       }
+    }
     else if (selectedFile && selectedFile.name.search("pdf") < 0) {
       alert("You must upload a PDF.")
     }

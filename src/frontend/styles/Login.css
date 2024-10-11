@@ -174,3 +174,6 @@ button:disabled {
   background-color: #ff3333;
 }
 
+.saveFile {
+  width: 200px;
+}

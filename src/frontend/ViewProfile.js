@@ -118,6 +118,7 @@ const ViewProfile = () => {
         <p>No song is currently playing, or your account is unlinked.</p>
       )}
     </div>    </div>
+
   );
 };
 
