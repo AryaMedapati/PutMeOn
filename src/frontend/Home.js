@@ -4,7 +4,7 @@ const Home = (props) => {
   console.log(props.user);
   return (
     <div>
-      <h1>Welcome to the Home Page, { props.user ? props.user.displayName : ""}!</h1>
+      <h1>Welcome to the Home Page!</h1>
       <p>This is the main page of your Firebase React application.</p>
     </div>
   );

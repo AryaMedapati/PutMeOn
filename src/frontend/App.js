@@ -112,7 +112,7 @@ function App(props) {
           <Route path="/login" element={<Login />} />       
           <Route path="/spotify" element={<Messages />} />       
           <Route path="/toptracks" element={<Tracks/>} />
-          <Route path="/" element={<Home user = {user}/>} />
+          <Route path="/" element={<Home />} />
           <Route path="/topartists" element={<Artists/>} />
           <Route path="/topgenres" element={<Genres/>} />
           <Route path="/profile" element={<Profile />} />
