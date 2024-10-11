@@ -10,8 +10,9 @@ import CreateAccount from "./CreateAccount"
 let tempUser = "";
 
 function Login() {
-  const [username, setUserName] = useState("");
-  const [pass, setPass] = useState("");
+  const [username, setUserName] = useState(localStorage.getItem("username") || "");
+  const [pass, setPass] = useState(localStorage.getItem("password") || "");
+  const [rememberMe, setRememberMe] = useState(localStorage.getItem("remember") || false);
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const nav = useNavigate();
@@ -25,12 +26,17 @@ function Login() {
     setPass(e.target.value);
   }
 
+  const handleRememberMe = (e) => {
+    setRememberMe(e.target.checked);
+    console.log(rememberMe);
+  };
+
   const handleVerificationCodeInput = (e) => {
     setVerificationCode(e.target.value);
   };
 
   const closeModal = () => {
-    setShowCodeInput(false); // Close the 2FA modal
+    setShowCodeInput(false);
   };
 
   const checkUser = async (e) => {
@@ -45,6 +51,17 @@ function Login() {
           console.log("here");
           console.log("two factor = " + users[i].twoStepAuth);
           track = true;
+
+          if (rememberMe) {
+            localStorage.setItem("remember", true);
+            localStorage.setItem("username", username);
+            localStorage.setItem("password", pass);
+          } else {
+            localStorage.removeItem("remember");
+            localStorage.removeItem("username");
+            localStorage.removeItem("password");
+          }
+          
           if (users[i].twoStepAuth) {
             const generateCodeResponse = await fetch("http://localhost:3001/generate2FACode", {
               method: "POST",
@@ -75,7 +92,6 @@ function Login() {
                 });
               setUsername(username);
               nav("/", { user: users[i] })
-
             } catch (error) {
               console.log(error);
             }
@@ -172,6 +188,7 @@ function Login() {
             id="user"
             name="user"
             required
+            value={username}
             onChange={handleUser}
           />
         </div>
@@ -182,7 +199,18 @@ function Login() {
             id="pass"
             name="pass"
             required
+            value={pass}
             onChange={handlePass}
+          />
+        </div>
+        <div className="rememberMeDiv">
+          <label htmlFor="rememberMe">Remember me on this device</label>
+          <input
+            type="checkbox"
+            id="rememberMe"
+            name="rememberMe"
+            checked={rememberMe}
+            onChange={handleRememberMe}
           />
         </div>
         <button type="submit">Login</button>

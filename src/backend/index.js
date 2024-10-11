@@ -41,6 +41,10 @@ function generateRandomCode(length = 6) {
   return crypto.randomBytes(length).toString('hex').slice(0, length).toUpperCase();
 }
 
+function generateRandomCode(length = 6) {
+  return crypto.randomBytes(length).toString('hex').slice(0, length).toUpperCase();
+}
+
 app.post("/insertUser", async (req, res) => {
   try{
     // console.log("Here")
