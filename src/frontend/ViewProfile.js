@@ -9,6 +9,7 @@ import { UserContext } from './UserContext';
 
 const ViewProfile = () => {
     const [pfp, setPfp] = useState("");
+    const [bio, setBio] = useState("");
     const [email, setEmail] = useState("");
 
     const fileInputRef = useRef(null);
@@ -37,7 +38,8 @@ const ViewProfile = () => {
                 if (userDoc.exists()) {
                     const data = userDoc.data();
                     setPfp(data.pfp);
-                    setEmail(data.email);
+                    setBio(data.bio)
+                    setEmail(data.username);
                 }
             }
         };
@@ -70,6 +72,9 @@ const ViewProfile = () => {
                     {email || 'Loading email...'}
                 </div>
             </div>
+            <div style={{ paddingLeft: '20px', fontSize: '16px' }}>
+                    {bio || 'Loading bio...'}
+                </div>
         </div>
     );
 };

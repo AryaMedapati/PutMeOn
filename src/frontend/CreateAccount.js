@@ -64,7 +64,8 @@ function CreateAccount() {
           username: userName,
           password: pass,
           isPrivate: isPrivate,
-          pfp: defaultPfp
+          pfp: defaultPfp,
+          bio: ""
         }),
       });
 
@@ -93,6 +94,7 @@ function CreateAccount() {
               username: auth.currentUser.email,
               password: "google",
               isPrivate: isPrivate,
+              bio: ""
             }),
           });
     
