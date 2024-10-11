@@ -247,8 +247,6 @@ app.post("/generate2FACode", async (req, res) => {
 });
 
 app.post("/verify2FACode", (req, res) => {
-  console.log("we got here");
-  //console.log("dict = " + tempCodeStore);
   const { username, code } = req.body;
 
   // Validate input
