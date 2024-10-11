@@ -9,7 +9,9 @@ import { UserContext } from './UserContext';
 
 const EditProfile = () => {
     const [pfp, setPfp] = useState("");
+    const [bio, setBio] = useState("");
     const [email, setEmail] = useState("");
+    const [docId, setDocId] = useState("")
 
     const fileInputRef = useRef(null);
     const imageContainerRef = useRef(null);
@@ -35,6 +37,10 @@ const EditProfile = () => {
         }
     };
 
+    const handleBioChange = (event) => {
+        setBio(event.target.value);
+    };
+
     const handleSaveChanges = async () => {
         if (username) {
           try {
@@ -49,7 +55,8 @@ const EditProfile = () => {
             //     }),
             // });
             await setDoc(doc(db, "UserData", username), {
-                pfp: pfp
+                pfp: pfp,
+                bio: bio
             }, {merge: true});
             alert("Changes saved");
           } catch (error) {
@@ -81,7 +88,9 @@ const EditProfile = () => {
                 if (userDoc.exists()) {
                     const data = userDoc.data();
                     setPfp(data.pfp);
-                    setEmail(data.email);
+                    setBio(data.bio)
+                    setEmail(data.username);
+                    setDocId(userDoc.id)
                 }
             }
         };
@@ -112,7 +121,7 @@ const EditProfile = () => {
                 />
 
                 <div style={{ paddingLeft: '20px', fontSize: '16px' }}>
-                    {email || 'Loading email...'}
+                    {email}
                 </div>
 
                 <Button
@@ -164,6 +173,8 @@ const EditProfile = () => {
                         borderRadius: 10
                     }}
                     large
+                    value={bio}
+                    onChange={handleBioChange}
                     placeholder="Put your bio here"
                 />
             </div>
