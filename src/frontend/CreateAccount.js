@@ -3,6 +3,7 @@ import "./styles/Login.css"
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from "react-router-dom";
 import {getAuth, signInWithPopup, GoogleAuthProvider} from "firebase/auth";
 import Login from "./Login";
+import defaultPfp from "./images/defaultPfp";
 
 function CreateAccount() {
 
@@ -63,6 +64,7 @@ function CreateAccount() {
           username: userName,
           password: pass,
           isPrivate: isPrivate,
+          pfp: defaultPfp
         }),
       });
 

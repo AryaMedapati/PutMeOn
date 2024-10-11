@@ -19,7 +19,7 @@ const ProfilePrivacy = () => {
   useEffect(() => {
     const fetchPrivacySettings = async () => {
       if (username) {
-        const userDoc = await getDoc(doc(db, "users", username));
+        const userDoc = await getDoc(doc(db, "UserData", username));
         if (userDoc.exists()) {
           const data = userDoc.data();
           setPrivacySettings(data.privacySettings || privacySettings);
@@ -51,7 +51,7 @@ const ProfilePrivacy = () => {
     if (username) {
       try {
         console.log("user = " + username);
-        await setDoc(doc(db, "users", username), {
+        await setDoc(doc(db, "UserData", username), {
           privacySettings: privacySettings,
           isPrivate: isPrivate,
           twoStepAuth: twoStepAuth,
