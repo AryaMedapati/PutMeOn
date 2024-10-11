@@ -3,7 +3,11 @@ import "./styles/Login.css"
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from "react-router-dom";
 import {getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword } from "firebase/auth";
 import Login from "./Login";
+
 import { UserContext } from "./UserContext";
+
+
+import defaultPfp from "./images/defaultPfp";
 
 
 function CreateAccount() {
@@ -68,6 +72,7 @@ function CreateAccount() {
         }
 
 
+
       }
       if (track) {
         document.getElementById("error-message").innerHTML = "Account already exists with email."
@@ -121,6 +126,7 @@ function CreateAccount() {
               username: auth.currentUser.email,
               password: "google",
               isPrivate: isPrivate,
+              bio: ""
             }),
           });
     
