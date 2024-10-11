@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Button, TextArea } from '@blueprintjs/core';
 import { useState, useEffect, useContext } from "react";
 import '@blueprintjs/core/lib/css/blueprint.css';
+import "@blueprintjs/core/lib/css/blueprint.css";
 import { Icon } from "@blueprintjs/core";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
@@ -72,6 +73,7 @@ const ViewProfile = () => {
             </div>
         </div>
     );
+
 };
 
 export default ViewProfile;
