@@ -109,10 +109,17 @@ function App(props) {
           <Route path="/playlists" element={<Playlists />} />
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/login" element={<Login />} />       
+          <Route path="/spotify" element={<Messages />} />       
+
           <Route path="/toptracks" element={<Tracks/>} />
+
+          <Route path="/" element={<Home user = {user}/>} />
+
+
           <Route path="/topartists" element={<Artists/>} />
-          <Route path="/" element={<Home />} />
+
           <Route path="/profile" element={<Profile />} />
+
         </Routes>
       </div>
     );
