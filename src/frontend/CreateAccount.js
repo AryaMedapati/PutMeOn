@@ -89,7 +89,7 @@ function CreateAccount() {
           body: JSON.stringify({
             username: userName,
             password: pass,
-            isPublic: isPublic,
+            isPrivate: isPrivate,
           }),
         });
         try {
