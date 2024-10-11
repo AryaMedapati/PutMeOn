@@ -95,7 +95,7 @@ function Login() {
         </div>
         <div className="passDiv">
           <label htmlFor="pass">Password</label>
-          <input type = "text" id="pass" name="pass" required onChange={handlePass}></input>
+          <input type = "password" id="pass" name="pass" required onChange={handlePass}></input>
         </div>
         <button type="submit">Login</button>
         <div className="alreadyHaveAccount">
