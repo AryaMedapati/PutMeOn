@@ -7,11 +7,13 @@ import { Icon } from "@blueprintjs/core";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { UserContext } from "./UserContext";
+import axios from "axios";
 
 const ViewProfile = () => {
   const [pfp, setPfp] = useState("");
   const [bio, setBio] = useState("");
   const [email, setEmail] = useState("");
+  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
 
   const fileInputRef = useRef(null);
   const imageContainerRef = useRef(null);
@@ -20,7 +22,7 @@ const ViewProfile = () => {
   const { username } = useContext(UserContext);
 
   const linkSpotifyAccount = () => {
-    const spotifyAuthUrl = `http://localhost:3001/spotify-login`; 
+    const spotifyAuthUrl = `http://localhost:3001/spotify-login`;
     window.open(spotifyAuthUrl, "_blank", "noopener,noreferrer");
   };
 
@@ -56,6 +58,19 @@ const ViewProfile = () => {
     displayImage(pfp);
   }, [pfp]);
 
+  useEffect(() => {
+    const fetchCurrentlyPlaying = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/currentlyPlaying");
+        setCurrentlyPlaying(response.data);
+      } catch (error) {
+        console.error("Error fetching currently playing song:", error);
+      }
+    };
+
+    fetchCurrentlyPlaying();
+  }, []);
+
   return (
     <div>
       <h1>Edit Profile</h1>
@@ -90,7 +105,19 @@ const ViewProfile = () => {
           onClick={linkSpotifyAccount}
         />
       </div>
-    </div>
+      <div>
+      {currentlyPlaying ? (
+        <div>
+          <h3>Currently Listening To:</h3>
+          <p><strong>Track:</strong> {currentlyPlaying.name}</p>
+          <p><strong>Artist:</strong> {currentlyPlaying.artist}</p>
+          <p><strong>Album:</strong> {currentlyPlaying.album}</p>
+          <p><strong>Progress:</strong> {Math.floor(currentlyPlaying.progress_ms / 60000)}:{Math.floor((currentlyPlaying.progress_ms % 60000) / 1000).toString().padStart(2, '0')} / {Math.floor(currentlyPlaying.duration_ms / 60000)}:{Math.floor((currentlyPlaying.duration_ms % 60000) / 1000).toString().padStart(2, '0')}</p>
+        </div>
+      ) : (
+        <p>No song is currently playing, or your account is unlinked.</p>
+      )}
+    </div>    </div>
   );
 };
 

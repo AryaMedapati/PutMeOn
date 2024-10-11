@@ -133,6 +133,36 @@ app.get("/topArtists", async (req, res) => {
   }
 });
 
+app.get("/currentlyPlaying", async (req, res) => {
+  try {
+    const token = accessToken;  // Ensure the accessToken is already set for the user
+    const currentlyPlayingResponse = await axios.get(
+      "https://api.spotify.com/v1/me/player/currently-playing",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    
+    if (currentlyPlayingResponse.data && currentlyPlayingResponse.data.item) {
+      const track = currentlyPlayingResponse.data.item;
+      res.status(200).json({
+        name: track.name,
+        artist: track.artists.map(artist => artist.name).join(", "),
+        album: track.album.name,
+        progress_ms: currentlyPlayingResponse.data.progress_ms,
+        duration_ms: track.duration_ms
+      });
+    } else {
+      res.status(200).json({ message: "No song is currently playing." });
+    }
+  } catch (error) {
+    console.error("Error fetching currently playing song:", error);
+    res.status(500).json({ message: "Failed to fetch currently playing song." });
+  }
+});
+
 const generatePieChart = (genreData) => {
   const width = 400;
   const height = 400;
