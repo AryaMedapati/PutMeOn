@@ -3,10 +3,10 @@ import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import Tracks from "./TopTracks";
 import Artists from "./TopArtists";
 import Genres from "./TopGenres";
-import GV from "./statistics/GenreVisual"
+import GV from "./GenreVisual"
 import TH from "./TrackVisual"
-import AH from "./statistics/ArtistVisual"
-import "./styles/Stats.css";
+import AH from "./ArtistVisual"
+import "./../styles/Stats.css";
 
 const Stats = () => {
   return (
