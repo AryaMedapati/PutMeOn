@@ -164,7 +164,7 @@ function Login() {
       .then(async (res) => {
         const cred = GoogleAuthProvider.credentialFromResult(res);
         // console.log(res.user);
-        nav("/");
+        nav("/", {user: auth.currentUser.email});
       }).catch((error) => {
         console.log(error);
       });
