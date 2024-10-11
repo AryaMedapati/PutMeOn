@@ -1,13 +1,14 @@
 import React, { useRef } from 'react';
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 import '@blueprintjs/core/lib/css/blueprint.css';
 import { Icon } from "@blueprintjs/core";
 import { getAuth } from "firebase/auth";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { UserContext } from './UserContext';
 import { MultiSelect } from "@blueprintjs/select";
 import { MenuItem, Tag, Button, TextArea } from '@blueprintjs/core';
 
 const EditProfile = () => {
-    const [editBio, setEditBio] = useState(false);
 
     const items = [
         "test123",
@@ -19,8 +20,13 @@ const EditProfile = () => {
         "Test",
     ];
 
-    const auth = getAuth();
-    const user = auth.currentUser;
+    const [pfp, setPfp] = useState("");
+    const [bio, setBio] = useState("");
+    const [email, setEmail] = useState("");
+    const [docId, setDocId] = useState("")
+
+    const db = getFirestore();
+    const { username } = useContext(UserContext);
 
     const fileInputRef = useRef(null);
     const imageContainerRef = useRef(null);
@@ -80,12 +86,39 @@ const EditProfile = () => {
             };
             reader.readAsDataURL(file);
         }
-        debugger;
-        console.log(user.uid)
-        console.log(user.displayName)
-        console.log(user.getIdTokenResult.name)
-        debugger;
     };
+
+
+    const handleBioChange = (event) => {
+        setBio(event.target.value);
+    };
+
+    const handleSaveChanges = async () => {
+        if (username) {
+          try {
+            // const res = await fetch("http://localhost:3001/updateUser", {
+            //     method: "POST",
+            //     headers: {
+            //         "Content-Type": "application/json",
+            //     },
+            //     body: JSON.stringify({
+            //         username: email,
+            //         pfp: pfp
+            //     }),
+            // });
+            await setDoc(doc(db, "UserData", username), {
+                pfp: pfp,
+                bio: bio
+            }, {merge: true});
+            alert("Changes saved");
+          } catch (error) {
+            console.error(error);
+            alert(error);
+          }
+        } else {
+          alert("No user logged in.");
+        }
+      };
 
     const displayImage = (base64String) => {
         const img = document.createElement('img');
@@ -99,6 +132,28 @@ const EditProfile = () => {
         container.innerHTML = '';
         container.appendChild(img);
     };
+
+
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            if (username) {
+                const userDoc = await getDoc(doc(db, "UserData", username));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    setPfp(data.pfp);
+                    setBio(data.bio)
+                    setEmail(data.username);
+                    setDocId(userDoc.id)
+                }
+            }
+        };
+        fetchProfileData();
+    }, [username]);
+
+    useEffect(() => {
+        displayImage(pfp);
+    }, [pfp]);
+
 
     return (
         <div>
@@ -119,7 +174,9 @@ const EditProfile = () => {
                     style={{ padding: '30px', border: '30px' }}
                 />
 
-                Username
+                <div style={{ paddingLeft: '20px', fontSize: '16px' }}>
+                    {email}
+                </div>
 
                 <Button
                     intent='primary'
@@ -172,6 +229,9 @@ const EditProfile = () => {
                     }}
                     large
 
+
+                    value={bio}
+                    onChange={handleBioChange}
                     placeholder="Put your bio here"
                 />
             </div>
@@ -215,7 +275,7 @@ const EditProfile = () => {
                         height: '35px',
                         borderRadius: 20
                     }}
-                    onClick={() => setEditBio(!editBio)}
+                    onClick={handleSaveChanges}
                     text="Save Changes" />
 
             </div>
