@@ -34,14 +34,27 @@ function App(props) {
   const [isProfHovered, setIsProfHovered] = useState(false);
   const {location} = useLocation();
   const nav = useNavigate();
+
+
   useEffect(() => {
     // Confirm Firebase is initialized
     console.log("Firebase App:", app);
+    if (props.user == null) {
+      // props.user = "";
+    }
     if (location == null) {
       nav("/login");
     }
-  }, []);
 
+
+  }, []);
+    //  console.log(props.user);
+    // console.log(location);
+    let passIn = "";
+    if (location) {
+      // passIn = location.state.user;
+      // console.log(passIn);
+    }
     return (
       <div>
         {window.location.pathname !== '/login' && window.location.pathname !== '/create-account' && (<nav>
@@ -69,7 +82,7 @@ function App(props) {
                     )}
                   </div>
                 </Link>
-                <Link to="/playlists">
+                <Link to={{ pathname: '/playlists', }}>
                   <div
                     onMouseEnter={() => setIsPlayHovered(true)}
                     onMouseLeave={() => setIsPlayHovered(false)}
