@@ -112,7 +112,7 @@ const ViewProfile = () => {
           <p><strong>Track:</strong> {currentlyPlaying.name}</p>
           <p><strong>Artist:</strong> {currentlyPlaying.artist}</p>
           <p><strong>Album:</strong> {currentlyPlaying.album}</p>
-          <p><strong>Progress:</strong> {Math.floor(currentlyPlaying.progress_ms / 60000)}:{Math.floor((currentlyPlaying.progress_ms % 60000) / 1000).toString().padStart(2, '0')} / {Math.floor(currentlyPlaying.duration_ms / 60000)}:{Math.floor((currentlyPlaying.duration_ms % 60000) / 1000).toString().padStart(2, '0')}</p>
+          {/* <p><strong>Progress:</strong> {Math.floor(currentlyPlaying.progress_ms / 60000)}:{Math.floor((currentlyPlaying.progress_ms % 60000) / 1000).toString().padStart(2, '0')} / {Math.floor(currentlyPlaying.duration_ms / 60000)}:{Math.floor((currentlyPlaying.duration_ms % 60000) / 1000).toString().padStart(2, '0')}</p> */}
         </div>
       ) : (
         <p>No song is currently playing, or your account is unlinked.</p>
