@@ -12,6 +12,9 @@ const ViewProfile = () => {
     const [pfp, setPfp] = useState("");
     const [bio, setBio] = useState("");
     const [email, setEmail] = useState("");
+    const [selectedSongs, setSelectedSongs] = useState([]);
+    const [selectedGenres, setSelectedGenres] = useState([]);
+    const [selectedArtists, setSelectedArtists] = useState([]);
 
     const fileInputRef = useRef(null);
     const imageContainerRef = useRef(null);
@@ -41,6 +44,9 @@ const ViewProfile = () => {
                     setPfp(data.pfp);
                     setBio(data.bio)
                     setEmail(data.username);
+                    setSelectedGenres(data.topGenres);
+                    setSelectedSongs(data.topSongs);
+                    setSelectedArtists(data.topArtists);
                 }
             }
         };
@@ -65,8 +71,8 @@ const ViewProfile = () => {
                     paddingRight: '30px',
                 }}
             >
-                <div ref={imageContainerRef} 
-                    style={{ padding: '30px', border: '30px'}}
+                <div ref={imageContainerRef}
+                    style={{ padding: '30px', border: '30px' }}
                 />
 
                 <div style={{ paddingLeft: '20px', fontSize: '16px' }}>
@@ -74,8 +80,32 @@ const ViewProfile = () => {
                 </div>
             </div>
             <div style={{ paddingLeft: '20px', fontSize: '16px' }}>
-                    {bio || 'Loading bio...'}
-                </div>
+                {bio || 'Loading bio...'}
+            </div>
+            <div
+                style={{
+                    fontWeight: 'bold',
+                    fontSize: 24,
+                    padding: 10
+                }}
+            >
+                Favorites:
+            </div>
+            {selectedSongs.map((item, index) => (
+                    <div key={index}>
+                        {item}
+                    </div>
+                ))}
+            {selectedGenres.map((item, index) => (
+                    <div key={index}>
+                        {item}
+                    </div>
+                ))}
+            {selectedArtists.map((item, index) => (
+                    <div key={index}>
+                        {item}
+                    </div>
+                ))}
         </div>
     );
 

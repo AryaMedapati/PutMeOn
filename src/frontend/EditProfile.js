@@ -18,6 +18,13 @@ const EditProfile = () => {
         "testesttest",
         "nottest",
         "Test",
+        "song1",
+        "song2",
+        "so3",
+        "songsong",
+        "testsong",
+        "songtest",
+        "song123",
     ];
 
     const [pfp, setPfp] = useState("");
@@ -31,39 +38,78 @@ const EditProfile = () => {
     const fileInputRef = useRef(null);
     const imageContainerRef = useRef(null);
 
-    const [selectedItems, setSelectedItems] = useState([]);
-    const [songQuery, setSongQuery] = useState("");
-    const handleItemSelect = (item) => {
-        if (!selectedItems.some((selectedItem) => selectedItem === item)) {
-            setSelectedItems([...selectedItems, item]);
+// Begin Multiselect items
+    const [selectedSongs, setSelectedSongs] = useState([]);
+    const [selectedGenres, setSelectedGenres] = useState([]);
+    const [selectedArtists, setSelectedArtists] = useState([]);
+    const handleSongSelect = (item) => {
+        if (!selectedSongs.some((selectedItem) => selectedItem === item)) {
+            setSelectedSongs([...selectedSongs, item]);
         }
     };
-    const handleTagRemove = (tag, index) => {
-        setSelectedItems(selectedItems.filter((_, i) => i !== index));
+    const handleSongTagRemove = (tag, index) => {
+        setSelectedSongs(selectedSongs.filter((_, i) => i !== index));
     };
-    const renderItem = (item, { handleClick, modifiers }) => {
+    const renderSongs = (item, { handleClick, modifiers }) => {
         return (
             <MenuItem
                 key={item}
                 text={item}
                 onClick={handleClick}
                 active={modifiers.active}
-                selected={selectedItems.includes(item)}
+                selected={selectedSongs.includes(item)}
             />
         );
     };
-    const itemPredicate = (songQuery, item) => {
-        const normalizedFruit = item.toLowerCase();
-        const normalizedQuery = songQuery.toLowerCase();
-        return normalizedFruit.includes(normalizedQuery);
+
+    const handleGenreSelect = (item) => {
+        if (!selectedGenres.some((selectedItem) => selectedItem === item)) {
+            setSelectedGenres([...selectedGenres, item]);
+        }
     };
-    const createNewItemFromQuery = (songQuery) => songQuery;
-    const createNewItemRenderer = (songQuery, active, handleClick) => {
-        if (!songQuery) return null;
+    const handleGenreTagRemove = (tag, index) => {
+        setSelectedGenres(selectedGenres.filter((_, i) => i !== index));
+    };
+    const renderGenres = (item, { handleClick, modifiers }) => {
         return (
             <MenuItem
-                key={`create-new-${songQuery}`}
-                text={`Create "${songQuery}"`}
+                key={item}
+                text={item}
+                onClick={handleClick}
+                active={modifiers.active}
+                selected={selectedGenres.includes(item)}
+            />
+        );
+    };
+ 
+    const handleArtistSelect = (item) => {
+        if (!selectedArtists.some((selectedItem) => selectedItem === item)) {
+            setSelectedArtists([...selectedArtists, item]);
+        }
+    };
+    const handleArtistTagRemove = (tag, index) => {
+        setSelectedArtists(selectedArtists.filter((_, i) => i !== index));
+    };
+    const renderArtists = (item, { handleClick, modifiers }) => {
+        return (
+            <MenuItem
+                key={item}
+                text={item}
+                onClick={handleClick}
+                active={modifiers.active}
+                selected={selectedArtists.includes(item)}
+            />
+        );
+    };
+ 
+
+    const createNewItemFromQuery = (query) => query;
+    const createNewItemRenderer = (query, active, handleClick) => {
+        if (!query) return null;
+        return (
+            <MenuItem
+                key={`create-new-${query}`}
+                text={`Create "${query}"`}
                 active={active}
                 onClick={handleClick}
                 icon="add"
@@ -71,6 +117,12 @@ const EditProfile = () => {
         );
     };
 
+    const itemPredicate = (query, item) => {
+        const normalizedFruit = item.toLowerCase();
+        const normalizedQuery = query.toLowerCase();
+        return normalizedFruit.includes(normalizedQuery);
+    };
+// end multiselect items
     const handleEditpfp = () => {
         fileInputRef.current.click();
     };
@@ -82,7 +134,7 @@ const EditProfile = () => {
             reader.onloadend = () => {
                 const base64String = reader.result;
                 displayImage(base64String);
-                console.log('Base64 String:', base64String);
+                setPfp(base64String)
             };
             reader.readAsDataURL(file);
         }
@@ -108,7 +160,10 @@ const EditProfile = () => {
             // });
             await setDoc(doc(db, "UserData", username), {
                 pfp: pfp,
-                bio: bio
+                bio: bio, 
+                topSongs: selectedSongs,
+                topGenres: selectedGenres,
+                topArtists: selectedArtists
             }, {merge: true});
             alert("Changes saved");
           } catch (error) {
@@ -143,7 +198,10 @@ const EditProfile = () => {
                     setPfp(data.pfp);
                     setBio(data.bio)
                     setEmail(data.username);
-                    setDocId(userDoc.id)
+                    setSelectedGenres(data.topGenres);
+                    setSelectedSongs(data.topSongs);
+                    setSelectedArtists(data.topArtists);
+                    setDocId(userDoc.id);
                 }
             }
         };
@@ -243,7 +301,7 @@ const EditProfile = () => {
                     padding: 10
                 }}
             >
-                Top 3 Songs
+                Top Songs
             </div>
             <div
                 className="multiselect-wrapper"
@@ -251,12 +309,72 @@ const EditProfile = () => {
                 <MultiSelect
                     items={items}
                     itemPredicate={itemPredicate}
-                    itemRenderer={renderItem}
-                    onItemSelect={handleItemSelect}
+                    itemRenderer={renderSongs}
+                    onItemSelect={handleSongSelect}
                     tagRenderer={(item) => item}
-                    selectedItems={selectedItems}
+                    selectedItems={selectedSongs}
                     tagInputProps={{
-                        onRemove: handleTagRemove,
+                        onRemove: handleSongTagRemove,
+                        large: true,
+                        placeholder: "Type to add a song...",
+                    }}
+                    createNewItemFromQuery={createNewItemFromQuery}
+                    createNewItemRenderer={createNewItemRenderer}
+                    openOnKeyDown
+                    resetOnSelect
+                />
+            </div>
+            <div
+                style={{
+                    fontWeight: 'bold',
+                    fontSize: 24,
+                    padding: 10
+                }}
+            >
+                Top Genres
+            </div>
+            <div
+                className="multiselect-wrapper"
+            >
+                <MultiSelect
+                    items={items}
+                    itemPredicate={itemPredicate}
+                    itemRenderer={renderGenres}
+                    onItemSelect={handleGenreSelect}
+                    tagRenderer={(item) => item}
+                    selectedItems={selectedGenres}
+                    tagInputProps={{
+                        onRemove: handleGenreTagRemove,
+                        large: true,
+                        placeholder: "Type to add a song...",
+                    }}
+                    createNewItemFromQuery={createNewItemFromQuery}
+                    createNewItemRenderer={createNewItemRenderer}
+                    openOnKeyDown
+                    resetOnSelect
+                />
+            </div>
+            <div
+                style={{
+                    fontWeight: 'bold',
+                    fontSize: 24,
+                    padding: 10
+                }}
+            >
+                Top Artists
+            </div>
+            <div
+                className="multiselect-wrapper"
+            >
+                <MultiSelect
+                    items={items}
+                    itemPredicate={itemPredicate}
+                    itemRenderer={renderArtists}
+                    onItemSelect={handleArtistSelect}
+                    tagRenderer={(item) => item}
+                    selectedItems={selectedArtists}
+                    tagInputProps={{
+                        onRemove: handleArtistTagRemove,
                         large: true,
                         placeholder: "Type to add a song...",
                     }}

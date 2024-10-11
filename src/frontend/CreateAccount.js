@@ -74,7 +74,10 @@ function CreateAccount() {
           password: pass,
           isPrivate: isPrivate,
           pfp: defaultPfp,
-          bio: ""
+          bio: "",
+          topSongs: [],
+          topGenres: [],
+          topArtists: []
         }),
       });
 
@@ -93,6 +96,8 @@ function CreateAccount() {
             username: userName,
             password: pass,
             isPrivate: isPrivate,
+            pfp: defaultPfp,
+            bio: ""
           }),
         });
         try {
@@ -132,7 +137,10 @@ function CreateAccount() {
               username: auth.currentUser.email,
               password: "google",
               isPrivate: isPrivate,
-              bio: ""
+              bio: "",
+              topSongs: [],
+            topGenres: [],
+            topArtists: []
             }),
           });
     
