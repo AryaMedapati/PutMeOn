@@ -16,7 +16,8 @@ import Stats from "./Stats";
 import Messages from "./Messages";
 import Playlists from "./Playlists";
 import Profile from "./Profile";
-import Tracks from "./TopTracks"
+import Tracks from "./TopTracks";
+import Artists from "./TopArtists";
 import Login from "./Login";
 import CreateAccount from "./CreateAccount";
 
@@ -109,6 +110,7 @@ function App(props) {
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/login" element={<Login />} />       
           <Route path="/toptracks" element={<Tracks/>} />
+          <Route path="/topartists" element={<Artists/>} />
           <Route path="/" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
