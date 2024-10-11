@@ -50,7 +50,7 @@ function Login() {
           setUsername(username);
           nav("/", {state:true});
         }
-      }
+      
       if (!track) {
         document.getElementById("error-message").innerHTML = "Incorrect email or password."
       }
