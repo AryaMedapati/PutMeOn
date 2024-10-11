@@ -79,6 +79,29 @@ app.get("/topTracks", async (req, res) => {
   }
 });
 
+app.get("/topArtists", async (req, res) => {
+  try {
+    const timeline = req.query.timeline;
+    const token = accessToken;
+    const limit = 50;
+    console.log(token);
+    const topArtistsResponse = await axios.get(
+      `https://api.spotify.com/v1/me/top/artists?time_range=${timeline}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log(topArtistsResponse)
+
+    res.status(200).json({ data: topArtistsResponse.data.items });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
 app.get("/spotify-login", async (req, res) => {
   // console.log("hello");
   res.redirect('https://accounts.spotify.com/authorize?' +

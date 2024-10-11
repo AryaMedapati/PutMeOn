@@ -2,7 +2,8 @@ import React, { useContext } from "react";
 import "./styles/Login.css"
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from "react-router-dom";
-import {getAuth, signInWithPopup, GoogleAuthProvider} from "firebase/auth";
+
+import {getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth";
 import { UserContext } from "./UserContext";
 import CreateAccount from "./CreateAccount"
 
@@ -26,7 +27,6 @@ function Login() {
 
   const checkUser = async (e) => {
     e.preventDefault();
-    console.log(1);
     try {
       const returnVal = await fetch("http://localhost:3001/fetchUsers");
       const users = await returnVal.json();
@@ -38,11 +38,28 @@ function Login() {
           setIsTwoFactorEnabled(true); // Enable 2FA
           /*
           track = true;
+
+          try {
+            const auth = getAuth();
+            signInWithEmailAndPassword(auth, username, pass)
+              .then((userCredential) => {
+                const user = userCredential.user;
+              })
+              .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+              });
+              nav("/", {user:users[i]})
+            } catch (error) {
+              console.log(error);
+            }
+          }
+
           setUsername(username);
           nav("/", {state:true});
           */
         }
-      }
+      
       if (!track) {
         document.getElementById("error-message").innerHTML = "Incorrect email or password."
       }
@@ -60,25 +77,6 @@ function Login() {
     signInWithPopup(auth, provider)
       .then (async (res) => {
         const cred = GoogleAuthProvider.credentialFromResult(res);
-        try {
-          const res = await fetch("http://localhost:3001/insertUser", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              username: auth.currentUser.email,
-              password: "google",
-              isPublic: false,
-            }),
-          });
-    
-          const returnVal = await res.json();
-          console.log(returnVal)
-          nav("/");
-        } catch (error) {
-          console.log("Error: " + error)
-        }
         // console.log(res.user);
         nav("/");
       }).catch((error) => {
@@ -114,9 +112,9 @@ function Login() {
         <div className="buttonDiv">
           <button type="submit" className = "gButton" onClick={handleSubmitWithGoogle}>Login with Google</button>
         </div>
-        <div className="buttonDiv">
+        {/* <div className="buttonDiv">
           <button type="submit" className = "spoButton"onClick={handleSubmitWithSpotify}>Login with Spotify</button>
-        </div>
+        </div> */}
         <Routes>
             <Route path = "/create-account" element = {<CreateAccount />}></Route>
         </Routes>
