@@ -41,14 +41,16 @@ function Login() {
                 const errorCode = error.code;
                 const errorMessage = error.message;
               });
-              nav("/", {user:users[i]})
+              // nav("/", {user:users[i]})
+              setUsername(username);
+              nav("/", {state:{user: username}});
+
             } catch (error) {
               console.log(error);
             }
           }
 
-          setUsername(username);
-          nav("/", {state:true});
+          
         }
       
       if (!track) {
@@ -68,7 +70,7 @@ function Login() {
       .then (async (res) => {
         const cred = GoogleAuthProvider.credentialFromResult(res);
         // console.log(res.user);
-        nav("/");
+        nav("/", {user: auth.currentUser.email});
       }).catch((error) => {
         console.log(error);
       });

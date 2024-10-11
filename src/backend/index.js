@@ -19,7 +19,7 @@ const frontUrl = `http://localhost:${frontPort}`;
 const mainUrl = "https://put-me-on-418b7.web.app"
 // app.use(express.json());
 // app.use(json());
-app.use(bp.json());
+app.use(bp.json({limit: '50mb'}));
 app.use(cors());
 
 const userProfile = {

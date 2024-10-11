@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useContext } from "react"
 import "./styles/Login.css"
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from "react-router-dom";
 import {getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword } from "firebase/auth";
 import Login from "./Login";
+import { UserContext } from "./UserContext";
+
 
 function CreateAccount() {
 
@@ -12,6 +14,8 @@ function CreateAccount() {
   const [errorMessage, setErrorMessage] = useState("");
   const [errorMessage2, setErrorMessage2] = useState("");
   const nav = useNavigate();
+  const { setUsername } = useContext(UserContext);
+
 
 
   const handleUser = (e) => {
@@ -63,18 +67,6 @@ function CreateAccount() {
           track = true;
         }
 
-      const res = await fetch("http://localhost:3001/insertUser", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: userName,
-          password: pass,
-          isPrivate: isPrivate,
-        }),
-      });
-
 
       }
       if (track) {
@@ -89,7 +81,7 @@ function CreateAccount() {
           body: JSON.stringify({
             username: userName,
             password: pass,
-            isPublic: isPublic,
+            isPrivate: isPrivate,
           }),
         });
         try {
@@ -102,7 +94,7 @@ function CreateAccount() {
               const errorCode = error.code;
               const errorMessage = error.message;
             });
-            nav("/", {user:userName})
+            nav("/", {state:{user: userName}});
         } catch (error) {
           console.log(error);
         }
@@ -133,8 +125,8 @@ function CreateAccount() {
           });
     
           const returnVal = await res.json();
-          console.log(returnVal)
-          nav("/");
+          // console.log(returnVal)
+          nav("/", {user: auth.currentUser.email});
         } catch (error) {
           console.log("Error: " + error)
         }
