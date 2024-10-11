@@ -167,12 +167,6 @@ function Login() {
         console.log(error);
       });
   }
-  const handleSubmitWithSpotify = async (e) => {
-    e.preventDefault();
-    window.location.href = "http://localhost:3001/spotify-login";
-    //const returnVal = await res.json();
-    // console.log(returnVal);
-  }
 
   return (
     <div className="loginDiv">
@@ -220,11 +214,6 @@ function Login() {
         <div className="buttonDiv">
           <button type="submit" className="gButton" onClick={handleSubmitWithGoogle}>
             Login with Google
-          </button>
-        </div>
-        <div className="buttonDiv">
-          <button type="submit" className="spoButton" onClick={handleSubmitWithSpotify}>
-            Login with Spotify
           </button>
         </div>
         <Routes>
