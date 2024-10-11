@@ -12,13 +12,16 @@ import { FaRegUserCircle, FaUserCircle } from "react-icons/fa";
 import { PiPlaylist, PiPlaylistFill } from "react-icons/pi";
 
 import Home from "./Home";
-import Stats from "./Stats";
+import Stats from "./statistics/Stats";
 import Messages from "./Messages";
 import Playlists from "./Playlists";
 import Profile from "./Profile";
-import Tracks from "./TopTracks";
-import Artists from "./TopArtists";
-import Genres from "./TopGenres";
+import Tracks from "./statistics/TopTracks";
+import Artists from "./statistics/TopArtists";
+import Genres from "./statistics/TopGenres";
+import GV from "./statistics/GenreVisual"
+import TH from "./statistics/TrackVisual"
+import AH from "./statistics/ArtistVisual"
 import Login from "./Login";
 import CreateAccount from "./CreateAccount";
 
@@ -31,14 +34,27 @@ function App(props) {
   const [isProfHovered, setIsProfHovered] = useState(false);
   const {location} = useLocation();
   const nav = useNavigate();
+
+
   useEffect(() => {
     // Confirm Firebase is initialized
     console.log("Firebase App:", app);
+    if (props.user == null) {
+      // props.user = "";
+    }
     if (location == null) {
       nav("/login");
     }
-  }, []);
 
+
+  }, []);
+    //  console.log(props.user);
+    // console.log(location);
+    let passIn = "";
+    if (location) {
+      // passIn = location.state.user;
+      // console.log(passIn);
+    }
     return (
       <div>
         {window.location.pathname !== '/login' && window.location.pathname !== '/create-account' && (<nav>
@@ -66,7 +82,7 @@ function App(props) {
                     )}
                   </div>
                 </Link>
-                <Link to="/playlists">
+                <Link to={{ pathname: '/playlists', }}>
                   <div
                     onMouseEnter={() => setIsPlayHovered(true)}
                     onMouseLeave={() => setIsPlayHovered(false)}
@@ -116,7 +132,9 @@ function App(props) {
           <Route path="/topartists" element={<Artists/>} />
           <Route path="/topgenres" element={<Genres/>} />
           <Route path="/profile" element={<Profile />} />
-
+          <Route path="/genrevis" element={<GV/>} />
+          <Route path="/trackvis" element={<TH/>} />
+          <Route path="/artistvis" element={<AH/>} />
         </Routes>
       </div>
     );
