@@ -12,13 +12,16 @@ import { FaRegUserCircle, FaUserCircle } from "react-icons/fa";
 import { PiPlaylist, PiPlaylistFill } from "react-icons/pi";
 
 import Home from "./Home";
-import Stats from "./Stats";
+import Stats from "./statistics/Stats";
 import Messages from "./Messages";
 import Playlists from "./Playlists";
 import Profile from "./Profile";
-import Tracks from "./TopTracks";
-import Artists from "./TopArtists";
-import Genres from "./TopGenres";
+import Tracks from "./statistics/TopTracks";
+import Artists from "./statistics/TopArtists";
+import Genres from "./statistics/TopGenres";
+import GV from "./statistics/GenreVisual"
+import TH from "./statistics/TrackVisual"
+import AH from "./statistics/ArtistVisual"
 import Login from "./Login";
 import CreateAccount from "./CreateAccount";
 
@@ -129,7 +132,9 @@ function App(props) {
           <Route path="/topartists" element={<Artists/>} />
           <Route path="/topgenres" element={<Genres/>} />
           <Route path="/profile" element={<Profile />} />
-
+          <Route path="/genrevis" element={<GV/>} />
+          <Route path="/trackvis" element={<TH/>} />
+          <Route path="/artistvis" element={<AH/>} />
         </Routes>
       </div>
     );
