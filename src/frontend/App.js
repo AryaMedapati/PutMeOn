@@ -10,6 +10,7 @@ import { GoHome, GoHomeFill } from "react-icons/go";
 import { TbMessageCircle, TbMessageCircleFilled } from "react-icons/tb";
 import { FaRegUserCircle, FaUserCircle } from "react-icons/fa";
 import { PiPlaylist, PiPlaylistFill } from "react-icons/pi";
+import localstorage from 'localstorage-slim';
 
 import Home from "./Home";
 import Stats from "./statistics/Stats";
@@ -32,6 +33,7 @@ function App(props) {
   const [isPlayHovered, setIsPlayHovered] = useState(false);
   const [isMesHovered, setIsMesHovered] = useState(false);
   const [isProfHovered, setIsProfHovered] = useState(false);
+
   const {location} = useLocation();
   const nav = useNavigate();
 
@@ -42,7 +44,17 @@ function App(props) {
     if (props.user == null) {
       // props.user = "";
     }
-    if (location == null) {
+    const storedUser = localstorage.get('user');
+    const storedPass = localstorage.get('pass');
+
+    // console.log(storedLoggedIn);
+    // if (storedLoggedIn) {
+    //   setIsLoggedIn(true);
+    // }
+    // if (location == null) {
+    //   nav("/login");
+    // }
+    if (storedUser == "") {
       nav("/login");
     }
 
