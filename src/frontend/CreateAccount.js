@@ -70,25 +70,6 @@ function CreateAccount() {
         if(users[i].username === userName) {
           track = true;
         }
-
-      const res = await fetch("http://localhost:3001/insertUser", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: userName,
-          password: pass,
-          isPrivate: isPrivate,
-          pfp: defaultPfp,
-          bio: "",
-          topSongs: [],
-          topGenres: [],
-          topArtists: []
-        }),
-      });
-
-
       }
       if (track) {
         document.getElementById("error-message").innerHTML = "Account already exists with email."
@@ -99,13 +80,17 @@ function CreateAccount() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            username: userName,
-            password: pass,
-            isPrivate: isPrivate,
-            pfp: defaultPfp,
-            bio: ""
-          }),
+        body: JSON.stringify({
+          username: userName,
+          password: pass,
+          isPrivate: isPrivate,
+          pfp: defaultPfp,
+          bio: "",
+          topSongs: [],
+          topGenres: [],
+          topArtists: [],
+          pdf: ""
+        }),
         });
         try {
           const auth = getAuth();
