@@ -63,15 +63,17 @@ function CreateAccount() {
     // }
     try {
 
-      const returnVal = await fetch("http://localhost:3001/fetchUsers");
-      const users = await returnVal.json();
-      let track = false;
-      for (let i = 0; i < users.length; i++) {
-        if(users[i].username === userName) {
-          track = true;
-        }
-      }
-      if (track) {
+      // const returnVal = await fetch("http://localhost:3001/fetchUsers");
+      // const users = await returnVal.json();
+      // let track = false;
+      // for (let i = 0; i < users.length; i++) {
+      //   if(users[i].username === userName) {
+      //     track = true;
+      //   }
+      // }
+      const track = await fetch(`http://localhost:3001/checkUserExists?user=${userName}`);
+      const jsonVal = await track.json();
+      if (jsonVal.message == 1) {
         document.getElementById("error-message").innerHTML = "Account already exists with email."
       }
       else {
