@@ -512,6 +512,23 @@ app.post("/verify2FACode", (req, res) => {
   delete tempCodeStore[username]; // Remove the code after successful verification
   return res.status(200).json({ message: "Code verified successfully" });
 });
+app.get("/checkUserExists", (req,res) => {
+try{
+  const getUsers = db.collection("UserData");
+  const user = req.query.user;
+  console.log(user);
+  const value = getUsers.where('username', '==', user);
+  const newVal = value.get().then((snapshot) =>{
+    res.status(200).json(snapshot);
+  })
+
+  // res.status(200).json({ message: "user exists" });
+} catch (error) {
+  console.log(error);
+  res.status(500).send(error);
+}
+
+})
 
 /*
 app.post('/sendRandomCode', async (req, res) => {
