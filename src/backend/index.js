@@ -26,7 +26,7 @@ const mainUrl = "https://put-me-on-418b7.web.app";
 // app.use(express.json());
 // app.use(json());
 
-app.use(bp.json({limit: '50mb'}));
+// app.use(bp.json({limit: '50mb'}));
 app.use(cors());
 
 const tempCodeStore = {};
@@ -167,8 +167,8 @@ app.get("/currentlyPlaying", async (req, res) => {
       res.status(200).json({ message: "No song is currently playing." });
     }
   } catch (error) {
-    console.error("Error fetching currently playing song:", error);
-    res.status(500).json({ message: "Failed to fetch currently playing song." });
+    // console.error("Error fetching currently playing song:", error);
+    // res.status(500).json({ message: "Failed to fetch currently playing song." });
   }
 });
 
