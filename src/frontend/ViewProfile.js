@@ -58,32 +58,23 @@ const ViewProfile = () => {
     displayImage(pfp);
   }, [pfp]);
 
-  const fetchCurrentlyPlaying = async () => {
-    try {
-      const response = await axios.get("http://localhost:3001/currentlyPlaying");
-      setCurrentlyPlaying(response.data);
-    } catch (error) {
-      console.error("Error fetching currently playing song:", error);
-    }
-  };
-
   useEffect(() => {
+    const fetchCurrentlyPlaying = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/currentlyPlaying");
+        setCurrentlyPlaying(response.data);
+      } catch (error) {
+        console.error("Error fetching currently playing song:", error);
+      }
+    };
+
     fetchCurrentlyPlaying();
-    const intervalId = setInterval(fetchCurrentlyPlaying, 1000);
-
-    return () => clearInterval(intervalId);
   }, []);
-
-  const formatTime = (milliseconds) => {
-    const totalSeconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
 
   return (
     <div>
       <h1>Edit Profile</h1>
+
       <div
         style={{
           width: "800px",
@@ -94,7 +85,11 @@ const ViewProfile = () => {
           paddingRight: "30px",
         }}
       >
-        <div ref={imageContainerRef} style={{ padding: "30px", border: "30px" }} />
+        <div
+          ref={imageContainerRef}
+          style={{ padding: "30px", border: "30px" }}
+        />
+
         <div style={{ paddingLeft: "20px", fontSize: "16px" }}>
           {email || "Loading email..."}
         </div>
@@ -110,32 +105,20 @@ const ViewProfile = () => {
           onClick={linkSpotifyAccount}
         />
       </div>
-      <div style={{ display: "flex", alignItems: "center", marginTop: "20px" }}>
-        {currentlyPlaying && currentlyPlaying.albumArt ? (
-          <img
-            src={currentlyPlaying.albumArt}
-            alt="Album Art"
-            style={{ width: "100px", height: "100px", borderRadius: "10px", marginRight: "20px" }}
-          />
-        ) : null}
+      <div>
+      {currentlyPlaying ? (
         <div>
-          {currentlyPlaying ? (
-            <div>
-              <h3>Currently Listening To:</h3>
-              <p><strong>{currentlyPlaying.name}</strong> by <strong>{currentlyPlaying.artist}</strong></p>
-              <p><strong>Album:</strong> {currentlyPlaying.album}</p>
-              <p>
-                <strong>Progress:</strong> 
-                {formatTime(currentlyPlaying.progress_ms)} / 
-                {formatTime(currentlyPlaying.duration_ms)}
-              </p>
-            </div>
-          ) : (
-            <p>No song is currently playing, or your account is unlinked.</p>
-          )}
+          <h3>Currently Listening To:</h3>
+          <p><strong>Track:</strong> {currentlyPlaying.name}</p>
+          <p><strong>Artist:</strong> {currentlyPlaying.artist}</p>
+          <p><strong>Album:</strong> {currentlyPlaying.album}</p>
+          {/* <p><strong>Progress:</strong> {Math.floor(currentlyPlaying.progress_ms / 60000)}:{Math.floor((currentlyPlaying.progress_ms % 60000) / 1000).toString().padStart(2, '0')} / {Math.floor(currentlyPlaying.duration_ms / 60000)}:{Math.floor((currentlyPlaying.duration_ms % 60000) / 1000).toString().padStart(2, '0')}</p> */}
         </div>
-      </div>
-    </div>
+      ) : (
+        <p>No song is currently playing, or your account is unlinked.</p>
+      )}
+    </div>    </div>
+
   );
 };
 

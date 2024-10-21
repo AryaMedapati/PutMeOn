@@ -160,7 +160,6 @@ app.get("/currentlyPlaying", async (req, res) => {
         name: track.name,
         artist: track.artists.map(artist => artist.name).join(", "),
         album: track.album.name,
-        albumArt: track.album.images[0].url,
         progress_ms: currentlyPlayingResponse.data.progress_ms,
         duration_ms: track.duration_ms
       });
@@ -514,6 +513,42 @@ app.post("/verify2FACode", (req, res) => {
   return res.status(200).json({ message: "Code verified successfully" });
 });
 
+/*
+app.post('/sendRandomCode', async (req, res) => {
+  const { username } = req.body;
+  console.log("a");
+  if (!username) {
+    return res.status(400).json({ message: 'Username required' });
+  }
+
+  const randomCode = generateRandomCode();
+  console.log("b");
+  const transporter = nodemailer.createTransport({
+    service: 'gmail', // Use your email service provider
+    auth: {
+      user: 'putmeonproject@gmail.com', // Your email address
+      pass: 'rvrl pstn twfh kjip ',    // Your email password or app password
+    },
+  });
+  console.log("c");
+  // Email content
+  const mailOptions = {
+    from: 'putmeonproject@gmail.com',
+    to: username,
+    subject: 'Your Random Code',
+    text: `Hello,\n\nYour random code is: ${randomCode}\n\nBest regards,\nYour Team`,
+  };
+  console.log("d");
+  try {
+    // Send mail
+    await transporter.sendMail(mailOptions);
+    return res.status(200).json({ message: 'Email sent successfully' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return res.status(500).json({ message: 'Error sending email', error: error.message });
+  }
+});
+*/
 app.listen(port, () => {
   console.log("Server running on port " + port);
 });
