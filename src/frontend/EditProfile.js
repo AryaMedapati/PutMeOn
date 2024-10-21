@@ -148,23 +148,22 @@ const EditProfile = () => {
     const handleSaveChanges = async () => {
         if (username) {
           try {
-            // const res = await fetch("http://localhost:3001/updateUser", {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     },
-            //     body: JSON.stringify({
-            //         username: email,
-            //         pfp: pfp
-            //     }),
-            // });
-            await setDoc(doc(db, "UserData", username), {
-                pfp: pfp,
-                bio: bio, 
-                topSongs: selectedSongs,
-                topGenres: selectedGenres,
-                topArtists: selectedArtists
-            }, {merge: true});
+            const resp = await fetch('http://localhost:3001/updateUser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'DocumentId': username,
+                },
+                body: JSON.stringify({
+                    username: email,
+                    pfp: pfp,
+                    bio: bio,
+                    topSongs: selectedSongs,
+                    topGenres: selectedGenres,
+                    topArtists: selectedArtists,
+                }),
+            });
+
             alert("Changes saved");
           } catch (error) {
             console.error(error);
@@ -201,7 +200,6 @@ const EditProfile = () => {
                     setSelectedGenres(data.topGenres);
                     setSelectedSongs(data.topSongs);
                     setSelectedArtists(data.topArtists);
-                    setDocId(userDoc.id);
                 }
             }
         };

@@ -62,37 +62,45 @@ app.get("/fetchUsers", async (req, res) => {
   try {
     const getUsers = db.collection("UserData");
     const snapshot = await getUsers.get();
-    const users = snapshot.docs.map((doc) => doc.data());
+    const users = snapshot.docs.map((doc) => ({
+      docId: doc.id,
+      ...doc.data()
+    }));
     res.status(200).json(users);
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).send(error);
   }
 });
 
-//this doesn't work -jason
+
+// app.post("/updateUser", async (req, res) => {
+//   try{
+//     console.log("Here")
+//     const userInfo = db.collection("UserData").doc();
+//     await userInfo.set(req.body);
+//     console.log("success")
+//     res.status(200).json({ message: "Success" });
+//   } catch (error) {
+//     // console.log(error);
+//     res.status(500).json({ message: error });
+//   }
+// });
+
 app.post("/updateUser", async (req, res) => {
-  const { username, pfp } = req.body;
+  console.log("test")
 
   try {
-    const userRef = doc(db, "UserData");
-    const userSnapshot = await getDoc(userRef);
+    const docId = req.headers['documentid'];
+    console.log(req.headers);
+    console.log(docId);
+    const userRef = db.collection('UserData').doc(docId);
+    await userRef.set(req.body, { merge: true });
 
-    if (userSnapshot.exists()) {
-      const userData = userSnapshot.data();
-
-      const updatedData = {
-        username: username || userData.username,
-        pfp: pfp || userData.pfp
-      };
-      await setDoc(userRef, updatedData);
-      res.status(200).send("User data updated successfully.");
-    } else {
-      res.status(404).send("User not found.");
-    }
+    res.status(200).send('User updated successfully');
   } catch (error) {
-    console.error("Error updating user data:", error);
-    res.status(500).send("Failed to update user data.");
+    console.error('Error updating user:', error);
+    res.status(500).send('Error updating user');
   }
 });
 
@@ -101,7 +109,7 @@ app.get("/topTracks", async (req, res) => {
     const timeline = req.query.timeline;
     const token = accessToken;
     const limit = 50;
-    console.log(token);
+    // console.log(token);
     const topTracksResponse = await axios.get(
       `https://api.spotify.com/v1/me/top/tracks?time_range=${timeline}&limit=${limit}`,
       {
@@ -110,7 +118,7 @@ app.get("/topTracks", async (req, res) => {
         },
       }
     );
-    //console.log(topTracksResponse)
+    console.log(topTracksResponse)
 
     res.status(200).json({ data: topTracksResponse.data.items });
   } catch (error) {
@@ -258,7 +266,7 @@ app.get("/genrePie", async (req, res) => {
   };
   // console.log(topArtistsResponse);
   const data = await topArtistsResponse.data.items;
-  console.log(data);
+  // console.log(data);
   const genreCounts = getGenreCounts(data);
   const rankedGenres = rankGenres(genreCounts);
   const chartBuffer = generatePieChart(rankedGenres);
@@ -402,7 +410,7 @@ app.get("/callback", function (req, res) {
           })
       );
     } else {
-      console.log("error");
+      // console.log("error");
     }
   });
 });

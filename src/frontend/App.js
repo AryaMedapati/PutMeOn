@@ -108,6 +108,7 @@ function App(props) {
                 </Link>
                 <Link to="/profile">
                   <div
+                    id="profilePage"
                     onMouseEnter={() => setIsProfHovered(true)}
                     onMouseLeave={() => setIsProfHovered(false)}
                   >

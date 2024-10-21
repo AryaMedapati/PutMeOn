@@ -46,6 +46,7 @@ function Login() {
       const users = await returnVal.json();
       let track = false;
       for (let i = 0; i < users.length; i++) {
+        debugger;
         if (users[i].username === username && users[i].password === pass) {
           tempUser = users[i];
           console.log("here");
@@ -90,7 +91,7 @@ function Login() {
                   const errorCode = error.code;
                   const errorMessage = error.message;
                 });
-              setUsername(username);
+              setUsername(users[i].docId);
               nav("/", { user: users[i] })
             } catch (error) {
               console.log(error);
@@ -207,7 +208,7 @@ function Login() {
             onChange={handleRememberMe}
           />
         </div>
-        <button type="submit">Login</button>
+        <button id="login" type="submit">Login</button>
         <div className="alreadyHaveAccount">
           <Link to="/create-account">Don't have an account? Sign up</Link>
         </div>
