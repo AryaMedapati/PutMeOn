@@ -14,7 +14,14 @@ function CreateAccount() {
 
   const [userName, setUserName] = useState("");
   const [pass, setPass] = useState("");
-  const [isPrivate, setIsPrivate] = useState(false); // State to manage account visibility
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [privacySettings, setPrivacySettings] = useState({
+    topTracks: false,
+    topAlbums: false,
+    topGenres: false,
+    playlists: false,
+    listeningActivity: false,
+  });
   const [errorMessage, setErrorMessage] = useState("");
   const [errorMessage2, setErrorMessage2] = useState("");
   const nav = useNavigate();
@@ -91,7 +98,11 @@ function CreateAccount() {
           topSongs: [],
           topGenres: [],
           topArtists: [],
-          pdf: ""
+          pdf: "",
+          privacySettings: privacySettings,
+          twoStepAuth: false,
+          authMethod: 'email',
+          phoneNumber: ''
         }),
         });
         try {

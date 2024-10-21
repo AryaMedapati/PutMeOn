@@ -1,101 +1,167 @@
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
 }
-
 
 .container {
-    display: flex;
-    height: 100vh;
+  display: flex;
+  height: 100vh;
 }
-
 
 .sidebar {
-    width: 300px;
-    background-color: #313131; 
-    padding: 0px;
-    height: 100vh;
+  width: 300px;
+  background-color: #313131; 
+  padding: 0px;
+  height: 100vh;
 }
-
 
 .main-content {
-    flex-grow: 1;
-    padding: 20px;
+  flex-grow: 1;
+  padding: 20px;
 }
 
-/* Profile Container */
 .profile-container {
-    width: 80%;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Profile Header */
-  .profile-header {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-bottom: 20px;
-  }
-  
-  .profile-pic {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 20px;
-  }
-  
-  .profile-header h2 {
-    font-size: 2rem;
-    color: #333;
-  }
-  
-  /* Bio Section */
-  .profile-bio {
-    margin-bottom: 30px;
-  }
-  
-  .profile-bio h3 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    color: #444;
-  }
-  
-  .profile-bio p {
-    font-size: 1.2rem;
-    line-height: 1.6;
-    color: #666;
-  }
-  
-  /* Friends Section */
-  .profile-friends h3 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    color: #444;
-  }
-  
-  .profile-friends ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .profile-friends li {
-    font-size: 1.2rem;
-    margin: 5px 0;
-    color: #555;
-  }
-  
-  .profile-friends li::before {
-    content: "👤";
-    margin-right: 8px;
+  width: 80%;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.privacy-settings {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.privacy-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.privacy-checkbox label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.privacy-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.custom-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #007bff;
+  border-radius: 4px;
+  margin-right: 10px;
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.custom-checkbox:after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background-color: transparent;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 3px;
+  transition: background-color 0.3s;
+}
+
+input[type="checkbox"]:checked + .custom-checkbox {
+  background-color: #007bff; /* Change to your theme color */
+}
+
+input[type="checkbox"]:checked + .custom-checkbox:after {
+  background-color: white; /* Checkbox tick color */
+}
+
+/* Authentication Method Container */
+.auth-method-container {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.auth-method-label {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  display: block;
+  color: #444;
+}
+
+.auth-select {
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+.phone-number-container {
+  margin-top: 15px;
+}
+
+.phone-number-label {
+  font-size: 1.1rem;
+  color: #444;
+  display: block;
+}
+
+.phone-number-input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.auth-select:hover {
+  border-color: #007bff;
+}
+
+.phone-number-input:focus, .auth-select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+@media (max-width: 768px) {
+  .container {
+      flex-direction: column;
   }
 
-  .multiselect-wrapper .bp5-tag-remove {
-    width: auto;
-    display: inline-block;
+  .sidebar {
+      width: 100%;
+      height: auto;
   }
+
+  .main-content {
+      padding: 10px;
+  }
+}
