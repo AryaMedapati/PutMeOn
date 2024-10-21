@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from "react";
 import "@blueprintjs/core/lib/css/blueprint.css";
 import "@blueprintjs/core/lib/css/blueprint.css";
 import { Icon } from "@blueprintjs/core";
-import { getAuth,signOut  } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { UserContext } from "./UserContext";
 import axios from "axios";
@@ -13,12 +13,12 @@ import localstorage from 'localstorage-slim';
 
 
 const ViewProfile = () => {
-    const [pfp, setPfp] = useState("");
-    const [bio, setBio] = useState("");
-    const [email, setEmail] = useState("");
-    const [selectedSongs, setSelectedSongs] = useState([]);
-    const [selectedGenres, setSelectedGenres] = useState([]);
-    const [selectedArtists, setSelectedArtists] = useState([]);
+  const [pfp, setPfp] = useState("");
+  const [bio, setBio] = useState("");
+  const [email, setEmail] = useState("");
+  const [selectedSongs, setSelectedSongs] = useState([]);
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  const [selectedArtists, setSelectedArtists] = useState([]);
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
 
   const fileInputRef = useRef(null);
@@ -34,7 +34,7 @@ const ViewProfile = () => {
   };
   const handleLogOut = () => {
     const auth = getAuth();
-    signOut(auth).then(function() {
+    signOut(auth).then(function () {
       console.log('Signed Out');
       // setIsLoggedIn(false);
       localstorage.set('user', "");
@@ -78,86 +78,96 @@ const ViewProfile = () => {
     displayImage(pfp);
   }, [pfp]);
 
-    useEffect(() => {
-        const fetchProfileData = async () => {
-            if (username) {
-                const userDoc = await getDoc(doc(db, "UserData", username));
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    setPfp(data.pfp);
-                    setBio(data.bio)
-                    setEmail(data.username);
-                    setSelectedGenres(data.topGenres);
-                    setSelectedSongs(data.topSongs);
-                    setSelectedArtists(data.topArtists);
-                }
-            }
-        };
-        fetchProfileData();
-    }, [username]);
-  
   useEffect(() => {
-    const fetchCurrentlyPlaying = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/currentlyPlaying");
-        setCurrentlyPlaying(response.data);
-      } catch (error) {
-        console.error("Error fetching currently playing song:", error);
+    const fetchProfileData = async () => {
+      if (username) {
+        const userDoc = await getDoc(doc(db, "UserData", username));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setPfp(data.pfp);
+          setBio(data.bio)
+          setEmail(data.username);
+          setSelectedGenres(data.topGenres);
+          setSelectedSongs(data.topSongs);
+          setSelectedArtists(data.topArtists);
+        }
       }
     };
+    fetchProfileData();
+  }, [username]);
 
-    fetchCurrentlyPlaying();
+  const fetchCurrentlyPlaying = async () => {
+    try {
+      const response = await axios.get("http://localhost:3001/currentlyPlaying");
+      setCurrentlyPlaying(response.data);
+    } catch (error) {
+      console.error("Error fetching currently playing song:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCurrentlyPlaying(); // Initial fetch
+    const intervalId = setInterval(fetchCurrentlyPlaying, 1000); // Fetch every second
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
   }, []);
+
+  const formatTime = (milliseconds) => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div>
       <h1>Edit Profile</h1>
 
-            <div
-                style={{
-                    width: "800px",
-                    borderRadius: '20px',
-                    position: 'relative',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    paddingRight: '30px',
-                }}
-            >
-                <div ref={imageContainerRef}
-                    style={{ padding: '30px', border: '30px' }}
-                />
+      <div
+        style={{
+          width: "800px",
+          borderRadius: '20px',
+          position: 'relative',
+          display: 'inline-flex',
+          alignItems: 'center',
+          paddingRight: '30px',
+        }}
+      >
+        <div ref={imageContainerRef}
+          style={{ padding: '30px', border: '30px' }}
+        />
 
-                <div style={{ paddingLeft: '20px', fontSize: '16px' }}>
-                    {email || 'Loading email...'}
-                </div>
-            </div>
-            <div style={{ paddingLeft: '20px', fontSize: '16px' }}>
-                {bio || 'Loading bio...'}
-            </div>
-            <div
-                style={{
-                    fontWeight: 'bold',
-                    fontSize: 24,
-                    padding: 10
-                }}
-            >
-                Favorites:
-            </div>
-            {selectedSongs.map((item, index) => (
-                    <div key={index}>
-                        {item}
-                    </div>
-                ))}
-            {selectedGenres.map((item, index) => (
-                    <div key={index}>
-                        {item}
-                    </div>
-                ))}
-            {selectedArtists.map((item, index) => (
-                    <div key={index}>
-                        {item}
-                    </div>
-                ))}
+        <div style={{ paddingLeft: '20px', fontSize: '16px' }}>
+          {email || 'Loading email...'}
+        </div>
+      </div>
+      <div style={{ paddingLeft: '20px', fontSize: '16px' }}>
+        {bio || 'Loading bio...'}
+      </div>
+      <div
+        style={{
+          fontWeight: 'bold',
+          fontSize: 24,
+          padding: 10
+        }}
+      >
+        Favorites:
+      </div>
+      {selectedSongs.map((item, index) => (
+        <div key={index}>
+          {item}
+        </div>
+      ))}
+      {selectedGenres.map((item, index) => (
+        <div key={index}>
+          {item}
+        </div>
+      ))}
+      {selectedArtists.map((item, index) => (
+        <div key={index}>
+          {item}
+        </div>
+      ))}
 
       <div style={{ marginTop: "20px" }}>
         <Button
@@ -167,20 +177,33 @@ const ViewProfile = () => {
           onClick={linkSpotifyAccount}
         />
       </div>
-      <div>
-      {currentlyPlaying ? (
+      <div style={{ display: "flex", alignItems: "center", marginTop: "20px" }}>
+        {currentlyPlaying && currentlyPlaying.albumArt ? (
+          <img
+            src={currentlyPlaying.albumArt}
+            alt="Album Art"
+            style={{ width: "100px", height: "100px", borderRadius: "10px", marginRight: "20px" }}
+          />
+        ) : null}
         <div>
-          <h3>Currently Listening To:</h3>
-          <p><strong>Track:</strong> {currentlyPlaying.name}</p>
-          <p><strong>Artist:</strong> {currentlyPlaying.artist}</p>
-          <p><strong>Album:</strong> {currentlyPlaying.album}</p>
-          {/* <p><strong>Progress:</strong> {Math.floor(currentlyPlaying.progress_ms / 60000)}:{Math.floor((currentlyPlaying.progress_ms % 60000) / 1000).toString().padStart(2, '0')} / {Math.floor(currentlyPlaying.duration_ms / 60000)}:{Math.floor((currentlyPlaying.duration_ms % 60000) / 1000).toString().padStart(2, '0')}</p> */}
+          {currentlyPlaying ? (
+            <div>
+              <h3>Currently Listening To:</h3>
+              <p><strong>Track:</strong> {currentlyPlaying.name}</p>
+              <p><strong>Artist:</strong> {currentlyPlaying.artist}</p>
+              <p><strong>Album:</strong> {currentlyPlaying.album}</p>
+              <p>
+                <strong>Progress:</strong> 
+                {formatTime(currentlyPlaying.progress_ms)} / 
+                {formatTime(currentlyPlaying.duration_ms)}
+              </p>
+            </div>
+          ) : (
+            <p>No song is currently playing, or your account is unlinked.</p>
+          )}
         </div>
-      ) : (
-        <p>No song is currently playing, or your account is unlinked.</p>
-      )}
-    </div>
-    <div style={{ marginTop: "20px" }}>
+      </div>
+      <div style={{ marginTop: "20px" }}>
         <Button
           text="Log Out"
           intent="primary"

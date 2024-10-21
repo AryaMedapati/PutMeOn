@@ -160,6 +160,7 @@ app.get("/currentlyPlaying", async (req, res) => {
         name: track.name,
         artist: track.artists.map(artist => artist.name).join(", "),
         album: track.album.name,
+        albumArt: track.album.images[0].url,
         progress_ms: currentlyPlayingResponse.data.progress_ms,
         duration_ms: track.duration_ms
       });
