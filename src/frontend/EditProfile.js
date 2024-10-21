@@ -191,16 +191,20 @@ const EditProfile = () => {
     useEffect(() => {
         const fetchProfileData = async () => {
             if (username) {
-                const userDoc = await getDoc(doc(db, "UserData", username));
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    setPfp(data.pfp);
-                    setBio(data.bio)
-                    setEmail(data.username);
-                    setSelectedGenres(data.topGenres);
-                    setSelectedSongs(data.topSongs);
-                    setSelectedArtists(data.topArtists);
-                }
+                const response = await fetch("http://localhost:3001/fetchCurrentUser", {
+                    method: "GET",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'DocumentId': username,
+                    },
+                });
+                const data = await response.json();
+                setPfp(data.pfp);
+                setBio(data.bio)
+                setEmail(data.username);
+                setSelectedGenres(data.topGenres);
+                setSelectedSongs(data.topSongs);
+                setSelectedArtists(data.topArtists);
             }
         };
         fetchProfileData();
@@ -260,10 +264,7 @@ const EditProfile = () => {
                     ref={fileInputRef}
                     onChange={handleFileChange}
                 />
-
-
             </div>
-
 
             <div
                 style={{
@@ -276,6 +277,7 @@ const EditProfile = () => {
             </div>
             <div>
                 <TextArea
+                    id='biography-input'
                     intent='none'
                     style={{
                         resize: 'none',
@@ -305,6 +307,7 @@ const EditProfile = () => {
                 className="multiselect-wrapper"
             >
                 <MultiSelect
+                    className='top-multiselect'
                     items={items}
                     itemPredicate={itemPredicate}
                     itemRenderer={renderSongs}
@@ -335,6 +338,7 @@ const EditProfile = () => {
                 className="multiselect-wrapper"
             >
                 <MultiSelect
+                    className='top-multiselect'
                     items={items}
                     itemPredicate={itemPredicate}
                     itemRenderer={renderGenres}
@@ -365,6 +369,7 @@ const EditProfile = () => {
                 className="multiselect-wrapper"
             >
                 <MultiSelect
+                    className='top-multiselect'
                     items={items}
                     itemPredicate={itemPredicate}
                     itemRenderer={renderArtists}
@@ -385,6 +390,7 @@ const EditProfile = () => {
 
             <div>
                 <Button
+                    className='submit-button'
                     intent='primary'
                     style={{
                         width: '160px',

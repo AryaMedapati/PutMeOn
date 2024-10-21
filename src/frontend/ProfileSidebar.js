@@ -12,6 +12,7 @@ const ProfileSidebar = ({ onChangeContent }) => {
     return (
         <div className="sidebar">
             <ButtonGroup
+                id="sidebarButtonGroup"
                 vertical
                 style={{
                     width: '100%',
@@ -22,6 +23,7 @@ const ProfileSidebar = ({ onChangeContent }) => {
                 }}
             >
                 <Button
+                    className="sidebarButton"
                     style={{...buttonStyle,
                         backgroundColor: hoverView ? colors.text : colors.background,
                         color: hoverView ? colors.background : colors.text,
@@ -32,6 +34,7 @@ const ProfileSidebar = ({ onChangeContent }) => {
                     text="Your Profile" />
 
                 <Button
+                    className="sidebarButton"
                     style={{...buttonStyle,
                         backgroundColor: hoverEdit ? colors.text : colors.background,
                         color: hoverEdit ? colors.background : colors.text,
@@ -42,6 +45,7 @@ const ProfileSidebar = ({ onChangeContent }) => {
                     text="Edit Profile" />
                 
                 <Button
+                    className="sidebarButton"
                     style={{...buttonStyle,
                         backgroundColor: hoverUsername ? colors.text : colors.background,
                         color: hoverUsername ? colors.background : colors.text,
@@ -52,6 +56,7 @@ const ProfileSidebar = ({ onChangeContent }) => {
                     text="Username and Password" />
                 
                 <Button
+                    className="sidebarButton"
                     style={{...buttonStyle,
                         backgroundColor: hoverPrivacy ? colors.text : colors.background,
                         color: hoverPrivacy ? colors.background : colors.text,

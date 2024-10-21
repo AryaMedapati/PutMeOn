@@ -73,29 +73,37 @@ app.get("/fetchUsers", async (req, res) => {
   }
 });
 
-
-// app.post("/updateUser", async (req, res) => {
-//   try{
-//     console.log("Here")
-//     const userInfo = db.collection("UserData").doc();
-//     await userInfo.set(req.body);
-//     console.log("success")
-//     res.status(200).json({ message: "Success" });
-//   } catch (error) {
-//     // console.log(error);
-//     res.status(500).json({ message: error });
-//   }
-// });
-
-app.post("/updateUser", async (req, res) => {
-  console.log("test")
-
+app.get("/fetchCurrentUser", async (req, res) => {
   try {
     const docId = req.headers['documentid'];
-    console.log(req.headers);
-    console.log(docId);
+    const userDoc = db.collection("UserData").doc(docId);
+    const doc = await userDoc.get();
+    const user = doc.data()
+    res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+});
+
+app.post("/updateUser", async (req, res) => {
+  try {
+    const docId = req.headers['documentid'];
     const userRef = db.collection('UserData').doc(docId);
     await userRef.set(req.body, { merge: true });
+
+    res.status(200).send('User updated successfully');
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).send('Error updating user');
+  }
+});
+
+app.post("/cypressUserReset", async (req, res) => {
+  try {
+    const docId = "Du33v7g2VInEVppp6wNU";
+    const userRef = db.collection('UserData').doc(docId);
+    await userRef.set(req.body, { merge: false });
 
     res.status(200).send('User updated successfully');
   } catch (error) {
