@@ -1,6 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "@blueprintjs/core/lib/css/blueprint.css";
-import { Button, ButtonGroup, Card, InputGroup } from "@blueprintjs/core";
+import {
+  Button,
+  ButtonGroup,
+  Card,
+  InputGroup,
+  Popover,
+  Menu,
+  MenuItem,
+  Icon,
+} from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
+import { ToastContainer, toast } from "react-toastify";
+import { UserContext } from "./UserContext";
+import "react-toastify/dist/ReactToastify.css";
 
 import "./styles/Profile.css";
 import ProfileSidebar from "./ProfileSidebar";
@@ -17,6 +30,9 @@ function Profile() {
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
   const [usernames, setUsernames] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const { username } = useContext(UserContext);
 
   const fetchUsers = async () => {
     try {
@@ -24,8 +40,29 @@ function Profile() {
       const data = await res.json();
       console.log(data);
       setUsers(data);
-      const extractedUsernames = [...new Set(data.map((user) => user.username).filter((username) => username))];
+      const extractedUsernames = [
+        ...new Set(
+          data.map((user) => user.username).filter((username) => username)
+        ),
+      ];
       setUsernames(extractedUsernames);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchNotifs = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/fetchNotifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: username }),
+      });
+      const data = await res.json();
+      console.log(data);
+      setNotifications(data.notifications);
     } catch (error) {
       console.error(error);
     }
@@ -48,7 +85,30 @@ function Profile() {
 
     fetchProfileData();
     fetchUsers();
+    fetchNotifs();
   }, []);
+
+  const sendFriendRequest = async (recipientUsername) => {
+    try {
+      const response = await fetch("http://localhost:3001/addFriend", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: recipientUsername, sender: username }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error sending friend request:", error);
+      toast.error("Failed to send friend request.");
+    }
+  };
 
   return (
     <div className="sidebar-container" style={{ display: "flex" }}>
@@ -71,7 +131,28 @@ function Profile() {
         style={{ marginBottom: "20px", width: "300px" }}
       />
 
-      {/* Display filtered users */}
+      <div style={{ position: "absolute", top: "10px", right: "10px" }}>
+        <Popover
+          isOpen={showNotifications}
+          onInteraction={(nextOpenState) => {
+            setShowNotifications(nextOpenState);
+          }}
+          content={
+            <Menu>
+              {notifications.length > 0 ? (
+                notifications.map((notification, index) => (
+                  <MenuItem key={index} text={notification.message} />
+                ))
+              ) : (
+                <MenuItem text="No notifications" />
+              )}
+            </Menu>
+          }
+        >
+          <Button icon={<Icon icon={IconNames.NOTIFICATIONS} />} />
+        </Popover>
+      </div>
+
       <div style={{ marginBottom: "20px" }}>
         {filteredUsers.length > 0 ? (
           filteredUsers.map((username, index) => (
@@ -79,13 +160,30 @@ function Profile() {
               key={index}
               style={{ margin: "10px", padding: "10px", width: "250px" }}
             >
-              {username}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                {username}
+                <Button
+                  small
+                  intent="primary"
+                  onClick={() => sendFriendRequest(username)}
+                >
+                  Add Friend
+                </Button>
+              </div>
             </Card>
           ))
         ) : (
           <p>No users found.</p>
         )}
       </div>
+
+      <ToastContainer autoClose={3000} position="top-right" />
     </div>
   );
 }
