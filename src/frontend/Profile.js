@@ -15,6 +15,8 @@ import { ToastContainer, toast } from "react-toastify";
 import { UserContext } from "./UserContext";
 import "react-toastify/dist/ReactToastify.css";
 import { FaUserFriends } from "react-icons/fa";
+import { IoMdNotifications } from "react-icons/io";
+import { MdPersonAddAlt1 } from "react-icons/md";
 
 import "./styles/Profile.css";
 import ProfileSidebar from "./ProfileSidebar";
@@ -194,14 +196,42 @@ function Profile() {
       >
         <ProfileContent activeContent={activeContent} />
       </div>
-      <InputGroup
-        leftIcon="search"
-        onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder="Search users..."
-        value={searchTerm}
-        style={{ marginBottom: "20px", width: "300px" }}
-      />
-
+      <div style={{ marginBottom: "20px" }}>
+        <InputGroup
+          leftIcon="search"
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search users..."
+          value={searchTerm}
+          style={{ marginBottom: "20px", width: "300px" }}
+        />
+        {filteredUsers.length > 0 ? (
+          filteredUsers.map((username, index) => (
+            <Card
+              key={index}
+              style={{ margin: "10px", padding: "10px", width: "250px" }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                {username}
+                <Button
+                  small
+                  intent="primary"
+                  onClick={() => sendFriendRequest(username)}
+                >
+                  Add Friend
+                </Button>
+              </div>
+            </Card>
+          ))
+        ) : (
+          <p>No users found.</p>
+        )}
+      </div>
       <div style={{ position: "absolute", top: "10px", right: "10px" }}>
         <Popover
           isOpen={showFriends}
@@ -247,7 +277,9 @@ function Profile() {
             </Menu>
           }
         >
-          <Button icon={<Icon icon={IconNames.USER} />} />
+          <div className="icon-container">
+            <MdPersonAddAlt1 className="icon" />
+          </div>
         </Popover>
         <Popover
           isOpen={showNotifications}
@@ -266,38 +298,10 @@ function Profile() {
             </Menu>
           }
         >
-          <Button icon={<Icon icon={IconNames.NOTIFICATIONS} />} />
+          <div className="icon-container">
+            <IoMdNotifications className="icon" />
+          </div>
         </Popover>
-      </div>
-
-      <div style={{ marginBottom: "20px" }}>
-        {filteredUsers.length > 0 ? (
-          filteredUsers.map((username, index) => (
-            <Card
-              key={index}
-              style={{ margin: "10px", padding: "10px", width: "250px" }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                {username}
-                <Button
-                  small
-                  intent="primary"
-                  onClick={() => sendFriendRequest(username)}
-                >
-                  Add Friend
-                </Button>
-              </div>
-            </Card>
-          ))
-        ) : (
-          <p>No users found.</p>
-        )}
       </div>
 
       <ToastContainer autoClose={3000} position="top-right" />

@@ -109,6 +109,7 @@ body {
     border: 2px solid #1DB954;
     border-radius: 10px; 
     background-color: #fff; 
+    cursor: pointer;
   }
 
   .icon {
