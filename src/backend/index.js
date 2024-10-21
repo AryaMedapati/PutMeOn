@@ -125,6 +125,70 @@ app.post("/addFriend", async (req, res) => {
   }
 });
 
+app.post("/acceptFriendRequest", async (req, res) => {
+  try {
+    const { recipientUsername, senderUsername } = req.body;
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", recipientUsername)
+      .get();
+    const senderSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", senderUsername)
+      .get();
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const senderDoc = senderSnapshot.docs[0];
+    const recipientId = recipientDoc.id;
+    const senderId = senderDoc.id;
+
+    const recipientUserRef = db.collection("UserData").doc(recipientId);
+    const recipientUserDoc = await recipientUserRef.get();
+    const recipientData = recipientUserDoc.data();
+    const senderUserRef = db.collection("UserData").doc(senderId);
+    const senderUserDoc = await senderUserRef.get();
+    const senderData = senderUserDoc.data();
+
+    if (!recipientData.friends_list) {
+      await recipientUserRef.update({
+        friends_list: [],
+      });
+    }
+
+    if (!senderData.friends_list) {
+      await senderUserRef.update({
+        friends_list: [],
+      });
+    }
+    await recipientUserRef.update({
+      friends_list: admin.firestore.FieldValue.arrayUnion(senderUsername),
+    });
+
+    await senderUserRef.update({
+      friends_list: admin.firestore.FieldValue.arrayUnion(recipientUsername),
+    });
+
+    const notificationData = {
+      message: `${recipientUsername} accepted your friend request.`,
+      recipient: senderId,
+      status: "unread",
+    };
+
+    await senderUserRef.update({
+      notifications: admin.firestore.FieldValue.arrayUnion(notificationData),
+    });
+
+    await recipientUserRef.update({
+      friendRequests: admin.firestore.FieldValue.arrayRemove(senderUsername),
+    });
+
+    res.json({ message: "Friend request accepted" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
 app.get("/fetchUsers", async (req, res) => {
   try {
     const getUsers = db.collection("UserData");
@@ -156,6 +220,58 @@ app.post("/fetchNotifications", async (req, res) => {
       res.json({ notifications: recipientData.notifications });
     } else {
       res.json({ notifications: [] });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+});
+
+app.post("/fetchFriendRequests", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    if (recipientSnapshot.empty) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const recipientData = recipientDoc.data();
+
+    if (recipientData.friendRequests) {
+      res.json({ friendRequests: recipientData.friendRequests });
+    } else {
+      res.json({ friendRequests: [] });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+});
+
+app.post("/fetchFriends", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    if (recipientSnapshot.empty) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const recipientData = recipientDoc.data();
+
+    if (recipientData.friends_list) {
+      res.json({ friends: recipientData.friends_list });
+    } else {
+      res.json({ friends: [] });
     }
   } catch (error) {
     console.log(error);
