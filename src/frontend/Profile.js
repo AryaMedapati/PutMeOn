@@ -173,6 +173,7 @@ function Profile() {
       if (response.ok) {
         toast.success(result.message);
         fetchNotifs();
+        fetchFriends();
         fetchFriendRequests();
       } else {
         toast.error(result.message);

@@ -256,6 +256,7 @@ app.post("/fetchFriendRequests", async (req, res) => {
 app.post("/fetchFriends", async (req, res) => {
   try {
     const { username } = req.body;
+    console.log(username);
     const recipientSnapshot = await db
       .collection("UserData")
       .where("username", "==", username)
