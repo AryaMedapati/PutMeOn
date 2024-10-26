@@ -3,6 +3,7 @@ const express = require("express");
 // const functions = require('firebase-functions');
 const bp = require("body-parser");
 const db = require("./firebaseConfig");
+const admin = require("firebase-admin");
 const cors = require("cors");
 const axios = require("axios");
 const request = require("request");
@@ -26,7 +27,7 @@ const mainUrl = "https://put-me-on-418b7.web.app";
 // app.use(express.json());
 // app.use(json());
 
-app.use(bp.json({limit: '50mb'}));
+app.use(bp.json({ limit: "50mb" }));
 app.use(cors());
 
 const tempCodeStore = {};
@@ -38,20 +39,150 @@ const userProfile = {
   isPrivate: false,
 };
 function generateRandomCode(length = 6) {
-  return crypto.randomBytes(length).toString('hex').slice(0, length).toUpperCase();
+  return crypto
+    .randomBytes(length)
+    .toString("hex")
+    .slice(0, length)
+    .toUpperCase();
 }
 
 function generateRandomCode(length = 6) {
-  return crypto.randomBytes(length).toString('hex').slice(0, length).toUpperCase();
+  return crypto
+    .randomBytes(length)
+    .toString("hex")
+    .slice(0, length)
+    .toUpperCase();
 }
 
 app.post("/insertUser", async (req, res) => {
-  try{
+  try {
     // console.log("Here")
     const userInfo = db.collection("UserData").doc();
     await userInfo.set(req.body);
-    console.log("success")
+    console.log("success");
     res.status(200).json({ message: "Success" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
+app.post("/addFriend", async (req, res) => {
+  try {
+    console.log(req.body);
+    console.log(req.user);
+    const { username, sender } = req.body;
+    console.log(username);
+    console.log(sender);
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+    console.log(recipientSnapshot);
+
+    if (recipientSnapshot.empty) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const recipientId = recipientDoc.id;
+
+    const notificationData = {
+      message: `Friend request from ${sender}`,
+      recipient: recipientId,
+      sender: sender,
+      status: "unread",
+    };
+
+    const recipientUserRef = db.collection("UserData").doc(recipientId);
+    const recipientUserDoc = await recipientUserRef.get();
+    const recipientData = recipientUserDoc.data();
+    // console.log(recipientData);
+
+    if (recipientData.notifications) {
+      await recipientUserRef.update({
+        notifications: admin.firestore.FieldValue.arrayUnion(notificationData),
+      });
+    } else {
+      await recipientUserRef.set(
+        { notifications: [notificationData] },
+        { merge: true }
+      );
+    }
+
+    if (recipientData.friendRequests) {
+      await recipientUserRef.update({
+        friendRequests: admin.firestore.FieldValue.arrayUnion(sender),
+      });
+    } else {
+      await recipientUserRef.set({ friendRequests: [sender] }, { merge: true });
+    }
+
+    res.json({ message: `Friend request sent to ${username}` });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
+app.post("/acceptFriendRequest", async (req, res) => {
+  try {
+    const { recipientUsername, senderUsername } = req.body;
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", recipientUsername)
+      .get();
+    const senderSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", senderUsername)
+      .get();
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const senderDoc = senderSnapshot.docs[0];
+    const recipientId = recipientDoc.id;
+    const senderId = senderDoc.id;
+
+    const recipientUserRef = db.collection("UserData").doc(recipientId);
+    const recipientUserDoc = await recipientUserRef.get();
+    const recipientData = recipientUserDoc.data();
+    const senderUserRef = db.collection("UserData").doc(senderId);
+    const senderUserDoc = await senderUserRef.get();
+    const senderData = senderUserDoc.data();
+
+    if (!recipientData.friends_list) {
+      await recipientUserRef.update({
+        friends_list: [],
+      });
+    }
+
+    if (!senderData.friends_list) {
+      await senderUserRef.update({
+        friends_list: [],
+      });
+    }
+    await recipientUserRef.update({
+      friends_list: admin.firestore.FieldValue.arrayUnion(senderUsername),
+    });
+
+    await senderUserRef.update({
+      friends_list: admin.firestore.FieldValue.arrayUnion(recipientUsername),
+    });
+
+    const notificationData = {
+      message: `${recipientUsername} accepted your friend request.`,
+      recipient: senderId,
+      status: "unread",
+    };
+
+    await senderUserRef.update({
+      notifications: admin.firestore.FieldValue.arrayUnion(notificationData),
+    });
+
+    await recipientUserRef.update({
+      friendRequests: admin.firestore.FieldValue.arrayRemove(senderUsername),
+    });
+
+    res.json({ message: "Friend request accepted" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error });
@@ -64,6 +195,85 @@ app.get("/fetchUsers", async (req, res) => {
     const snapshot = await getUsers.get();
     const users = snapshot.docs.map((doc) => doc.data());
     res.status(200).json(users);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+});
+
+app.post("/fetchNotifications", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    if (recipientSnapshot.empty) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const recipientData = recipientDoc.data();
+
+    if (recipientData.notifications) {
+      res.json({ notifications: recipientData.notifications });
+    } else {
+      res.json({ notifications: [] });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+});
+
+app.post("/fetchFriendRequests", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    if (recipientSnapshot.empty) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const recipientData = recipientDoc.data();
+
+    if (recipientData.friendRequests) {
+      res.json({ friendRequests: recipientData.friendRequests });
+    } else {
+      res.json({ friendRequests: [] });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+});
+
+app.post("/fetchFriends", async (req, res) => {
+  try {
+    const { username } = req.body;
+    console.log(username);
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    if (recipientSnapshot.empty) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const recipientData = recipientDoc.data();
+
+    if (recipientData.friends_list) {
+      res.json({ friends: recipientData.friends_list });
+    } else {
+      res.json({ friends: [] });
+    }
   } catch (error) {
     console.log(error);
     res.status(500).send(error);
@@ -83,7 +293,7 @@ app.post("/updateUser", async (req, res) => {
 
       const updatedData = {
         username: username || userData.username,
-        pfp: pfp || userData.pfp
+        pfp: pfp || userData.pfp,
       };
       await setDoc(userRef, updatedData);
       res.status(200).send("User data updated successfully.");
@@ -144,7 +354,7 @@ app.get("/topArtists", async (req, res) => {
 
 app.get("/currentlyPlaying", async (req, res) => {
   try {
-    const token = accessToken;  // Ensure the accessToken is already set for the user
+    const token = accessToken; // Ensure the accessToken is already set for the user
     const currentlyPlayingResponse = await axios.get(
       "https://api.spotify.com/v1/me/player/currently-playing",
       {
@@ -153,22 +363,22 @@ app.get("/currentlyPlaying", async (req, res) => {
         },
       }
     );
-    
+
     if (currentlyPlayingResponse.data && currentlyPlayingResponse.data.item) {
       const track = currentlyPlayingResponse.data.item;
       res.status(200).json({
         name: track.name,
-        artist: track.artists.map(artist => artist.name).join(", "),
+        artist: track.artists.map((artist) => artist.name).join(", "),
         album: track.album.name,
         progress_ms: currentlyPlayingResponse.data.progress_ms,
-        duration_ms: track.duration_ms
+        duration_ms: track.duration_ms,
       });
     } else {
       res.status(200).json({ message: "No song is currently playing." });
     }
   } catch (error) {
-    console.error("Error fetching currently playing song:", error);
-    res.status(500).json({ message: "Failed to fetch currently playing song." });
+    // console.error("Error fetching currently playing song:", error);
+    // res.status(500).json({ message: "Failed to fetch currently playing song." });
   }
 });
 
@@ -437,7 +647,10 @@ app.post("/generate2FACode", async (req, res) => {
 
   try {
     // Fetch the user by username
-    const userSnapshot = await db.collection("UserData").where("username", "==", username).get();
+    const userSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
 
     if (userSnapshot.empty) {
       return res.status(404).json({ message: "User not found" });
@@ -457,27 +670,31 @@ app.post("/generate2FACode", async (req, res) => {
 
     // Set up the email transport (use environment variables for credentials in production)
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
-        user: 'putmeonproject@gmail.com', // Your email address
-        pass: 'rvrl pstn twfh kjip ',    // Your email password or app password
+        user: "putmeonproject@gmail.com", // Your email address
+        pass: "rvrl pstn twfh kjip ", // Your email password or app password
       },
     });
 
     // Send the email with the verification code
     const mailOptions = {
-      from: 'putmeonproject@gmail.com',
+      from: "putmeonproject@gmail.com",
       to: userEmail,
-      subject: 'Your 2FA Verification Code',
+      subject: "Your 2FA Verification Code",
       text: `Hello,\n\nYour verification code is: ${verificationCode}\nThis code will expire in 5 minutes.\n\nBest regards,\nYour Team`,
     };
 
     // Send the email
     await transporter.sendMail(mailOptions);
-    return res.status(200).json({ message: 'Verification code sent to your email.' });
+    return res
+      .status(200)
+      .json({ message: "Verification code sent to your email." });
   } catch (error) {
-    console.error('Error generating 2FA code:', error);
-    return res.status(500).json({ message: 'Error generating 2FA code', error: error.message });
+    console.error("Error generating 2FA code:", error);
+    return res
+      .status(500)
+      .json({ message: "Error generating 2FA code", error: error.message });
   }
 });
 
