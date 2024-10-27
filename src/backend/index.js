@@ -46,14 +46,6 @@ function generateRandomCode(length = 6) {
     .toUpperCase();
 }
 
-function generateRandomCode(length = 6) {
-  return crypto
-    .randomBytes(length)
-    .toString("hex")
-    .slice(0, length)
-    .toUpperCase();
-}
-
 app.post("/insertUser", async (req, res) => {
   try {
     // console.log("Here")
@@ -316,21 +308,7 @@ app.post("/cypressUserReset", async (req, res) => {
     await userRef.set(req.body, { merge: false });
 
     res.status(200).send('User updated successfully');
-    const userRef = doc(db, "UserData");
-    const userSnapshot = await getDoc(userRef);
 
-    if (userSnapshot.exists()) {
-      const userData = userSnapshot.data();
-
-      const updatedData = {
-        username: username || userData.username,
-        pfp: pfp || userData.pfp,
-      };
-      await setDoc(userRef, updatedData);
-      res.status(200).send("User data updated successfully.");
-    } else {
-      res.status(404).send("User not found.");
-    }
   } catch (error) {
     console.error('Error updating user:', error);
     res.status(500).send('Error updating user');
