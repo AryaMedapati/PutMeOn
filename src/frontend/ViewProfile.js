@@ -111,7 +111,7 @@ const ViewProfile = () => {
 
   return (
     <div>
-      <h1>Edit Profile</h1>
+      <h1>Profile View</h1>
 
             <div
                 style={{
