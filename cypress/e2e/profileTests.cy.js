@@ -1,6 +1,7 @@
 describe('profile functinality', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:5002/')
+    cy.visit('http://localhost:5002/login/')
+    // cy.visit('http://localhost:5002/')
     // cy.visit('http://localhost:3000/')
     cy.wait(500)
 

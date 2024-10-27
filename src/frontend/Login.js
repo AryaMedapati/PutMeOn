@@ -95,7 +95,7 @@ function Login() {
                   const errorMessage = error.message;
                 });
               setUsername(users[i].docId);
-              setUsername(username);
+              // setUsername(username);
               // setIsLoggedIn(true);
               localstorage.set('user', username);
               localstorage.set('pass', pass);
@@ -145,7 +145,7 @@ function Login() {
               const errorCode = error.code;
               const errorMessage = error.message;
             });
-          setUsername(username);
+          // setUsername(username);
           closeModal(); // Close the 2FA modal on successful verification
           const returnVal = await fetch("http://localhost:3001/fetchUsers");
           const users = await returnVal.json();
