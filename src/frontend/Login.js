@@ -5,7 +5,10 @@ import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from "react
 
 import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth";
 import { UserContext } from "./UserContext";
-import CreateAccount from "./CreateAccount"
+import localstorage from 'localstorage-slim';
+
+import CreateAccount from "./CreateAccount";
+
 
 let tempUser = "";
 
@@ -92,6 +95,10 @@ function Login() {
                   const errorMessage = error.message;
                 });
               setUsername(users[i].docId);
+              setUsername(username);
+              // setIsLoggedIn(true);
+              localstorage.set('user', username);
+              localstorage.set('pass', pass);
               nav("/", { user: users[i] })
             } catch (error) {
               console.log(error);

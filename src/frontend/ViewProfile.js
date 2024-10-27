@@ -4,10 +4,13 @@ import { useState, useEffect, useContext } from "react";
 import "@blueprintjs/core/lib/css/blueprint.css";
 import "@blueprintjs/core/lib/css/blueprint.css";
 import { Icon } from "@blueprintjs/core";
-import { getAuth } from "firebase/auth";
+import { getAuth,signOut  } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { UserContext } from "./UserContext";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import localstorage from 'localstorage-slim';
+
 
 const ViewProfile = () => {
     const [pfp, setPfp] = useState("");
@@ -20,6 +23,7 @@ const ViewProfile = () => {
 
   const fileInputRef = useRef(null);
   const imageContainerRef = useRef(null);
+  const nav = useNavigate();
 
   const db = getFirestore();
   const { username } = useContext(UserContext);
@@ -27,6 +31,19 @@ const ViewProfile = () => {
   const linkSpotifyAccount = () => {
     const spotifyAuthUrl = `http://localhost:3001/spotify-login`;
     window.open(spotifyAuthUrl, "_blank", "noopener,noreferrer");
+  };
+  const handleLogOut = () => {
+    const auth = getAuth();
+    signOut(auth).then(function() {
+      console.log('Signed Out');
+      // setIsLoggedIn(false);
+      localstorage.set('user', "");
+      localstorage.set('pass', "")
+      nav("/login");
+    }).catch((error) => {
+      console.log(error);
+    })
+
   };
 
   const displayImage = (base64String) => {
@@ -163,6 +180,13 @@ const ViewProfile = () => {
         <p>No song is currently playing, or your account is unlinked.</p>
       )}
     </div>
+    <div style={{ marginTop: "20px" }}>
+        <Button
+          text="Log Out"
+          intent="primary"
+          onClick={handleLogOut}
+        />
+      </div>
     </div>
 
   );

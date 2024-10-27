@@ -63,34 +63,17 @@ function CreateAccount() {
     // }
     try {
 
-      const returnVal = await fetch("http://localhost:3001/fetchUsers");
-      const users = await returnVal.json();
-      let track = false;
-      for (let i = 0; i < users.length; i++) {
-        if(users[i].username === userName) {
-          track = true;
-        }
-
-      const res = await fetch("http://localhost:3001/insertUser", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: userName,
-          password: pass,
-          isPrivate: isPrivate,
-          pfp: defaultPfp,
-          bio: "",
-          topSongs: [],
-          topGenres: [],
-          topArtists: []
-        }),
-      });
-
-
-      }
-      if (track) {
+      // const returnVal = await fetch("http://localhost:3001/fetchUsers");
+      // const users = await returnVal.json();
+      // let track = false;
+      // for (let i = 0; i < users.length; i++) {
+      //   if(users[i].username === userName) {
+      //     track = true;
+      //   }
+      // }
+      const track = await fetch(`http://localhost:3001/checkUserExists?user=${userName}`);
+      const jsonVal = await track.json();
+      if (jsonVal.message == 1) {
         document.getElementById("error-message").innerHTML = "Account already exists with email."
       }
       else {
@@ -99,13 +82,17 @@ function CreateAccount() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            username: userName,
-            password: pass,
-            isPrivate: isPrivate,
-            pfp: defaultPfp,
-            bio: ""
-          }),
+        body: JSON.stringify({
+          username: userName,
+          password: pass,
+          isPrivate: isPrivate,
+          pfp: defaultPfp,
+          bio: "",
+          topSongs: [],
+          topGenres: [],
+          topArtists: [],
+          pdf: ""
+        }),
         });
         try {
           const auth = getAuth();
