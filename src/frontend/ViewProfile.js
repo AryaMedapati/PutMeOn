@@ -20,17 +20,25 @@ const ViewProfile = () => {
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedArtists, setSelectedArtists] = useState([]);
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const { username, setUsername } = useContext(UserContext);
+
 
   const fileInputRef = useRef(null);
   const imageContainerRef = useRef(null);
   const nav = useNavigate();
 
   const db = getFirestore();
-  const { username } = useContext(UserContext);
+  // const { username } = useContext(UserContext);
 
-  const linkSpotifyAccount = () => {
-    const spotifyAuthUrl = `http://localhost:3001/spotify-login`;
+  const linkSpotifyAccount = async () => {
+    const user = localstorage.get('user');
+    const spotifyAuthUrl = `http://localhost:3001/spotify-login?user=${user}`;
+    
+    // const accessTokenFromUrl = params.get('access_token');
+    // const refreshTokenFromUrl = params.get('refresh_token');
+    // console.log(accessTokenFromUrl);
     window.open(spotifyAuthUrl, "_blank", "noopener,noreferrer");
+    // await fetch(`http://localhost:3001/saveToken?user=${username}`);
   };
   const handleLogOut = () => {
     const auth = getAuth();

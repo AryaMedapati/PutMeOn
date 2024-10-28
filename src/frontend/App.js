@@ -47,14 +47,14 @@ function App(props) {
     const storedUser = localstorage.get('user');
     const storedPass = localstorage.get('pass');
 
-    // console.log(storedLoggedIn);
+    console.log(storedUser);
     // if (storedLoggedIn) {
     //   setIsLoggedIn(true);
     // }
     // if (location == null) {
     //   nav("/login");
     // }
-    if (storedUser == "") {
+    if (!storedUser || storedUser == "") {
       nav("/login");
     }
 

@@ -59,54 +59,54 @@ function Profile() {
   };
 
   const fetchNotifs = async () => {
-    try {
-      const res = await fetch("http://localhost:3001/fetchNotifications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username: username }),
-      });
-      const data = await res.json();
-      console.log(data);
-      setNotifications(data.notifications);
-    } catch (error) {
-      console.error(error);
-    }
+    // try {
+    //   const res = await fetch("http://localhost:3001/fetchNotifications", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify({ username: username }),
+    //   });
+    //   const data = await res.json();
+    //   console.log(data);
+    //   setNotifications(data.notifications);
+    // } catch (error) {
+    //   console.error(error);
+    // }
   };
 
   const fetchFriendRequests = async () => {
-    try {
-      const res = await fetch("http://localhost:3001/fetchFriendRequests", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username: username }),
-      });
-      const data = await res.json();
-      console.log(data);
-      setFriendRequests(data.friendRequests);
-    } catch (error) {
-      console.error(error);
-    }
+    // try {
+    //   const res = await fetch("http://localhost:3001/fetchFriendRequests", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify({ username: username }),
+    //   });
+    //   const data = await res.json();
+    //   console.log(data);
+    //   setFriendRequests(data.friendRequests);
+    // } catch (error) {
+    //   console.error(error);
+    // }
   };
 
   const fetchFriends = async () => {
-    try {
-      const res = await fetch("http://localhost:3001/fetchFriends", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username: username }),
-      });
-      const data = await res.json();
-      console.log(data);
-      setFriends(data.friends);
-    } catch (error) {
-      console.error(error);
-    }
+    // try {
+    //   const res = await fetch("http://localhost:3001/fetchFriends", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify({ username: username }),
+    //   });
+    //   const data = await res.json();
+    //   console.log(data);
+    //   setFriends(data.friends);
+    // } catch (error) {
+    //   console.error(error);
+    // }
   };
 
   const filteredUsers = usernames.filter((username) =>

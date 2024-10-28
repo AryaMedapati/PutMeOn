@@ -15,6 +15,7 @@ const clientID = "6e24baf59c484801a146e21891775723";
 const clientSecret = "177482208fff40f7991ac0b139b2627e";
 let accessToken = "";
 let refreshToken = "";
+let user = "";
 const nodemailer = require("nodemailer"); // Add nodemailer for sending emails
 const crypto = require("crypto"); // For generating random codes
 
@@ -38,6 +39,32 @@ const userProfile = {
   friends: [],
   isPrivate: false,
 };
+// async function updateField() {
+//   await updateDoc(docRef, {
+//     fieldName: "newValue" // Specify the field and its new value
+//   });
+// }
+async function saveToken(user) {
+  // console.log("user: "+ user);
+  try {
+    const getUsers = db.collection("UserData");
+    // const user = user;
+    const value = getUsers.where('username', '==', user);
+    const snapshot = await value.get();
+
+    if (!snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      const userData = userDoc.data();
+      // console.log(userData);
+      await userDoc.ref.update({
+        accessToken: accessToken
+      });
+
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 function generateRandomCode(length = 6) {
   return crypto
     .randomBytes(length)
@@ -589,6 +616,8 @@ app.get("/artistChart", async (req, res) => {
 });
 
 app.get("/spotify-login", async (req, res) => {
+  user = req.query.user;
+  console.log(user);
   // console.log("hello");
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
@@ -626,9 +655,19 @@ app.get("/callback", function (req, res) {
       const refresh_token = body.refresh_token;
       accessToken = body.access_token;
       refreshToken = body.refreshToken;
+      saveToken(user);
       // Redirect to frontend with tokens
+      // res.send(`
+      //   <script>
+      //     window.opener.postMessage({
+      //       access_token: "${access_token}",
+      //       refresh_token: "${refresh_token}"
+      //     }, "*");
+      //     window.close();
+      //   </script>
+      // `);
       res.redirect(
-        `${mainUrl}/?` +
+        `${frontUrl}/transferToken?` +
           querystring.stringify({
             access_token: access_token,
             refresh_token: refresh_token,
@@ -662,7 +701,7 @@ app.get("/profile", async (req, res) => {
 
 app.post("/generate2FACode", async (req, res) => {
   const { username } = req.body;
-
+  user = username
   // Validate input
   if (!username) {
     return res.status(400).json({ message: "Username is required" });
@@ -769,6 +808,36 @@ try{
 }
 
 })
+app.get("/recentlyPlayed", async (req, res) => {
+  try {
+    const userN = req.query.user;
+    const usersCollection = db.collection('UserData');
+    const val = usersCollection.where('username', '==', userN);
+    const snapshot = await val.get();
+    if (snapshot.empty) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const userDoc = snapshot.docs[0];
+    const token = userDoc.data().accessToken; 
+    // console.log(token);
+    const recentlyPlayed = await axios.get(
+      `https://api.spotify.com/v1/me/player/recently-played?limit=1`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log(recentlyPlayed)
+
+    res.status(200).json({ data: recentlyPlayed.data });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
 
 /*
 app.post('/sendRandomCode', async (req, res) => {
