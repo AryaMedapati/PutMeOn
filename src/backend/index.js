@@ -59,6 +59,19 @@ app.post("/insertUser", async (req, res) => {
   }
 });
 
+app.post("/insertDM", async (req, res) => {
+  try {
+    const msgInfo = db.collection("MessageData").doc();
+    await msgInfo.set(req.body);
+    //console.log("success");
+    res.status(200).json({ message: "Success" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
+
 app.post("/addFriend", async (req, res) => {
   try {
     console.log(req.body);

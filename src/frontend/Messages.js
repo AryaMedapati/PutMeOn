@@ -16,7 +16,6 @@ const Messages = () => {
     setChats(initialChats);
   }, []);
 
-  // Handler to add a new message to the selected chat
   const handleSendMessage = () => {
     if (newMessage.trim() && selectedChat) {
       const updatedChats = chats.map(chat => {
@@ -33,11 +32,10 @@ const Messages = () => {
     }
   };
 
-  // Handler for key press events in the TextArea
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { // Check if Enter is pressed without Shift
-      e.preventDefault(); // Prevent default behavior (e.g., adding a newline)
-      handleSendMessage(); // Send the message
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
