@@ -7,6 +7,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/
 import {getAuth} from 'firebase/auth';
 import "./styles/Playlists.css";
 import { UserContext } from "./UserContext";
+import PlaylistList from "./PlaylistList";
 
 
 const Playlists = (props) => {
@@ -125,12 +126,13 @@ const Playlists = (props) => {
   }
   return (
 <div className="outer-container">
-  <div className="inner-container">
+  <PlaylistList/>
+  {/* <div className="inner-container">
     <h2>Upload Extensive Listening History</h2>
     <input type="file" onChange={handleFileChange} />
     <button className="saveFile" onClick={handleFileSave}>Save File</button>
     <p id="uploading"></p>
-  </div>
+  </div> */}
 </div>
   );
 };
