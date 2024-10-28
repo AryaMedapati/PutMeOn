@@ -17,7 +17,6 @@ let accessToken = "";
 let refreshToken = "";
 const nodemailer = require("nodemailer"); // Add nodemailer for sending emails
 const crypto = require("crypto"); // For generating random codes
-const localStorage = require("localstorage-slim");
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -443,9 +442,189 @@ app.get("/currentlyPlaying", async (req, res) => {
   }
 });
 
+async function logTrackToDatabase(
+  userId,
+  artists,
+  duration,
+  popularity,
+  progress,
+  time_played,
+  track_id,
+  track_name
+) {
+  try {
+    const recipientSnapshot = await db
+      .collection("UserListening")
+      .where("user_id", "==", userId)
+      .get();
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const recipientId = recipientDoc.id;
+    const recipientUserRef = db.collection("UserData").doc(recipientId);
+
+    await recipientUserRef.update({
+      listening_data: admin.firestore.FieldValue.arrayUnion(
+        artists,
+        duration,
+        popularity,
+        progress,
+        time_played,
+        track_id,
+        track_name
+      ),
+    });
+    console.log("Track added to database");
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function getLastPlayedTrackForUser(username) {
+  const recipientSnapshot = await db
+    .collection("UserListening")
+    .where("user_id", "==", username)
+    .get();
+
+  if (recipientSnapshot.empty) {
+    console.log("No listening data found for the user.");
+    return null;
+  }
+
+  const recipientDoc = recipientSnapshot.docs[0];
+  const listeningData = recipientDoc.data().listening_data;
+
+  // Check if there is any listening data
+  if (!listeningData || listeningData.length === 0) {
+    console.log("No listening history found for the user.");
+    return null;
+  }
+
+  const lastPlayedData = listeningData[listeningData.length - 1];
+  const [
+    artist_names,
+    duration,
+    popularity,
+    progress,
+    time_played,
+    track_id,
+    track_name,
+  ] = lastPlayedData;
+
+  return {
+    track_id,
+    time_played,
+  };
+}
+
+async function trackCurrentlyPlaying(userId, accessToken) {
+  try {
+    const currentlyPlayingResponse = await axios.get(
+      "https://api.spotify.com/v1/me/player/currently-playing",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (currentlyPlayingResponse.data && currentlyPlayingResponse.data.item) {
+      const track = currentlyPlayingResponse.data.item;
+      const artists = track.artists;
+      const duration = track.duration_ms;
+      const progress = track.progress_ms;
+      const popularity = track.popularity;
+      const timestamp = track.timestamp;
+      const trackId = track.id;
+      const name = track.name;
+
+      const progressMs = currentlyPlayingResponse.data.progress_ms;
+      const lastPlayed = await getLastPlayedTrackForUser(userId);
+      const listenedAtLeast30Sec = progressMs >= 30000;
+
+      if (lastPlayed) {
+        const lastPlayedTrackId = lastPlayed.track_id;
+        const lastPlayedProgressMs = lastPlayed.progress;
+
+        if (trackId === lastPlayedTrackId) {
+          if (listenedAtLeast30Sec) {
+            if (progressMs > lastPlayedProgressMs) {
+              console.log(
+                "Not logging, already playing longer than last entry."
+              );
+              return;
+            } else if (lastPlayedProgressMs - progressMs >= 30000) {
+              await logTrackToDatabase(
+                userId,
+                artists,
+                duration,
+                progress,
+                popularity,
+                timestamp,
+                trackId,
+                name
+              );
+              console.log(
+                `New entry logged for: ${track.name} by ${track.artists
+                  .map((artist) => artist.name)
+                  .join(", ")}`
+              );
+            }
+          }
+        } else if (listenedAtLeast30Sec) {
+          await logTrackToDatabase(
+            userId,
+            artists,
+            duration,
+            progress,
+            popularity,
+            timestamp,
+            trackId,
+            name
+          );
+          console.log(
+            `New track logged: ${track.name} by ${track.artists
+              .map((artist) => artist.name)
+              .join(", ")}`
+          );
+        }
+      } else if (listenedAtLeast30Sec) {
+        await logTrackToDatabase(
+          userId,
+          artists,
+          duration,
+          progress,
+          popularity,
+          timestamp,
+          trackId,
+          name
+        );
+        console.log(
+          `First entry logged for: ${track.name} by ${track.artists
+            .map((artist) => artist.name)
+            .join(", ")}`
+        );
+      }
+    } else {
+      console.log("No song is currently playing.");
+    }
+  } catch (error) {
+    console.error("Error fetching currently playing song:", error);
+  }
+}
+
+const startSpotifyTracking = (username, token) => {
+  cron.schedule("*/30 * * * * *", () => {
+    trackCurrentlyPlaying(username, token);
+  });
+};
+
 app.get("/startTracking", async (req, res) => {
   try {
+    const { username } = req.body;
     const token = accessToken;
+
+    startSpotifyTracking(username, token);
+    res.status(200).json({ message: "Spotify tracking started." });
   } catch (error) {}
 });
 
