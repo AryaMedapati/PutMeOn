@@ -17,6 +17,7 @@ let accessToken = "";
 let refreshToken = "";
 const nodemailer = require("nodemailer"); // Add nodemailer for sending emails
 const crypto = require("crypto"); // For generating random codes
+const localStorage = require("localstorage-slim");
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -442,13 +443,10 @@ app.get("/currentlyPlaying", async (req, res) => {
   }
 });
 
-app.get("/startTracking", async (req, req) => {
+app.get("/startTracking", async (req, res) => {
   try {
     const token = accessToken;
-    
-  } catch (error) {
-
-  }
+  } catch (error) {}
 });
 
 const generatePieChart = (genreData) => {

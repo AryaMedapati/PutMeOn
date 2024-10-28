@@ -15,6 +15,7 @@ import { IoMdNotifications } from "react-icons/io";
 import { MdPersonAddAlt1 } from "react-icons/md";
 import { UserContext } from "./UserContext";
 import { ToastContainer, toast } from "react-toastify";
+import localstorage from "localstorage-slim";
 
 function FriendsAndNotifications() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,8 +29,8 @@ function FriendsAndNotifications() {
   const [showFriends, setShowFriends] = useState(false);
   const [friendToRemove, setFriendToRemove] = useState(null);
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
+  const [username, setUsername] = useState("");
   const { email } = useContext(UserContext);
-  console.log(email);
 
   const fetchUsers = async () => {
     try {
@@ -50,12 +51,13 @@ function FriendsAndNotifications() {
 
   const fetchNotifs = async () => {
     try {
+      console.log(username);
       const res = await fetch("http://localhost:3001/fetchNotifications", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: email }),
+        body: JSON.stringify({ username: username || localstorage.get('user') }),
       });
       const data = await res.json();
       console.log(data);
@@ -73,7 +75,7 @@ function FriendsAndNotifications() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: email }),
+        body: JSON.stringify({ username: username || localstorage.get('user') }),
       });
       const data = await res.json();
       setFriendRequests(data.friendRequests);
@@ -89,7 +91,7 @@ function FriendsAndNotifications() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: email }),
+        body: JSON.stringify({ username: username || localstorage.get('user') }),
       });
       const data = await res.json();
       setFriends(data.friends);
@@ -105,7 +107,7 @@ function FriendsAndNotifications() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: recipientUsername, sender: email }),
+        body: JSON.stringify({ username: recipientUsername, sender: username || localstorage.get('user') }),
       });
 
       const result = await response.json();
@@ -130,7 +132,7 @@ function FriendsAndNotifications() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            recipientUsername: email,
+            recipientUsername: username || localstorage.get('user'),
             senderUsername: senderUsername,
           }),
         }
@@ -159,7 +161,7 @@ function FriendsAndNotifications() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          recipientUsername: email,
+          recipientUsername: username,
           senderUsername: senderUsername,
         }),
       });
@@ -190,6 +192,18 @@ function FriendsAndNotifications() {
   const filteredUsers = usernames.filter((username) =>
     username.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  useEffect(() => {
+    if (email) {
+      setUsername(email);
+    } else {
+      const storedUsername = localstorage.get("user");
+      console.log(storedUsername);
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    }
+  }, [email]); 
 
   useEffect(() => {
     fetchUsers();
