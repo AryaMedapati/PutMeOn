@@ -442,6 +442,15 @@ app.get("/currentlyPlaying", async (req, res) => {
   }
 });
 
+app.get("/startTracking", async (req, req) => {
+  try {
+    const token = accessToken;
+    
+  } catch (error) {
+
+  }
+});
+
 const generatePieChart = (genreData) => {
   const width = 400;
   const height = 400;
