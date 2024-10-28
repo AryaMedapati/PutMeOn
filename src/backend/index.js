@@ -8,6 +8,7 @@ const cors = require("cors");
 const axios = require("axios");
 const request = require("request");
 const querystring = require("querystring");
+const cron = require("node-cron");
 const { createCanvas } = require("canvas");
 const { Chart, registerables } = require("chart.js");
 Chart.register(...registerables);
@@ -446,8 +447,8 @@ async function logTrackToDatabase(
   userId,
   artists,
   duration,
-  popularity,
   progress,
+  popularity,
   time_played,
   track_id,
   track_name
@@ -458,21 +459,48 @@ async function logTrackToDatabase(
       .where("user_id", "==", userId)
       .get();
 
-    const recipientDoc = recipientSnapshot.docs[0];
-    const recipientId = recipientDoc.id;
-    const recipientUserRef = db.collection("UserData").doc(recipientId);
+    let recipientRef;
+    if (recipientSnapshot.empty) {
+      recipientRef = await db.collection("UserListening").add({
+        user_id: userId,
+        listening_data: [],
+      });
+      console.log("New document created for user.");
+    } else {
+      recipientRef = db
+        .collection("UserListening")
+        .doc(recipientSnapshot.docs[0].id);
+    }
 
-    await recipientUserRef.update({
-      listening_data: admin.firestore.FieldValue.arrayUnion(
-        artists,
-        duration,
-        popularity,
-        progress,
-        time_played,
-        track_id,
-        track_name
-      ),
+    const trackData = {
+      artists,
+      duration,
+      popularity,
+      progress,
+      time_played,
+      track_id,
+      track_name,
+    };
+
+    await recipientRef.update({
+      listening_data: admin.firestore.FieldValue.arrayUnion(trackData),
     });
+
+    // const recipientDoc = recipientSnapshot.docs[0];
+    // const recipientId = recipientDoc.id;
+    // const recipientUserRef = db.collection("UserData").doc(recipientId);
+
+    // await recipientUserRef.update({
+    //   listening_data: admin.firestore.FieldValue.arrayUnion(
+    //     artists,
+    //     duration,
+    //     popularity,
+    //     progress,
+    //     time_played,
+    //     track_id,
+    //     track_name
+    //   ),
+    // });
     console.log("Track added to database");
   } catch (error) {
     console.log(error);
@@ -480,6 +508,7 @@ async function logTrackToDatabase(
 }
 
 async function getLastPlayedTrackForUser(username) {
+  console.log(username);
   const recipientSnapshot = await db
     .collection("UserListening")
     .where("user_id", "==", username)
@@ -500,7 +529,8 @@ async function getLastPlayedTrackForUser(username) {
   }
 
   const lastPlayedData = listeningData[listeningData.length - 1];
-  const [
+  console.log(lastPlayedData);
+  const {
     artist_names,
     duration,
     popularity,
@@ -508,7 +538,7 @@ async function getLastPlayedTrackForUser(username) {
     time_played,
     track_id,
     track_name,
-  ] = lastPlayedData;
+  } = lastPlayedData;
 
   return {
     track_id,
@@ -528,14 +558,21 @@ async function trackCurrentlyPlaying(userId, accessToken) {
     );
 
     if (currentlyPlayingResponse.data && currentlyPlayingResponse.data.item) {
-      const track = currentlyPlayingResponse.data.item;
-      const artists = track.artists;
-      const duration = track.duration_ms;
+      const track = currentlyPlayingResponse.data;
+      const artists = track.item.artists;
+      const duration = track.item.duration_ms;
       const progress = track.progress_ms;
-      const popularity = track.popularity;
+      const popularity = track.item.popularity;
       const timestamp = track.timestamp;
-      const trackId = track.id;
-      const name = track.name;
+      const trackId = track.item.id;
+      const name = track.item.name;
+      console.log(artists);
+      console.log(duration);
+      console.log(progress);
+      console.log(popularity);
+      console.log(timestamp);
+      console.log(trackId);
+      console.log(name);
 
       const progressMs = currentlyPlayingResponse.data.progress_ms;
       const lastPlayed = await getLastPlayedTrackForUser(userId);
@@ -563,11 +600,7 @@ async function trackCurrentlyPlaying(userId, accessToken) {
                 trackId,
                 name
               );
-              console.log(
-                `New entry logged for: ${track.name} by ${track.artists
-                  .map((artist) => artist.name)
-                  .join(", ")}`
-              );
+              console.log(`New entry logged for: ${name}`);
             }
           }
         } else if (listenedAtLeast30Sec) {
@@ -581,11 +614,7 @@ async function trackCurrentlyPlaying(userId, accessToken) {
             trackId,
             name
           );
-          console.log(
-            `New track logged: ${track.name} by ${track.artists
-              .map((artist) => artist.name)
-              .join(", ")}`
-          );
+          console.log(`New track logged: ${name}`);
         }
       } else if (listenedAtLeast30Sec) {
         await logTrackToDatabase(
@@ -598,11 +627,7 @@ async function trackCurrentlyPlaying(userId, accessToken) {
           trackId,
           name
         );
-        console.log(
-          `First entry logged for: ${track.name} by ${track.artists
-            .map((artist) => artist.name)
-            .join(", ")}`
-        );
+        console.log(`First entry logged for: ${name}`);
       }
     } else {
       console.log("No song is currently playing.");
@@ -613,15 +638,20 @@ async function trackCurrentlyPlaying(userId, accessToken) {
 }
 
 const startSpotifyTracking = (username, token) => {
+  console.log("before cron schedule");
   cron.schedule("*/30 * * * * *", () => {
+    console.log("about to track currently playing");
+    console.log(username);
     trackCurrentlyPlaying(username, token);
   });
 };
 
-app.get("/startTracking", async (req, res) => {
+app.post("/startTracking", async (req, res) => {
   try {
     const { username } = req.body;
     const token = accessToken;
+
+    console.log("before tracking function call");
 
     startSpotifyTracking(username, token);
     res.status(200).json({ message: "Spotify tracking started." });
