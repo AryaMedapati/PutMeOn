@@ -181,13 +181,50 @@ app.post("/acceptFriendRequest", async (req, res) => {
   }
 });
 
+app.post("/removeFriend", async (req, res) => {
+  try {
+    const { recipientUsername, senderUsername } = req.body;
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", recipientUsername)
+      .get();
+    const senderSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", senderUsername)
+      .get();
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const senderDoc = senderSnapshot.docs[0];
+    const recipientId = recipientDoc.id;
+    const senderId = senderDoc.id;
+
+    const recipientUserRef = db.collection("UserData").doc(recipientId);
+    const senderUserRef = db.collection("UserData").doc(senderId);
+
+    await recipientUserRef.update({
+      friends_list: admin.firestore.FieldValue.arrayRemove(senderUsername),
+    });
+
+    await senderUserRef.update({
+      friends_list: admin.firestore.FieldValue.arrayRemove(recipientUsername),
+    });
+
+    res.json({
+      message: `Removed ${recipientUsername} and ${senderUsername} as friends`,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
 app.get("/fetchUsers", async (req, res) => {
   try {
     const getUsers = db.collection("UserData");
     const snapshot = await getUsers.get();
     const users = snapshot.docs.map((doc) => ({
       docId: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
     res.status(200).json(users);
   } catch (error) {
@@ -198,10 +235,10 @@ app.get("/fetchUsers", async (req, res) => {
 
 app.get("/fetchCurrentUser", async (req, res) => {
   try {
-    const docId = req.headers['documentid'];
+    const docId = req.headers["documentid"];
     const userDoc = db.collection("UserData").doc(docId);
     const doc = await userDoc.get();
-    const user = doc.data()
+    const user = doc.data();
     res.status(200).json(user);
   } catch (error) {
     console.log(error);
@@ -290,24 +327,24 @@ app.post("/fetchFriends", async (req, res) => {
 
 app.post("/updateUser", async (req, res) => {
   try {
-    const docId = req.headers['documentid'];
-    const userRef = db.collection('UserData').doc(docId);
+    const docId = req.headers["documentid"];
+    const userRef = db.collection("UserData").doc(docId);
     await userRef.set(req.body, { merge: true });
 
-    res.status(200).send('User updated successfully');
+    res.status(200).send("User updated successfully");
   } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).send('Error updating user');
+    console.error("Error updating user:", error);
+    res.status(500).send("Error updating user");
   }
 });
 
 app.post("/cypressUserReset", async (req, res) => {
   try {
     const docId = "Du33v7g2VInEVppp6wNU";
-    const userRef = db.collection('UserData').doc(docId);
+    const userRef = db.collection("UserData").doc(docId);
     await userRef.set(req.body, { merge: false });
 
-    res.status(200).send('User updated successfully');
+    res.status(200).send("User updated successfully");
     // const userRef = doc(db, "UserData");
     // const userSnapshot = await getDoc(userRef);
 
@@ -324,8 +361,8 @@ app.post("/cypressUserReset", async (req, res) => {
     //   res.status(404).send("User not found.");
     // }
   } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).send('Error updating user');
+    console.error("Error updating user:", error);
+    res.status(500).send("Error updating user");
   }
 });
 
@@ -343,7 +380,7 @@ app.get("/topTracks", async (req, res) => {
         },
       }
     );
-    console.log(topTracksResponse)
+    console.log(topTracksResponse);
 
     res.status(200).json({ data: topTracksResponse.data.items });
   } catch (error) {
@@ -752,23 +789,22 @@ app.post("/verify2FACode", (req, res) => {
   delete tempCodeStore[username]; // Remove the code after successful verification
   return res.status(200).json({ message: "Code verified successfully" });
 });
-app.get("/checkUserExists", (req,res) => {
-try{
-  const getUsers = db.collection("UserData");
-  const user = req.query.user;
-  console.log(user);
-  const value = getUsers.where('username', '==', user);
-  const newVal = value.get().then((snapshot) =>{
-    res.status(200).json(snapshot);
-  })
+app.get("/checkUserExists", (req, res) => {
+  try {
+    const getUsers = db.collection("UserData");
+    const user = req.query.user;
+    console.log(user);
+    const value = getUsers.where("username", "==", user);
+    const newVal = value.get().then((snapshot) => {
+      res.status(200).json(snapshot);
+    });
 
-  // res.status(200).json({ message: "user exists" });
-} catch (error) {
-  console.log(error);
-  res.status(500).send(error);
-}
-
-})
+    // res.status(200).json({ message: "user exists" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+});
 
 /*
 app.post('/sendRandomCode', async (req, res) => {

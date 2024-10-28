@@ -8,6 +8,7 @@ import {
   Menu,
   MenuItem,
   Icon,
+  Dialog,
 } from "@blueprintjs/core";
 import { FaUserFriends } from "react-icons/fa";
 import { IoMdNotifications } from "react-icons/io";
@@ -25,8 +26,10 @@ function FriendsAndNotifications() {
   const [showFriendRequests, setShowFriendRequests] = useState(false);
   const [friends, setFriends] = useState([]);
   const [showFriends, setShowFriends] = useState(false);
+  const [friendToRemove, setFriendToRemove] = useState(null);
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
   const { email } = useContext(UserContext);
-  console.log(email)
+  console.log(email);
 
   const fetchUsers = async () => {
     try {
@@ -148,6 +151,42 @@ function FriendsAndNotifications() {
     }
   };
 
+  const removeFriend = async (senderUsername) => {
+    try {
+      const response = await fetch("http://localhost:3001/removeFriend", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          recipientUsername: email,
+          senderUsername: senderUsername,
+        }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        toast.success(result.message);
+        fetchFriendsList();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error accepting friend request:", error);
+      toast.error("Failed to accept friend request.");
+    }
+  };
+
+  const confirmRemoveFriend = (friendUsername) => {
+    setFriendToRemove(friendUsername);
+    setIsRemoveDialogOpen(true);
+  };
+
+  const closeRemoveDialog = () => {
+    setFriendToRemove(null);
+    setIsRemoveDialogOpen(false);
+  };
+
   const filteredUsers = usernames.filter((username) =>
     username.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -205,7 +244,20 @@ function FriendsAndNotifications() {
           <Menu>
             {friends.length > 0 ? (
               friends.map((friend, index) => (
-                <MenuItem key={index} text={`${friend}`} />
+                <MenuItem
+                  key={index}
+                  text={`${friend}`}
+                  labelElement={
+                    <Button
+                      small
+                      minimal
+                      intent="danger"
+                      onClick={() => confirmRemoveFriend(friend)}
+                    >
+                      Remove
+                    </Button>
+                  }
+                />
               ))
             ) : (
               <MenuItem text="No friends" />
@@ -264,6 +316,29 @@ function FriendsAndNotifications() {
           <IoMdNotifications className="icon" />
         </div>
       </Popover>
+      <Dialog
+        isOpen={isRemoveDialogOpen}
+        onClose={closeRemoveDialog}
+        title="Remove Friend"
+      >
+        <div className="bp3-dialog-body">
+          Are you sure you want to remove {friendToRemove} as a friend?
+        </div>
+        <div className="bp3-dialog-footer">
+          <Button intent="none" onClick={closeRemoveDialog}>
+            Cancel
+          </Button>
+          <Button
+            intent="danger"
+            onClick={() => {
+              removeFriend(friendToRemove);
+              closeRemoveDialog();
+            }}
+          >
+            Remove
+          </Button>
+        </div>
+      </Dialog>
 
       <ToastContainer autoClose={3000} position="top-right" />
     </div>
