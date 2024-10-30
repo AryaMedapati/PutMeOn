@@ -19,7 +19,7 @@ function Login() {
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const nav = useNavigate();
-  const { setUsername } = useContext(UserContext);
+  const { setUsername, setEmail } = useContext(UserContext);
 
   const handleUser = (e) => {
     setUserName(e.target.value);
@@ -96,6 +96,7 @@ function Login() {
                 });
               setUsername(users[i].docId);
               // setUsername(username);
+              setEmail(username);
               // setIsLoggedIn(true);
               localstorage.set('user', username);
               localstorage.set('pass', pass);
