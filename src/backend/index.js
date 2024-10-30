@@ -15,8 +15,9 @@ const clientID = "6e24baf59c484801a146e21891775723";
 const clientSecret = "177482208fff40f7991ac0b139b2627e";
 let accessToken = "";
 let refreshToken = "";
-const nodemailer = require("nodemailer"); // Add nodemailer for sending emails
-const crypto = require("crypto"); // For generating random codes
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -783,6 +784,70 @@ try{
 
 })
 
+app.get("/fetchDMs", async (req, res) => {
+  const userID = req.query.userID;
+  try {
+    const snapshot = await db.collection("DMData").where("senderID", "==", userID)
+      .get();
+
+    const dms = snapshot.docs.map(doc => ({
+      docId: doc.id,
+      ...doc.data(),
+    }));
+
+    res.status(200).json(dms);
+  } catch (error) {
+    res.status(500).send("Error fetching DMs");
+  }
+});
+
+app.post("/sendMessage", async (req, res) => {
+  const { senderID, receiverID, chatID, content } = req.body;
+
+  try {
+    const timestamp = new Date().toISOString();
+    await db.collection("DMData").add({
+      senderID,
+      receiverID,
+      chatID,
+      timestamp,
+      content,
+    });
+    res.status(201).send("Message sent successfully");
+  } catch (error) {
+    res.status(500).send("Error sending message");
+  }
+});
+
+app.post("/createDM", async (req, res) => {
+  const { senderID, receiverID } = req.body;
+
+  try {
+    const snapshot = await db.collection("DMData")
+      .where("senderID", "==", senderID)
+      .where("receiverID", "==", receiverID)
+      .get();
+
+    let chatID;
+
+    if (snapshot.empty) {
+      chatID = uuidv4(); // Generate new chatID if no existing chat found
+      await db.collection("DMData").add({
+        senderID,
+        receiverID,
+        chatID,
+        timestamp: new Date().toISOString(),
+        content: "Chat started",
+      });
+    } else {
+      chatID = snapshot.docs[0].data().chatID; // Use existing chatID
+    }
+
+    res.status(200).json({ chatID });
+  } catch (error) {
+    res.status(500).send("Error creating DM");
+  }
+});
 /*
 app.post('/sendRandomCode', async (req, res) => {
   const { username } = req.body;
