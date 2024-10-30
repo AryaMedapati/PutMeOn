@@ -829,12 +829,12 @@ app.get("/recentlyPlayed", async (req, res) => {
         },
       }
     );
-    console.log(recentlyPlayed)
+    // console.log(recentlyPlayed)
 
     res.status(200).json({ data: recentlyPlayed.data });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error });
+    // res.status(500).json({ message: error });
   }
 });
 

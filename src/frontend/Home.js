@@ -1,4 +1,4 @@
-import {React, useEffect, useRef} from 'react';
+import {React, useEffect, useState, useRef} from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, useLocation, useNavigate, Switch} from "react-router-dom";
 import Playlists from "./Playlists";
 import "./styles/Home.css";
@@ -9,8 +9,9 @@ const Home = () => {
 
 
   const location = useLocation();
+  
   let passIn2 = "";
-  const info = [];
+  const [info, setInfo] = useState([]);
 
   async function getRecentlyPlayed(user) {
     const url = "http://localhost:3001";
@@ -19,64 +20,65 @@ const Home = () => {
       `${url}/recentlyPlayed?user=${user}`
     );
     const data = await response.json();
-    info.push(data.data.items[0].track);
-    // console.log(data.data.items[0].track);
+    // console.log(data);
+    return data.data.items[0];
   };
   if (location.state) {
     passIn2 = location.state.user;
   }
-  const friends = ["test3@email.com", "test4@email.com"];
-  for(let i = 0; i < friends.length; i++) {
-    const user = friends[i];
-    getRecentlyPlayed(user);
+  const friends = ["test3@email.com", "test4@email.com", "test2@email.com"];
+  async function getReady() {
+    const tracks =[]
+    for(let i = 0; i < friends.length; i++) {
+      const user = friends[i];
+      let track = await getRecentlyPlayed(user);
+      console.log(track);
+      tracks.push(track);
+      console.log(tracks);
+  
+    }
+    setInfo(tracks)
   }
-  // console.log(info);
-  const friendsListeningActivity = [
-    {
-      name: 'Alice',
-      song: 'Blinding Lights',
-      artist: 'The Weeknd',
-      time: '10 minutes ago',
-    },
-    {
-      name: 'Bob',
-      song: 'Levitating',
-      artist: 'Dua Lipa',
-      time: '30 minutes ago',
-    },
-    {
-      name: 'Charlie',
-      song: 'Shape of You',
-      artist: 'Ed Sheeran',
-      time: '1 hour ago',
-    },
-    // Add more friends' activities as needed
-  ];
-  console.log(passIn2);
-  const getTimeSinceListened = (date) => {
-    const now = new Date();
-    const seconds = Math.floor((now - date) / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(seconds / 3600);
+  useEffect(() => {
+    getReady();
+  }, [])
 
-    if (seconds < 60) return `${seconds} seconds ago`;
-    if (minutes < 60) return `${minutes} minutes ago`;
-    return `${hours} hours ago`;
-};
-  console.log(info);
+  // console.log(passIn2);
+  function getTimeSincePlayed(timestamp) {
+    const playedDate = new Date(timestamp);
+    const now = new Date();
+
+    const secondsAgo = Math.floor((now - playedDate) / 1000);
+    const minutesAgo = Math.floor(secondsAgo / 60);
+    const hoursAgo = Math.floor(minutesAgo / 60);
+
+    if (secondsAgo < 60) {
+        return `${secondsAgo} seconds ago`;
+    } else if (minutesAgo < 60) {
+        return `${minutesAgo} minutes ago`;
+    } else {
+        return `${hoursAgo} hours ago`;
+    }
+}
+  // console.log(info);
     return (
     <div>
+        <h1 className="header1">My Friends</h1>
         <div className="track-list">
-            <h1>Recently Played Tracks</h1>
+
             {info.map((track, index) => {
-                const artistName = track.album.artists[0].name;
-                const timeSinceListened = getTimeSinceListened(track.listenedAt);
+                const artistName = track ? track.track.album.artists[0].name : "Error";
+                // console.log(artistName);
+                const timeSinceListened = getTimeSincePlayed(track.played_at);
 
                 return (
                     <div className="track-activity" key={index}>
-                        <div className="track-name">{track.name}</div>
+                      <div className="friend">{friends[index]}</div>
+                        <div className="album-cover"><img src={track.track.album.images[0].url} alt="Error"/></div>
+                        <div className="track-name">{track ? track.track.name : "Error"}</div>
                         <div className="listening-info">
-                            <span className="artist">{artistName}</span> from <span className="album">{track.album.name}</span>
+                            <div className="artist">{artistName}</div>
+                            <div className="album">{track? track.track.album.name : "Error"}</div>
                         </div>
                         <div className="time">{timeSinceListened}</div>
                     </div>
