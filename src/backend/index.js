@@ -308,7 +308,6 @@ app.post("/cypressUserReset", async (req, res) => {
     await userRef.set(req.body, { merge: false });
 
     res.status(200).send('User updated successfully');
-
   } catch (error) {
     console.error('Error updating user:', error);
     res.status(500).send('Error updating user');
