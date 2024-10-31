@@ -65,6 +65,29 @@ async function saveToken(user) {
     console.log(error);
   }
 }
+async function saveRecentlyPlayed(user, song, likes, likedBy) {
+  // console.log("user: "+ user);
+  try {
+    const getUsers = db.collection("UserData");
+    // const user = user;
+    const value = getUsers.where('username', '==', user);
+    const snapshot = await value.get();
+
+    if (!snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      const userData = userDoc.data();
+      // console.log(userData);
+      await userDoc.ref.update({
+        recentlyPlayed: song,
+        currentLikes: likes,
+        likedBy: likedBy
+      });
+
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 function generateRandomCode(length = 6) {
   return crypto
     .randomBytes(length)
@@ -835,6 +858,35 @@ app.get("/recentlyPlayed", async (req, res) => {
   } catch (error) {
     console.log(error);
     // res.status(500).json({ message: error });
+  }
+});
+
+app.post("/saveRecentlyPlayed", (req, res) => {
+  const song = req.body.song;
+  const user = req.body.user;
+  const currentLikes = req.body.likes;
+  const likedBy = req.body.likedBy;
+  console.log(currentLikes);
+  saveRecentlyPlayed(user, song, currentLikes, likedBy);
+})
+app.get("/getRecentlyPlayed", async (req, res) => {
+  const username = req.query.user;
+  console.log(username);
+  try {
+    const userDoc = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    if (userDoc.empty) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const userProfile = userDoc.docs[0].data();
+    res.status(200).json(userProfile);
+  } catch (error) {
+    console.error("Error fetching profile data:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 

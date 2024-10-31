@@ -85,3 +85,24 @@ body {
 .track-activity:hover {
   background-color: #f1f1f1;
 }
+
+.interaction-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.like-button, .comment-button {
+  background-color: #1db954;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 5px 15px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.like-button:hover, .comment-button:hover {
+  background-color: #17a44c;
+}
