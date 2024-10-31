@@ -18,6 +18,7 @@ let accessToken = "";
 let refreshToken = "";
 const nodemailer = require("nodemailer"); // Add nodemailer for sending emails
 const crypto = require("crypto"); // For generating random codes
+const { ArrayTimestamp } = require("@blueprintjs/icons");
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -655,7 +656,54 @@ app.post("/startTracking", async (req, res) => {
 
     startSpotifyTracking(username, token);
     res.status(200).json({ message: "Spotify tracking started." });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.post("/generateReport", async (req, res) => {
+  try {
+    const { username, time } = req.body;
+    const unixTime = new Date(time).getTime();
+    const recipientSnapshot = await db
+      .collection("UserListening")
+      .where("user_id", "==", username)
+      .get();
+
+    if (recipientSnapshot.empty) {
+      console.log("No listening data found for the user.");
+      return null;
+    }
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const listeningData = recipientDoc.data().listening_data;
+
+    const filteredData = listeningData.filter(
+      (item) => item.time_played >= unixTime
+    );
+    const trackCountMap = {};
+    const artistMap = {};
+    filteredData.forEach((item) => {
+      const trackId = item.track_id;
+      const artists = item.artists;
+      artists.forEach((artist) => {
+        if (artistMap[artist.id]) {
+          artistMap[artist.id].count += 1;
+        } else {
+          artistMap[artist.id] = { artist: artist.id, count: 1 };
+        }
+      });
+      if (trackCountMap[trackId]) {
+        trackCountMap[trackId].count += 1;
+      } else {
+        trackCountMap[trackId] = { track: item.track_id, count: 1 };
+      }
+    });
+
+    res.status(200).json({ trackMap: trackCountMap, artistMap: artistMap });
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 const generatePieChart = (genreData) => {
