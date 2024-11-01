@@ -15,7 +15,9 @@ const Messages = () => {
   const [clickedChat, setClickedChat] = useState(false);
   const [recipient, setRecipient] = useState(null);
   const [participants, setParticipants] = useState([]);
+  const [groupParticipants, setGroupParticipants] = useState([]);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [newChatUsername, setNewChatUsername] = useState("");
   const [newMessage, setNewMessage] = useState("");
@@ -112,7 +114,7 @@ const Messages = () => {
   }, [chats, email]);
 
   useEffect(() => {
-    if (!chats || chats.length === 0 || !chatNames || chatNames.length === 0) {
+    if (!chats || chats.length == 0 || !chatNames || chatNames.length == 0) {
       setChatDict({});
       console.log("chats = " + chats);
       console.log("chat names = " + chatNames);
@@ -292,6 +294,44 @@ const Messages = () => {
     }
   };
 
+  const handleNewGroup = async () => {
+    if (groupParticipants.length < 2) {
+      console.error('Need to pick at least 2 members for a group chat.');
+      return;
+    }
+
+    const newChatID = uuidv4();
+    const participantArray = [...groupParticipants, email].sort();
+
+    setSelectedChat({ id: newChatID, name: groupParticipants.sort() });
+    setIsCreatingGroup(false);
+    setRecipient(groupParticipants);
+    setParticipants(participantArray);
+
+    try {
+      const res = await fetch("http://localhost:3001/updateUserChats", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          participants: participantArray, // Use email to identify the user
+          newChatID: newChatID, // The new chat ID to append
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to update group chat. Please try again later.');
+      }
+
+      fetchChats();
+
+    } catch (error) {
+      console.error('Error updating group chat:', error);
+    }
+  };
+
+
   return (
     <div className="messages-container">
       <div className="chats-list">
@@ -302,6 +342,43 @@ const Messages = () => {
         >
           New Chat
         </Button>
+
+        <Button
+          icon="group"
+          onClick={() => setIsCreatingGroup(!isCreatingGroup)}
+          className="new-group-chat-button"
+        >
+          New Group Chat
+        </Button>
+
+        {isCreatingGroup && (
+          <div className="new-group-chat-input">
+            <InputGroup
+              placeholder="Type a username..."
+              value={newChatUsername}
+              onChange={handleSearchUser}
+            />
+            <div className="user-suggestions">
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map(user => (
+                  <Card
+                    key={user}
+                    className="user-suggestion"
+                    onClick={() => {
+                      setGroupParticipants(prev => [...prev, user]);
+                      setFilteredUsers(prev => prev.filter(u => u !== user)); // Remove selected user from suggestions
+                    }}
+                  >
+                    {user}
+                  </Card>
+                ))
+              ) : (
+                <div className="no-suggestions">No users found</div>
+              )}
+            </div>
+            <Button onClick={handleNewGroup}>Create Group Chat</Button>
+          </div>
+        )}
 
         {isCreatingChat && (
           <div className="new-chat-input">
@@ -334,20 +411,18 @@ const Messages = () => {
               key={chatID}
               className={`chat-card ${selectedChat && selectedChat.id === chatID ? 'active-chat' : ''}`}
               onClick={() => {
-                // console.log("chatID and name =", chatID, "...", chatName);
                 setSelectedChat({ id: chatID, name: chatName });
                 setClickedChat(true);
-                // console.log("selected chat =", chatID); // Log chatID instead of selectedChat
               }}
             >
-              {chatName}
+              {Array.isArray(chatName) ? chatName.join(', ') : chatName}
             </Card>
           ))
         ) : (
           <div className="no-chats">No chats available</div>
         )}
-
       </div>
+
       <div className="chat-content">
         {selectedChat ? (
           <>
