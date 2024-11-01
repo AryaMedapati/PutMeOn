@@ -92,7 +92,8 @@ function CreateAccount() {
           topGenres: [],
           topArtists: [],
           pdf: "",
-          playlists: []
+          playlists: [],
+          sharedPlaylists: [],
         }),
         });
         try {
