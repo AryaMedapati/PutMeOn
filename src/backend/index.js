@@ -890,11 +890,89 @@ app.post("/insertChat", async (req, res) => {
     await chatInfo.set({
       text: req.body.text,
       createdAt: req.body.createdAt,
-      sender: req.body.user,
+      sender: req.body.sender,
       recipient: req.body.recipient,
       participants: req.body.participants,
       chatID: req.body.chatID,
     });
+
+    if (typeof req.body.recipient === 'string') {
+      console.log("case string");
+      const recipientSnapshot = await db
+        .collection("UserData")
+        .where("username", "==", req.body.recipient)
+        .get();
+
+      if (recipientSnapshot.empty) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const recipientDoc = recipientSnapshot.docs[0];
+      const recipientId = recipientDoc.id;
+
+      const notificationData = {
+        message: `Unread message from from ${req.body.sender}`,
+        recipient: recipientId,
+        sender: req.body.sender,
+        status: "unread",
+        type: "msg",
+      };
+
+      const recipientUserRef = db.collection("UserData").doc(recipientId);
+      const recipientUserDoc = await recipientUserRef.get();
+      const recipientData = recipientUserDoc.data();
+
+      if (recipientData.notifications) {
+        await recipientUserRef.update({
+          notifications: admin.firestore.FieldValue.arrayUnion(notificationData),
+        });
+      } else {
+        await recipientUserRef.set(
+          { notifications: [notificationData] },
+          { merge: true }
+        );
+      }
+    } else {
+      console.log("case array");
+      for (const rec of req.body.recipient) {
+        const recipientSnapshot = await db
+          .collection("UserData")
+          .where("username", "==", rec)
+          .get();
+
+        if (recipientSnapshot.empty) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        const recipientDoc = recipientSnapshot.docs[0];
+        const recipientId = recipientDoc.id;
+
+        const chatName = req.body.participants
+          .filter(element => element !== rec)
+          .join(", ");
+        const notificationData = {
+          message: `Unread message from from ${chatName}`,
+          recipient: recipientId,
+          sender: req.body.sender,
+          status: "unread",
+          type: "msg",
+        };
+
+        const recipientUserRef = db.collection("UserData").doc(recipientId);
+        const recipientUserDoc = await recipientUserRef.get();
+        const recipientData = recipientUserDoc.data();
+
+        if (recipientData.notifications) {
+          await recipientUserRef.update({
+            notifications: admin.firestore.FieldValue.arrayUnion(notificationData),
+          });
+        } else {
+          await recipientUserRef.set(
+            { notifications: [notificationData] },
+            { merge: true }
+          );
+        }
+      }
+    }
 
     res.status(200).json({ message: "Success" });
   } catch (error) {
@@ -904,7 +982,7 @@ app.post("/insertChat", async (req, res) => {
 });
 
 app.post('/updateUserChats', async (req, res) => {
-  const { participants , newChatID } = req.body;
+  const { participants, newChatID } = req.body;
 
   // Log the inputs for debugging
   // console.log('Updating chats for user:', username);
@@ -927,7 +1005,7 @@ app.post('/updateUserChats', async (req, res) => {
         .where('username', '==', username)
         .limit(1)
         .get();
-      
+
       if (!querySnapshot.empty) {
         // Update the chats field for the matched user document
         const userDoc = querySnapshot.docs[0];
@@ -975,15 +1053,19 @@ app.post('/fetchChatHistory', async (req, res) => {
   }
 });
 
-app.post('/fetchChatParticipants', async (req, res) => {
-  const { chatID } = req.body;
+app.post('/fetchChatInfo', async (req, res) => {
+  const { chatID , sender } = req.body;
 
   // console.log("my fetch id = " + chatID );
-  
+
   if (!chatID) {
     return res.status(400).json({ error: 'Chat ID is required.' });
   }
 
+  if (!sender) {
+    return res.status(400).json({ error: 'sender is required.' });
+  }
+  
   try {
     const querySnapshot = await db.collection('MessageData')
       .where('chatID.id', '==', chatID)
@@ -995,17 +1077,20 @@ app.post('/fetchChatParticipants', async (req, res) => {
     }
 
     const participants = querySnapshot.docs[0].data().participants;
+    const recipients = participants.filter(participant => participant !== sender);
 
-    return res.status(200).json({ participants });
+    return res.status(200).json({ participants:participants, recipients:recipients });
   } catch (error) {
-    console.error('Error fetching participants:', error);
+    console.error('Error fetching chat info:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 app.post('/fetchChatRecipients', async (req, res) => {
-  const { chatID , sender } = req.body;
-  
+  const { chatID, sender } = req.body;
+
+  console.log("received chatID, sender:" + chatID + " " + sender);
+
   if (!chatID) {
     return res.status(400).json({ error: 'Chat ID is required.' });
   }
@@ -1016,7 +1101,6 @@ app.post('/fetchChatRecipients', async (req, res) => {
   try {
     const querySnapshot = await db.collection('MessageData')
       .where('chatID.id', '==', chatID)
-      .where('sender', '==', sender)
       .limit(1)
       .get();
 
@@ -1025,8 +1109,8 @@ app.post('/fetchChatRecipients', async (req, res) => {
       return res.status(404).json({ message: 'No document found' });
     }
 
-    const recipients = querySnapshot.docs[0].data().recipient;
-    console.log("recipieints = " + recipients);
+    const allParticipants = querySnapshot.docs[0].data().participants;
+    const recipients = allParticipants.filter(participant => participant !== sender);
 
     return res.status(200).json({ recipients: recipients });
   } catch (error) {

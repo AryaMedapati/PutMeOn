@@ -40,39 +40,23 @@ const Messages = () => {
     }
   };
 
-  const getParticipantsForChat = async (chatID) => {
-    console.log("getting participants");
+  const getChatInfo = async (chatID) => {
+    console.log("getting chat info");
     try {
-      const res = await fetch("http://localhost:3001/fetchChatParticipants", {
+      const res = await fetch("http://localhost:3001/fetchChatInfo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ chatID: chatID }),
+        body: JSON.stringify({ chatID:chatID , sender: email }),
       });
       const data = await res.json();
-      setParticipants(data.participants || []);
+      setParticipants(data.participants || []);      
+      setRecipient(data.recipients || [])
     } catch (error) {
       console.error(error);
     }
   };
-
-  const getRecipientsForChat = async (chatID) => {
-    try {
-      const res = await fetch("http://localhost:3001/fetchChatRecipients", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ chatID: chatID, sender: email }),
-      });
-      const data = await res.json();
-      setRecipient(data.recipients || "");
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
 
   useEffect(() => {
     if (email) {
@@ -84,7 +68,7 @@ const Messages = () => {
     const fetchChatNames = async () => {
       try {
         if (!chats || chats.length === 0 || !email) return;
-        console.log("(fetch chat names) chats are = " + chats);
+        // console.log("(fetch chat names) chats are = " + chats);
 
         const response = await fetch('http://localhost:3001/fetchChatNames', {
           method: 'POST',
@@ -116,9 +100,9 @@ const Messages = () => {
   useEffect(() => {
     if (!chats || chats.length == 0 || !chatNames || chatNames.length == 0) {
       setChatDict({});
-      console.log("chats = " + chats);
-      console.log("chat names = " + chatNames);
-      console.log("chat dict early return case = " + chatDict);
+      // console.log("chats = " + chats);
+      // console.log("chat names = " + chatNames);
+      // console.log("chat dict early return case = " + chatDict);
       return;
     }
 
@@ -128,7 +112,7 @@ const Messages = () => {
     }, {});
 
     setChatDict(dict);
-    console.log("chat dict = " + chatDict);
+    // console.log("chat dict = " + chatDict);
   }, [chats, chatNames]);
 
   useEffect(() => {
@@ -161,32 +145,32 @@ const Messages = () => {
     }
   }, [email]);
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (!selectedChat || !selectedChat.id) return;
+  const fetchMessages = async () => {
+    if (!selectedChat || !selectedChat.id) return;
 
-      try {
-        const response = await fetch('http://localhost:3001/fetchChatHistory', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ chatID: selectedChat.id }),
-        });
+    try {
+      const response = await fetch('http://localhost:3001/fetchChatHistory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chatID: selectedChat.id }),
+      });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch messages. Please try again later.');
-        }
-
-        const data = await response.json();
-        if (data.messages && Array.isArray(data.messages)) {
-          setChatHistory(data.messages);
-        }
-      } catch (error) {
-        console.error('Error fetching messages:', error);
+      if (!response.ok) {
+        throw new Error('Failed to fetch messages. Please try again later.');
       }
-    };
 
+      const data = await response.json();
+      if (data.messages && Array.isArray(data.messages)) {
+        setChatHistory(data.messages);
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchMessages();
   }, [selectedChat]);
 
@@ -234,8 +218,8 @@ const Messages = () => {
 
       // Call functions to get participants and recipients for the selected chat
       // console.log("selected chat id = = = = " + selectedChat.id);
-      getParticipantsForChat(selectedChat.id);
-      getRecipientsForChat(selectedChat.id);
+      getChatInfo(selectedChat.id);
+      // getRecipientsForChat(selectedChat.id);
 
       setClickedChat(false);
     }
@@ -269,7 +253,7 @@ const Messages = () => {
         },
         body: JSON.stringify({
           text: newMessage,
-          user: email,
+          sender: email,
           recipient: recipient,
           participants: participants,
           chatID: selectedChat,
@@ -282,6 +266,7 @@ const Messages = () => {
       }
 
       setNewMessage("");
+      fetchMessages();
     } catch (error) {
       console.error('Error sending message:', error);
     }
