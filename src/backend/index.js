@@ -196,6 +196,21 @@ app.get("/fetchUsers", async (req, res) => {
   }
 });
 
+app.get("/fetchUserByUsername", async (req, res) => {
+  try {
+    const username = req.headers['username'];
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    const user = recipientSnapshot.docs[0].data()
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error retrieving document:", error);
+  }
+});
+
 app.get("/fetchCurrentUser", async (req, res) => {
   try {
     const docId = req.headers['documentid'];
@@ -292,6 +307,25 @@ app.post("/updateUser", async (req, res) => {
   try {
     const docId = req.headers['documentid'];
     const userRef = db.collection('UserData').doc(docId);
+    await userRef.set(req.body, { merge: true });
+
+    res.status(200).send('User updated successfully');
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).send('Error updating user');
+  }
+});
+
+app.post("/updateUserbyUsername", async (req, res) => {
+  try {
+    const username = req.headers['username'];
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    const userDoc = recipientSnapshot.docs[0];
+    const userRef = userDoc.ref;
     await userRef.set(req.body, { merge: true });
 
     res.status(200).send('User updated successfully');

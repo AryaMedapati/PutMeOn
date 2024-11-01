@@ -64,7 +64,7 @@ const PlaylistList = () => {
                     },
                 });
                 const data = await response.json();
-                setPlaylists(data.playlists);
+                setPlaylists(data.sharedPlaylists);
                 setFriendsList(data.friends_list)
             }
         };
