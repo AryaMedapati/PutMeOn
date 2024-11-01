@@ -574,6 +574,7 @@ app.get("/currentlyPlaying", async (req, res) => {
         album: track.album.name,
         progress_ms: currentlyPlayingResponse.data.progress_ms,
         duration_ms: track.duration_ms,
+        albumArt: track.album.images[0].url,
       });
     } else {
       res.status(200).json({ message: "No song is currently playing." });
