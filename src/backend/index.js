@@ -61,6 +61,44 @@ app.post("/insertUser", async (req, res) => {
   }
 });
 
+app.post("/insertCollabPlaylist", async (req, res) => {
+  try {
+    // console.log("Here")
+    const playlistInfo = db.collection("CollabPlaylists").doc();
+    await playlistInfo.set(req.body);
+    res.status(200).json({ message: "Success", documentId: playlistInfo.id });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
+app.get("/fetchCollabPlaylist", async (req, res) => {
+  try {
+    const docId = req.headers['documentid'];
+    const userDoc = db.collection("CollabPlaylists").doc(docId);
+    const doc = await userDoc.get();
+    const user = doc.data()
+    res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+});
+
+app.post("/updateCollabPlaylist", async (req, res) => {
+  try {
+    const docId = req.headers['documentid'];
+    const userRef = db.collection('CollabPlaylists').doc(docId);
+    await userRef.set(req.body, { merge: true });
+
+    res.status(200).send('User updated successfully');
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).send('Error updating user');
+  }
+});
+
 app.post("/addFriend", async (req, res) => {
   try {
     console.log(req.body);
@@ -235,6 +273,21 @@ app.get("/fetchUsers", async (req, res) => {
   }
 });
 
+app.get("/fetchUserByUsername", async (req, res) => {
+  try {
+    const username = req.headers['username'];
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    const user = recipientSnapshot.docs[0].data()
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error retrieving document:", error);
+  }
+});
+
 app.get("/fetchCurrentUser", async (req, res) => {
   try {
     const docId = req.headers["documentid"];
@@ -340,28 +393,51 @@ app.post("/updateUser", async (req, res) => {
   }
 });
 
+app.post("/updateUserbyUsername", async (req, res) => {
+  try {
+    const username = req.headers['username'];
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    const userDoc = recipientSnapshot.docs[0];
+    const userRef = userDoc.ref;
+    await userRef.set(req.body, { merge: true });
+
+    res.status(200).send("User updated successfully");
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).send("Error updating user");
+  }
+});
+
+app.post("/updateUserbyUsername", async (req, res) => {
+  try {
+    const username = req.headers['username'];
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    const userDoc = recipientSnapshot.docs[0];
+    const userRef = userDoc.ref;
+    await userRef.set(req.body, { merge: true });
+
+    res.status(200).send('User updated successfully');
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).send('Error updating user');
+  }
+});
+
 app.post("/cypressUserReset", async (req, res) => {
   try {
     const docId = "Du33v7g2VInEVppp6wNU";
     const userRef = db.collection("UserData").doc(docId);
     await userRef.set(req.body, { merge: false });
 
-    res.status(200).send("User updated successfully");
-    // const userRef = doc(db, "UserData");
-    // const userSnapshot = await getDoc(userRef);
-
-    // if (userSnapshot.exists()) {
-    //   const userData = userSnapshot.data();
-
-    //   const updatedData = {
-    //     username: username || userData.username,
-    //     pfp: pfp || userData.pfp,
-    //   };
-    //   await setDoc(userRef, updatedData);
-    //   res.status(200).send("User data updated successfully.");
-    // } else {
-    //   res.status(404).send("User not found.");
-    // }
+    res.status(200).send('User updated successfully');
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).send("Error updating user");
