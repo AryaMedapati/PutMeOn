@@ -49,7 +49,6 @@ function Login() {
       const users = await returnVal.json();
       let track = false;
       for (let i = 0; i < users.length; i++) {
-        // debugger;
         if (users[i].username === username && users[i].password === pass) {
           tempUser = users[i];
           console.log("here");

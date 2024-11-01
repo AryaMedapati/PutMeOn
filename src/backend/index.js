@@ -255,6 +255,21 @@ app.get("/fetchUsers", async (req, res) => {
   }
 });
 
+app.get("/fetchUserByUsername", async (req, res) => {
+  try {
+    const username = req.headers['username'];
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    const user = recipientSnapshot.docs[0].data()
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error retrieving document:", error);
+  }
+});
+
 app.get("/fetchCurrentUser", async (req, res) => {
   try {
     const docId = req.headers['documentid'];
@@ -360,6 +375,25 @@ app.post("/updateUser", async (req, res) => {
   }
 });
 
+app.post("/updateUserbyUsername", async (req, res) => {
+  try {
+    const username = req.headers['username'];
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    const userDoc = recipientSnapshot.docs[0];
+    const userRef = userDoc.ref;
+    await userRef.set(req.body, { merge: true });
+
+    res.status(200).send('User updated successfully');
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).send('Error updating user');
+  }
+});
+
 app.post("/cypressUserReset", async (req, res) => {
   try {
     const docId = "Du33v7g2VInEVppp6wNU";
@@ -367,21 +401,6 @@ app.post("/cypressUserReset", async (req, res) => {
     await userRef.set(req.body, { merge: false });
 
     res.status(200).send('User updated successfully');
-    // const userRef = doc(db, "UserData");
-    // const userSnapshot = await getDoc(userRef);
-
-    // if (userSnapshot.exists()) {
-    //   const userData = userSnapshot.data();
-
-    //   const updatedData = {
-    //     username: username || userData.username,
-    //     pfp: pfp || userData.pfp,
-    //   };
-    //   await setDoc(userRef, updatedData);
-    //   res.status(200).send("User data updated successfully.");
-    // } else {
-    //   res.status(404).send("User not found.");
-    // }
   } catch (error) {
     console.error('Error updating user:', error);
     res.status(500).send('Error updating user');
