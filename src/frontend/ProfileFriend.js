@@ -16,6 +16,8 @@ import { MdPersonAddAlt1 } from "react-icons/md";
 import { UserContext } from "./UserContext";
 import { ToastContainer, toast } from "react-toastify";
 import localstorage from "localstorage-slim";
+import FriendProfile from "./FriendProfile";
+import  "./styles/ProfileFriend.css";
 
 function FriendsAndNotifications() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,6 +32,8 @@ function FriendsAndNotifications() {
   const [friendToRemove, setFriendToRemove] = useState(null);
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
   const [username, setUsername] = useState("");
+  const [showFriendsList, setShowFriendsList] = useState(true);
+  const [selectedFriend, setSelectedFriend] = useState(null);
   const { email } = useContext(UserContext);
 
   const fetchUsers = async () => {
@@ -212,124 +216,139 @@ function FriendsAndNotifications() {
     fetchFriendsList();
   }, []);
 
+  const openFriendProfile = (friend) => {
+    setSelectedFriend(friend);
+    setShowFriendsList(false); // Hide list, show profile
+  };
+
+  const goBackToFriendsList = () => {
+    setShowFriendsList(true); // Toggle back to list view
+    setSelectedFriend(null); // Clear selected friend
+  };
+
   console.log(notifications);
 
   return (
-    <div>
-      <InputGroup
-        leftIcon="search"
-        onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder="Search users..."
-        value={searchTerm}
-        style={{ marginBottom: "20px", width: "300px" }}
-      />
-      {filteredUsers.length > 0 ? (
-        filteredUsers.map((name, index) => (
-          <Card
-            key={index}
-            style={{ margin: "10px", padding: "10px", width: "250px" }}
+    <div style={{ display: "flex", width: "100%" }}>
+      {/* Left side: Friend List or Friend Profile */}
+      <div style={{ width: "50%", paddingRight: "20px" }}>
+        {showFriendsList ? (
+          <div>
+            <h3>Friends</h3>
+            {friends.map((friend, index) => (
+              <Card key={index} style={{ margin: "10px" }}>
+                <p onClick={() => openFriendProfile(friend)} style={{ cursor: "pointer", fontWeight: "bold" }}>
+                  {friend}
+                </p>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <FriendProfile friend={selectedFriend} onBack={goBackToFriendsList} />
+        )}
+      </div>
+      
+      {/* Right Section: Search, Icons, and Notifications */}
+      <div className="controls-section">
+        <InputGroup
+          leftIcon="search"
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search users..."
+          value={searchTerm}
+          style={{ marginBottom: "20px", width: "300px" }}
+        />
+        {filteredUsers.length > 0 ? (
+          filteredUsers.map((name, index) => (
+            <Card key={index} className="user-card">
+              <div className="user-info">
+                {name}
+                <Button
+                  small
+                  intent="primary"
+                  onClick={() => sendFriendRequest(name)}
+                >
+                  Add Friend
+                </Button>
+              </div>
+            </Card>
+          ))
+        ) : (
+          <p>No users found.</p>
+        )}
+        
+        {/* Icons Section */}
+        <div className="icons-container">
+          <Popover
+            isOpen={showFriends}
+            onInteraction={(nextOpenState) => setShowFriends(nextOpenState)}
+            content={
+              <Menu>
+                {friends.length > 0 ? (
+                  friends.map((friend, index) => (
+                    <MenuItem key={index} text={friend} />
+                  ))
+                ) : (
+                  <MenuItem text="No friends" />
+                )}
+              </Menu>
+            }
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              {name}
-              <Button
-                small
-                intent="primary"
-                onClick={() => sendFriendRequest(name)}
-              >
-                Add Friend
-              </Button>
+            <div className="icon-container">
+              <FaUserFriends className="icon" />
             </div>
-          </Card>
-        ))
-      ) : (
-        <p>No users found.</p>
-      )}
+          </Popover>
 
-      <Popover
-        isOpen={showFriends}
-        onInteraction={(nextOpenState) => setShowFriends(nextOpenState)}
-        content={
-          <Menu>
-            {friends.length > 0 ? (
-              friends.map((friend, index) => (
-                <MenuItem
-                  key={index}
-                  text={`${friend}`}
-                  labelElement={
-                    <Button
-                      small
-                      minimal
-                      intent="danger"
-                      onClick={() => confirmRemoveFriend(friend)}
-                    >
-                      Remove
-                    </Button>
-                  }
-                />
-              ))
-            ) : (
-              <MenuItem text="No friends" />
-            )}
-          </Menu>
-        }
-      >
-        <div className="icon-container">
-          <FaUserFriends className="icon" />
-        </div>
-      </Popover>
+          <Popover
+            isOpen={showFriendRequests}
+            onInteraction={(nextOpenState) => setShowFriendRequests(nextOpenState)}
+            content={
+              <Menu>
+                {friendRequests.length > 0 ? (
+                  friendRequests.map((sender, index) => (
+                    <MenuItem key={index} text={`Friend request from ${sender}`}>
+                      <Button
+                        small
+                        intent="success"
+                        onClick={() => acceptFriendRequest(sender)}
+                      >
+                        Accept
+                      </Button>
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem text="No friend requests" />
+                )}
+              </Menu>
+            }
+          >
+            <div className="icon-container">
+              <MdPersonAddAlt1 className="icon" />
+            </div>
+          </Popover>
 
-      <Popover
-        isOpen={showFriendRequests}
-        onInteraction={(nextOpenState) => setShowFriendRequests(nextOpenState)}
-        content={
-          <Menu>
-            {friendRequests.length > 0 ? (
-              friendRequests.map((sender, index) => (
-                <MenuItem key={index} text={`Friend request from ${sender}`}>
-                  <Button
-                    small
-                    intent="success"
-                    onClick={() => acceptFriendRequest(sender)}
-                  >
-                    Accept
-                  </Button>
-                </MenuItem>
-              ))
-            ) : (
-              <MenuItem text="No friend requests" />
-            )}
-          </Menu>
-        }
-      >
-        <div className="icon-container">
-          <MdPersonAddAlt1 className="icon" />
+          <Popover
+            isOpen={showNotifications}
+            onInteraction={(nextOpenState) => setShowNotifications(nextOpenState)}
+            content={
+              <Menu>
+                {notifications.length > 0 ? (
+                  notifications.map((notif, index) => (
+                    <MenuItem key={index} text={notif.message} />
+                  ))
+                ) : (
+                  <MenuItem text="No notifications" />
+                )}
+              </Menu>
+            }
+          >
+            <div className="icon-container">
+              <IoMdNotifications className="icon" />
+            </div>
+          </Popover>
         </div>
-      </Popover>
-      <Popover
-        isOpen={showNotifications}
-        onInteraction={(nextOpenState) => setShowNotifications(nextOpenState)}
-        content={
-          <Menu>
-            {notifications.length > 0 ? (
-              notifications.map((notif, index) => (
-                <MenuItem key={index} text={notif.message} />
-              ))
-            ) : (
-              <MenuItem text="No notifications" />
-            )}
-          </Menu>
-        }
-      >
-        <div className="icon-container">
-          <IoMdNotifications className="icon" />
-        </div>
-      </Popover>
+      </div>
+
+      {/* Remove Friend Dialog */}
       <Dialog
         isOpen={isRemoveDialogOpen}
         onClose={closeRemoveDialog}

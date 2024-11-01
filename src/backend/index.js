@@ -365,6 +365,29 @@ app.get("/fetchCurrentUser", async (req, res) => {
   }
 });
 
+app.get("/fetchUserInfo", async (req, res) => {
+    try {
+      const { username } = req.body;
+      const userSnapshot = await db
+        .collection("UserData")
+        .where("username", "==", username)
+        .get();
+  
+      if (userSnapshot.empty) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      const userDoc = userSnapshot.docs[0];
+      const userData = userDoc.data();
+  
+      res.json({ userData:userData});
+      
+      } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
+    }
+});
+
 app.post("/fetchNotifications", async (req, res) => {
   try {
     const { username } = req.body;
