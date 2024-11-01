@@ -497,7 +497,7 @@ app.post("/updateUserbyUsername", async (req, res) => {
 
 app.post("/cypressUserReset", async (req, res) => {
   try {
-    const docId = "Du33v7g2VInEVppp6wNU";
+    const docId = req.headers["documentid"];
     const userRef = db.collection("UserData").doc(docId);
     await userRef.set(req.body, { merge: false });
 
