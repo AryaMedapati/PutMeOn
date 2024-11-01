@@ -94,6 +94,7 @@ function CreateAccount() {
           topArtists: [],
           pdf: "",
           playlists: [],
+          chats: [],
           sharedPlaylists: [],
           collabPlaylists: [],
         }),
