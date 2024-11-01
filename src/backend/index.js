@@ -1169,12 +1169,6 @@ app.get("/checkUserExists", (req, res) => {
     console.log(error);
     res.status(500).send(error);
   }
-
-    // res.status(200).json({ message: "user exists" });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send(error);
-  }
 });
 
 app.post("/fetchChats", async (req, res) => {
