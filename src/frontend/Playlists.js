@@ -8,6 +8,8 @@ import {getAuth} from 'firebase/auth';
 import "./styles/Playlists.css";
 import { UserContext } from "./UserContext";
 import PlaylistList from "./PlaylistList";
+import SharedPlaylists from './SharedPlaylists';
+import CollabPlaylist from './CollabPlaylist';
 
 
 const Playlists = (props) => {
@@ -127,6 +129,8 @@ const Playlists = (props) => {
   return (
 <div className="outer-container">
   <PlaylistList/>
+  <SharedPlaylists/>
+  <CollabPlaylist/>
   {/* <div className="inner-container">
     <h2>Upload Extensive Listening History</h2>
     <input type="file" onChange={handleFileChange} />

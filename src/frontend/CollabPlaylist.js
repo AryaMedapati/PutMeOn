@@ -16,17 +16,17 @@ import {
 } from '@blueprintjs/core';
 import { useNavigate } from "react-router-dom";
 
-const PlaylistList = () => {
+const CollabPlaylist = () => {
     const navigate = useNavigate();
     const { username } = useContext(UserContext);
 
     const [friendPlaylists, setFriendPlaylists] = useState([])
-    const [playlists, setPlaylists] = useState([]);
+    const [collabPlaylists, setCollabPlaylists] = useState([]);
     const [friendsList, setFriendsList] = useState([])
 
     const handleCreatePlaylist = (index) => {
-        const additionalInfo = { playlists: playlists, playlistIndex: index };
-        navigate("new-playlist", { state: additionalInfo });
+        const additionalInfo = { playlists: collabPlaylists, playlistIndex: index };
+        navigate("edit-collab-playlist", { state: additionalInfo });
     };
 
     const handleSharePlaylist = async (friend, playlist) => {
@@ -63,8 +63,8 @@ const PlaylistList = () => {
                         'DocumentId': username,
                     },
                 });
-                const data = await response.json();
-                setPlaylists(data.playlists);
+                const data = await response.json()
+                setCollabPlaylists(data.collabPlaylists)
                 setFriendsList(data.friends_list)
             }
         };
@@ -85,10 +85,10 @@ const PlaylistList = () => {
                     onClick={() => handleCreatePlaylist(-1)}
                     text="New Playlist" />
             </div>
-            <Section title="My Playlists">
+            <Section title="Collab Playlists">
                 <SectionCard padded={false}>
                     <CardList bordered={false}>
-                        {playlists.map((playlist, index) => (
+                        {collabPlaylists.map((playlist, index) => (
                             <Card
                                 key={index}
                             >
@@ -119,7 +119,6 @@ const PlaylistList = () => {
                                     icon={<Icon icon="edit" />}
                                     minimal
                                     onClick={() => handleCreatePlaylist(index)}
-
                                 />
 
                             </Card>
@@ -131,4 +130,4 @@ const PlaylistList = () => {
     );
 };
 
-export default PlaylistList;
+export default CollabPlaylist;

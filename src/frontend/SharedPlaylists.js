@@ -16,7 +16,7 @@ import {
 } from '@blueprintjs/core';
 import { useNavigate } from "react-router-dom";
 
-const PlaylistList = () => {
+const SharedPlaylists = () => {
     const navigate = useNavigate();
     const { username } = useContext(UserContext);
 
@@ -64,7 +64,7 @@ const PlaylistList = () => {
                     },
                 });
                 const data = await response.json();
-                setPlaylists(data.playlists);
+                setPlaylists(data.sharedPlaylists);
                 setFriendsList(data.friends_list)
             }
         };
@@ -85,7 +85,7 @@ const PlaylistList = () => {
                     onClick={() => handleCreatePlaylist(-1)}
                     text="New Playlist" />
             </div>
-            <Section title="My Playlists">
+            <Section title="Shared Playlists">
                 <SectionCard padded={false}>
                     <CardList bordered={false}>
                         {playlists.map((playlist, index) => (
@@ -131,4 +131,4 @@ const PlaylistList = () => {
     );
 };
 
-export default PlaylistList;
+export default SharedPlaylists;
