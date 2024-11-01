@@ -56,7 +56,7 @@ function App(props) {
     // if (location == null) {
     //   nav("/login");
     // }
-    if (storedUser == "") {
+    if (storedUser == "" | storedUser == null) {
       nav("/login");
     }
 
