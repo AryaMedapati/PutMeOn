@@ -749,30 +749,35 @@ app.get("/checkUserExists", (req, res) => {
 
 })
 
-app.get('/fetchChats', async (req, res) => {
+app.post("/fetchChats", async (req, res) => {
   try {
-    const { username } = req.query;
+    const { username } = req.body;
 
-    if (!username) {
-      return res.status(400).json({ error: 'Username is required' });
-    }
-
-    const userSnapshot = await db.collection('UserData')
-      .where('username', '==', username)
-      .limit(1)
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
       .get();
 
-    if (userSnapshot.empty) {
-      return res.status(404).json({ error: 'User not found' });
+    if (recipientSnapshot.empty) {
+      // console.log("this is an issue");
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const userData = userSnapshot.docs[0].data();
-    const userChats = userData.Chats;
+    const recipientDoc = recipientSnapshot.docs[0];
+    const recipientData = recipientDoc.data();
 
-    return res.status(200).json({ Chats: userChats });
+    if (recipientData.chats) {
+      // console.log("okay so now we're here");
+      res.json({ chats: recipientData.chats });
+
+    } else {
+      // console.log("le sigh");
+      res.json({ chats: [] });
+    }
   } catch (error) {
-    console.error('Error fetching user Chats:', error);
-    return res.status(500).json({ error: 'Failed to fetch user Chats' });
+    // console.log("why oh why");
+    console.log(error);
+    res.status(500).send(error);
   }
 });
 
@@ -780,10 +785,11 @@ app.post('/fetchChatNames', async (req, res) => {
   const { chatIDs, currentUser } = req.body;
   const chatNames = [];
 
+  // console.log("chatIDs=" + chatIDs);
   try {
     for (const chatID of chatIDs) {
-      const querySnapshot = await firestore.collection('MessageData')
-        .where('chatID', '==', chatID)
+      const querySnapshot = await db.collection('MessageData')
+        .where('chatID.id', '==', chatID)
         .limit(1)
         .get();
 
@@ -793,6 +799,8 @@ app.post('/fetchChatNames', async (req, res) => {
         participants = participants.filter(participant => participant !== currentUser)
           .sort();
         chatNames.push(participants);
+      } else {
+        // console.log("so its empty/");
       }
     }
 
@@ -806,51 +814,156 @@ app.post('/fetchChatNames', async (req, res) => {
 app.post("/insertChat", async (req, res) => {
   try {
     const chatInfo = db.collection("MessageData").doc();
-    await chatInfo.set(req.body);
+
+    await chatInfo.set({
+      text: req.body.text,
+      createdAt: req.body.createdAt,
+      sender: req.body.user,
+      recipient: req.body.recipient,
+      participants: req.body.participants,
+      chatID: req.body.chatID,
+    });
+
     res.status(200).json({ message: "Success" });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error });
+    res.status(500).json({ message: error.message });
   }
 });
 
+app.post('/updateUserChats', async (req, res) => {
+  const { participants , newChatID } = req.body;
 
-/*
-app.post('/sendRandomCode', async (req, res) => {
-  const { username } = req.body;
-  console.log("a");
-  if (!username) {
-    return res.status(400).json({ message: 'Username required' });
+  // Log the inputs for debugging
+  // console.log('Updating chats for user:', username);
+  // console.log('New Chat ID:', newChatID);
+
+  if (!Array.isArray(participants) || participants.length === 0) {
+    return res.status(400).send({ error: 'Invalid participants array' });
   }
 
-  const randomCode = generateRandomCode();
-  console.log("b");
-  const transporter = nodemailer.createTransport({
-    service: 'gmail', // Use your email service provider
-    auth: {
-      user: 'putmeonproject@gmail.com', // Your email address
-      pass: 'rvrl pstn twfh kjip ',    // Your email password or app password
-    },
-  });
-  console.log("c");
-  // Email content
-  const mailOptions = {
-    from: 'putmeonproject@gmail.com',
-    to: username,
-    subject: 'Your Random Code',
-    text: `Hello,\n\nYour random code is: ${randomCode}\n\nBest regards,\nYour Team`,
-  };
-  console.log("d");
+  // Ensure newChatID is a valid string
+  if (typeof newChatID !== 'string' || !newChatID) {
+    console.error('Invalid newChatID:', newChatID);
+    return res.status(400).send({ error: 'Invalid newChatID' });
+  }
+
   try {
-    // Send mail
-    await transporter.sendMail(mailOptions);
-    return res.status(200).json({ message: 'Email sent successfully' });
+    const updatePromises = participants.map(async (username) => {
+      // Query the UserData collection to find the user by username
+      const querySnapshot = await db.collection('UserData')
+        .where('username', '==', username)
+        .limit(1)
+        .get();
+      
+      if (!querySnapshot.empty) {
+        // Update the chats field for the matched user document
+        const userDoc = querySnapshot.docs[0];
+        await userDoc.ref.update({
+          chats: admin.firestore.FieldValue.arrayUnion(newChatID),
+        });
+      } else {
+        console.warn(`User with username ${username} not found.`);
+      }
+    });
+
+    // Wait for all updates to complete
+    await Promise.all(updatePromises);
+
+    res.status(200).send({ message: 'User chats updated successfully for all participants' });
   } catch (error) {
-    console.error('Error sending email:', error);
-    return res.status(500).json({ message: 'Error sending email', error: error.message });
+    console.error('Error updating user chats:', error);
+    res.status(500).send({ error: 'Failed to update user chats for participants' });
   }
 });
-*/
+
+app.post('/fetchChatHistory', async (req, res) => {
+  const { chatID } = req.body; // Get chatID from request body
+  // console.log("chat history id = " + chatID);
+
+  if (!chatID) {
+    return res.status(400).json({ error: 'Chat ID is required.' });
+  }
+
+  try {
+    const messagesSnapshot = await db.collection('MessageData')
+      .where('chatID.id', '==', chatID)
+      .orderBy('createdAt') // Ensure messages are ordered by creation time
+      .get();
+
+    const messages = messagesSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.status(200).json({ messages });
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    res.status(500).json({ error: 'Failed to fetch messages. Please try again later.' });
+  }
+});
+
+app.post('/fetchChatParticipants', async (req, res) => {
+  const { chatID } = req.body;
+
+  // console.log("my fetch id = " + chatID );
+  
+  if (!chatID) {
+    return res.status(400).json({ error: 'Chat ID is required.' });
+  }
+
+  try {
+    const querySnapshot = await db.collection('MessageData')
+      .where('chatID.id', '==', chatID)
+      .limit(1)
+      .get();
+
+    if (querySnapshot.empty) {
+      return res.status(404).json({ message: 'No document found' });
+    }
+
+    const participants = querySnapshot.docs[0].data().participants;
+
+    return res.status(200).json({ participants });
+  } catch (error) {
+    console.error('Error fetching participants:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/fetchChatRecipients', async (req, res) => {
+  const { chatID , sender } = req.body;
+  
+  if (!chatID) {
+    return res.status(400).json({ error: 'Chat ID is required.' });
+  }
+  if (!sender) {
+    return res.status(400).json({ error: 'sender is required.' });
+  }
+
+  try {
+    const querySnapshot = await db.collection('MessageData')
+      .where('chatID.id', '==', chatID)
+      .where('sender', '==', sender)
+      .limit(1)
+      .get();
+
+    if (querySnapshot.empty) {
+      // console.log("okay so it is in fact empty");
+      return res.status(404).json({ message: 'No document found' });
+    }
+
+    const recipients = querySnapshot.docs[0].data().recipient;
+    console.log("recipieints = " + recipients);
+
+    return res.status(200).json({ recipients: recipients });
+  } catch (error) {
+    console.error('Error fetching recipients:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 app.listen(port, () => {
   console.log("Server running on port " + port);
 });

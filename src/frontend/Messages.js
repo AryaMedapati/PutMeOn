@@ -11,7 +11,8 @@ const Messages = () => {
   const [chatDict, setChatDict] = useState({});
   const [chatHistory, setChatHistory] = useState([]);
   const [friends, setFriends] = useState([]);
-  const [selectedChat, setSelectedChat] = useState(null);
+  const [selectedChat, setSelectedChat] = useState({ id: "", name: [] });
+  const [clickedChat, setClickedChat] = useState(false);
   const [recipient, setRecipient] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
@@ -19,77 +20,114 @@ const Messages = () => {
   const [newChatUsername, setNewChatUsername] = useState("");
   const [newMessage, setNewMessage] = useState("");
 
-  const { username } = useContext(UserContext);
+  const { username, email } = useContext(UserContext);
+
+  const fetchChats = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/fetchChats", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: email }),
+      });
+      const data = await res.json();
+      setChats(data.chats || []); // Ensure chats is always an array
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getParticipantsForChat = async (chatID) => {
+    console.log("getting participants");
+    try {
+      const res = await fetch("http://localhost:3001/fetchChatParticipants", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ chatID: chatID }),
+      });
+      const data = await res.json();
+      setParticipants(data.participants || []);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getRecipientsForChat = async (chatID) => {
+    try {
+      const res = await fetch("http://localhost:3001/fetchChatRecipients", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ chatID: chatID, sender: email }),
+      });
+      const data = await res.json();
+      setRecipient(data.recipients || "");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
 
   useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        const response = await fetch(`http://localhost:3001/fetchChats?username=${username}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch Chats');
-        }
-        const result = await response.json();
-        setChats(result.Chats);
-      } catch (error) {
-        console.error('Error fetching Chats:', error);
-      }
-    };
-
-    fetchChats();
-  }, []);
+    if (email) {
+      fetchChats();
+    }
+  }, [email]);
 
   useEffect(() => {
-    const fetchChatNames = async (chatIDs, username) => {
+    const fetchChatNames = async () => {
       try {
+        if (!chats || chats.length === 0 || !email) return;
+        console.log("(fetch chat names) chats are = " + chats);
+
         const response = await fetch('http://localhost:3001/fetchChatNames', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ chatIDs, username }),
+          body: JSON.stringify({ chatIDs: chats, currentUser: email }), // Ensure chats is passed correctly
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch chat names');
+          throw new Error('Failed to fetch chat names. Please try again later.');
         }
 
         const data = await response.json();
-        console.log('Chat Names:', data.chatNames);
-        setChatNames(data.chatNames);
+
+        if (!Array.isArray(data.chatNames)) {
+          throw new Error('Unexpected response format for chat names.');
+        }
+
+        setChatNames(data.chatNames); // Ensure chatNames is set from response
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error fetching chat names:', error);
       }
     };
 
     fetchChatNames();
-  }, [chats]);
+  }, [chats, email]);
 
   useEffect(() => {
+    if (!chats || chats.length === 0 || !chatNames || chatNames.length === 0) {
+      setChatDict({});
+      console.log("chats = " + chats);
+      console.log("chat names = " + chatNames);
+      console.log("chat dict early return case = " + chatDict);
+      return;
+    }
+
     const dict = chats.reduce((acc, id, index) => {
-      acc[id] = chatNames[index];
+      acc[id] = chatNames[index] || `Chat ${id}`;
       return acc;
     }, {});
-    setChatDict(dict);
-  }, [chats, chatNames]);
-  /*
-  useEffect(() => {
-    const queryMessages = query(
-      messagesRef,
-      where("chatID", "==", chatID),
-      orderBy("createdAt")
-    );
-    const unsuscribe = onSnapshot(queryMessages, (snapshot) => {
-      let messages = [];
-      snapshot.forEach((doc) => {
-        messages.push({ ...doc.data(), id: doc.id });
-      });
-      console.log(messages);
-      setMessages(messages);
-    });
 
-    return () => unsuscribe();
-  }, []);
-  */
+    setChatDict(dict);
+    console.log("chat dict = " + chatDict);
+  }, [chats, chatNames]);
 
   useEffect(() => {
     const fetchFriendsList = async () => {
@@ -99,30 +137,111 @@ const Messages = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ username: username }),
+          body: JSON.stringify({ username: email }),
         });
+
+        if (!res.ok) {
+          throw new Error('Failed to fetch friends list. Please try again later.');
+        }
+
         const data = await res.json();
+        if (!Array.isArray(data.friends)) {
+          throw new Error('Unexpected response format for friends list.');
+        }
         setFriends(data.friends);
       } catch (error) {
-        console.error(error);
+        console.error('Error fetching friends list:', error);
       }
     };
 
-    fetchFriendsList();
-  }, []);
+    if (email) {
+      fetchFriendsList();
+    }
+  }, [email]);
 
-  const handleNewChat = (recipient) => {
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!selectedChat || !selectedChat.id) return;
+
+      try {
+        const response = await fetch('http://localhost:3001/fetchChatHistory', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ chatID: selectedChat.id }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch messages. Please try again later.');
+        }
+
+        const data = await response.json();
+        if (data.messages && Array.isArray(data.messages)) {
+          setChatHistory(data.messages);
+        }
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
+    };
+
+    fetchMessages();
+  }, [selectedChat]);
+
+  const handleNewChat = async (recipient) => {
+    if (!recipient) {
+      console.error('Recipient is not valid.');
+      return;
+    }
+
     const newChatID = uuidv4();
-    setSelectedChat(newChatID);
+    const participantArray = [recipient, email].sort();
+
+    setSelectedChat({ id: newChatID, name: [recipient].sort() });
     setIsCreatingChat(false);
-    setRecipient([recipient]);
-    setParticipants([recipient, username]);
-    setParticipants(participants.sort());
+    setRecipient(recipient);
+    setParticipants(participantArray);
     setNewChatUsername("");
+
+    try {
+      const res = await fetch("http://localhost:3001/updateUserChats", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          participants: participantArray, // Use email to identify the user
+          newChatID: newChatID, // The new chat ID to append
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to update chats. Please try again later.');
+      }
+
+      fetchChats();
+
+    } catch (error) {
+      console.error('Error updating chats:', error);
+    }
   };
 
+  useEffect(() => {
+    if (selectedChat && clickedChat) {
+      // console.log("Selected chat updated:", selectedChat);
+
+      // Call functions to get participants and recipients for the selected chat
+      // console.log("selected chat id = = = = " + selectedChat.id);
+      getParticipantsForChat(selectedChat.id);
+      getRecipientsForChat(selectedChat.id);
+
+      setClickedChat(false);
+    }
+  }, [clickedChat]); // Dependency array with selectedChat
+
+
   const handleSearchUser = (e) => {
-    const searchValue = e.target.value;
+    const searchValue = e.target.value.trim();
     setNewChatUsername(searchValue);
     const regex = new RegExp(searchValue, 'i');
     setFilteredUsers(friends.filter(friend => regex.test(friend)));
@@ -131,31 +250,45 @@ const Messages = () => {
   const handleSendMessage = async (event) => {
     event.preventDefault();
 
-    if (newMessage === "") return;
-    if (!selectedChat) return;
+    if (!newMessage.trim()) {
+      console.warn('Cannot send an empty message.');
+      return;
+    }
+    if (!selectedChat) {
+      console.error('No chat selected to send the message.');
+      return;
+    }
 
-    const res = await fetch("http://localhost:3001/insertChat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text: newMessage,
-        createdAt: serverTimestamp(),
-        user: username,
-        recipient: recipient,
-        participants: participants,
-        chatID: selectedChat,
-      }),
-    });
+    try {
+      const res = await fetch("http://localhost:3001/insertChat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: newMessage,
+          user: email,
+          recipient: recipient,
+          participants: participants,
+          chatID: selectedChat,
+          createdAt: new Date().toISOString(),
+        }),
+      });
 
-    setNewMessage("");
+      if (!res.ok) {
+        throw new Error('Failed to send message. Please try again later.');
+      }
+
+      setNewMessage("");
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleSendMessage(e);
     }
   };
 
@@ -178,51 +311,67 @@ const Messages = () => {
               onChange={handleSearchUser}
             />
             <div className="user-suggestions">
-              {filteredUsers.map(user => (
-                <Card
-                  key={user}
-                  className="user-suggestion"
-                  onClick={() => handleNewChat(user)}
-                >
-                  {user}
-                </Card>
-              ))}
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map(user => (
+                  <Card
+                    key={user}
+                    className="user-suggestion"
+                    onClick={() => handleNewChat(user)}
+                  >
+                    {user}
+                  </Card>
+                ))
+              ) : (
+                <div className="no-suggestions">No users found</div>
+              )}
             </div>
           </div>
         )}
 
-        {Object.entries(chatDict).map(([chatID, chatName]) => (
-          <Card
-            key={chatID}
-            className={`chat-card ${selectedChat && selectedChat.id === chatID ? 'active-chat' : ''}`}
-            onClick={() => setSelectedChat({ id: chatID, name: chatName })} // Set both id and name in selectedChat
-          >
-            {chatName} {/* Display the chat name */}
-          </Card>
-        ))}      
-        </div>
+        {Object.entries(chatDict).length > 0 ? (
+          Object.entries(chatDict).map(([chatID, chatName]) => (
+            <Card
+              key={chatID}
+              className={`chat-card ${selectedChat && selectedChat.id === chatID ? 'active-chat' : ''}`}
+              onClick={() => {
+                // console.log("chatID and name =", chatID, "...", chatName);
+                setSelectedChat({ id: chatID, name: chatName });
+                setClickedChat(true);
+                // console.log("selected chat =", chatID); // Log chatID instead of selectedChat
+              }}
+            >
+              {chatName}
+            </Card>
+          ))
+        ) : (
+          <div className="no-chats">No chats available</div>
+        )}
+
+      </div>
       <div className="chat-content">
         {selectedChat ? (
           <>
             <div className="message-list">
-              {selectedChat.messages.map((message, index) => (
-                <Card key={index} className="message-card">
-                  {message.text}
-                </Card>
-              ))}
+              {chatHistory.length > 0 ? (
+                chatHistory.map((message) => (
+                  <Card key={message.id} className="message-card">
+                    {`${message.sender}: ${message.text}`}
+                  </Card>
+                ))
+              ) : (
+                <div className="no-messages">No messages in this chat</div>
+              )}
             </div>
 
-            <div className="message-input">
+            <form className="message-input" onSubmit={handleSendMessage}>
               <TextArea
-                className="message-textarea"
                 placeholder="Type your message..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                growVertically={true}
-                fill={true}
               />
-            </div>
+              <Button type="submit" icon="send-message">Send</Button>
+            </form>
           </>
         ) : (
           <div className="no-chat-selected">Select a chat to view messages</div>
@@ -230,7 +379,6 @@ const Messages = () => {
       </div>
     </div>
   );
-
 };
 
 export default Messages;
