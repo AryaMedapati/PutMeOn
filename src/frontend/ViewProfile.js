@@ -68,17 +68,17 @@ const ViewProfile = () => {
       `${url}/getRecentlyPlayed?user=${user}`
     );
     const data = await response.json();
-    const totalLikesTemp = data.totalLikes;
+    const totalLikesTemp = data.totalLikes || 0;
     setTotalLikes(totalLikesTemp);
-    const totalReactionsTemp = data.totalReactions;
+    const totalReactionsTemp = data.totalReactions || 0;
     setTotalReactions(totalReactionsTemp);
-    const totalCommentsTemp = data.totalComments;
+    const totalCommentsTemp = data.totalComments || 0;
     setTotalComments(totalCommentsTemp);
     const currentCommentsTemp = data.comments ? data.comments.length : 0;
     setCurrentComments(currentCommentsTemp);
-    const currentReactionsTemp = data.fire + data.currentLaughingLikes;
+    const currentReactionsTemp = (data.fire + data.currentLaughingLikes) || 0;
     setCurrentReactions(currentReactionsTemp);
-    const currentLikesTemp = data.currentLikes;
+    const currentLikesTemp = data.currentLikes || 0;
     setCurrentLikes(currentLikesTemp);
   }
 
