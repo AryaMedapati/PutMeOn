@@ -33,6 +33,7 @@ function Profile() {
   });
   const { username } = useContext(UserContext);
 
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
