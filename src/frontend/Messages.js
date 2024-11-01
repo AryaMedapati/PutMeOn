@@ -106,13 +106,19 @@ const Messages = () => {
       return;
     }
 
+    console.log("chats is " + chats);
+    console.log("chat names is " + chatNames);
+
     const dict = chats.reduce((acc, id, index) => {
-      acc[id] = chatNames[index] || `Chat ${id}`;
+      console.log ("at index" + index + "chat names is " + chatNames[index]);
+      acc[id] = chatNames[index];
       return acc;
     }, {});
 
     setChatDict(dict);
-    // console.log("chat dict = " + chatDict);
+    Object.entries(dict).forEach(([key, value]) => {
+      console.log(`${key}: ${value}`);
+    });
   }, [chats, chatNames]);
 
   useEffect(() => {
@@ -181,9 +187,12 @@ const Messages = () => {
     }
 
     const newChatID = uuidv4();
+    console.log("recipient is " + recipient);
     const participantArray = [recipient, email].sort();
+    console.log("participant array is " + participantArray);
 
-    setSelectedChat({ id: newChatID, name: [recipient].sort() });
+    if (Array.isArray(recipient) ? setSelectedChat({ id: newChatID, name: recipient.sort() }) : setSelectedChat({ id: newChatID, name: [recipient] }));
+    // setSelectedChat({ id: newChatID, name: [recipient].sort() });
     setIsCreatingChat(false);
     setRecipient(recipient);
     setParticipants(participantArray);
@@ -288,7 +297,11 @@ const Messages = () => {
     const newChatID = uuidv4();
     const participantArray = [...groupParticipants, email].sort();
 
+    console.log("participant array = " + participantArray);
+    console.log("group participants = " + groupParticipants);
+
     setSelectedChat({ id: newChatID, name: groupParticipants.sort() });
+    console.log("selected chat post update = " + selectedChat.name);
     setIsCreatingGroup(false);
     setRecipient(groupParticipants);
     setParticipants(participantArray);
