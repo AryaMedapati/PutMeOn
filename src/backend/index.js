@@ -16,9 +16,10 @@ const clientID = "6e24baf59c484801a146e21891775723";
 const clientSecret = "177482208fff40f7991ac0b139b2627e";
 let accessToken = "";
 let refreshToken = "";
-const nodemailer = require("nodemailer"); // Add nodemailer for sending emails
-const crypto = require("crypto"); // For generating random codes
 const { ArrayTimestamp } = require("@blueprintjs/icons");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -33,13 +34,6 @@ app.use(bp.json({ limit: "50mb" }));
 app.use(cors());
 
 const tempCodeStore = {};
-const userProfile = {
-  username: "",
-  profilePic: "",
-  bio: "",
-  friends: [],
-  isPrivate: false,
-};
 function generateRandomCode(length = 6) {
   return crypto
     .randomBytes(length)
@@ -1000,13 +994,13 @@ app.get("/spotify-login", async (req, res) => {
   // console.log("hello");
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
-      querystring.stringify({
-        response_type: "code",
-        client_id: clientID,
-        scope:
-          "ugc-image-upload user-read-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-modify user-follow-read user-top-read user-read-recently-played user-library-modify user-library-read user-read-email user-read-private",
-        redirect_uri: `${url}/callback`,
-      })
+    querystring.stringify({
+      response_type: "code",
+      client_id: clientID,
+      scope:
+        "ugc-image-upload user-read-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-modify user-follow-read user-top-read user-read-recently-played user-library-modify user-library-read user-read-email user-read-private",
+      redirect_uri: `${url}/callback`,
+    })
   );
 });
 
@@ -1037,10 +1031,10 @@ app.get("/callback", function (req, res) {
       // Redirect to frontend with tokens
       res.redirect(
         `${mainUrl}/?` +
-          querystring.stringify({
-            access_token: access_token,
-            refresh_token: refresh_token,
-          })
+        querystring.stringify({
+          access_token: access_token,
+          refresh_token: refresh_token,
+        })
       );
     } else {
       // console.log("error");
@@ -1165,10 +1159,16 @@ app.get("/checkUserExists", (req, res) => {
     const getUsers = db.collection("UserData");
     const user = req.query.user;
     console.log(user);
-    const value = getUsers.where("username", "==", user);
+    const value = getUsers.where('username', '==', user);
     const newVal = value.get().then((snapshot) => {
       res.status(200).json(snapshot);
-    });
+    })
+
+    // res.status(200).json({ message: "user exists" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
 
     // res.status(200).json({ message: "user exists" });
   } catch (error) {
@@ -1177,42 +1177,305 @@ app.get("/checkUserExists", (req, res) => {
   }
 });
 
-/*
-app.post('/sendRandomCode', async (req, res) => {
-  const { username } = req.body;
-  console.log("a");
-  if (!username) {
-    return res.status(400).json({ message: 'Username required' });
-  }
-
-  const randomCode = generateRandomCode();
-  console.log("b");
-  const transporter = nodemailer.createTransport({
-    service: 'gmail', // Use your email service provider
-    auth: {
-      user: 'putmeonproject@gmail.com', // Your email address
-      pass: 'rvrl pstn twfh kjip ',    // Your email password or app password
-    },
-  });
-  console.log("c");
-  // Email content
-  const mailOptions = {
-    from: 'putmeonproject@gmail.com',
-    to: username,
-    subject: 'Your Random Code',
-    text: `Hello,\n\nYour random code is: ${randomCode}\n\nBest regards,\nYour Team`,
-  };
-  console.log("d");
+app.post("/fetchChats", async (req, res) => {
   try {
-    // Send mail
-    await transporter.sendMail(mailOptions);
-    return res.status(200).json({ message: 'Email sent successfully' });
+    const { username } = req.body;
+
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    if (recipientSnapshot.empty) {
+      // console.log("this is an issue");
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const recipientData = recipientDoc.data();
+
+    if (recipientData.chats) {
+      // console.log("okay so now we're here");
+      res.json({ chats: recipientData.chats });
+
+    } else {
+      // console.log("le sigh");
+      res.json({ chats: [] });
+    }
   } catch (error) {
-    console.error('Error sending email:', error);
-    return res.status(500).json({ message: 'Error sending email', error: error.message });
+    // console.log("why oh why");
+    console.log(error);
+    res.status(500).send(error);
   }
 });
-*/
+
+app.post('/fetchChatNames', async (req, res) => {
+  const { chatIDs, currentUser } = req.body;
+  const chatNames = [];
+
+  // console.log("chatIDs=" + chatIDs);
+  try {
+    for (const chatID of chatIDs) {
+      const querySnapshot = await db.collection('MessageData')
+        .where('chatID.id', '==', chatID)
+        .limit(1)
+        .get();
+
+      if (!querySnapshot.empty) {
+        const messageDoc = querySnapshot.docs[0];
+        let participants = messageDoc.data().participants;
+        participants = participants.filter(participant => participant !== currentUser)
+          .sort();
+        chatNames.push(participants);
+      } else {
+        // console.log("so its empty/");
+      }
+    }
+
+    res.status(200).json({ chatNames });
+  } catch (error) {
+    console.error('Error fetching chat names:', error);
+    res.status(500).json({ error: 'Failed to fetch chat names' });
+  }
+});
+
+app.post("/insertChat", async (req, res) => {
+  try {
+    const chatInfo = db.collection("MessageData").doc();
+
+    await chatInfo.set({
+      text: req.body.text,
+      createdAt: req.body.createdAt,
+      sender: req.body.sender,
+      recipient: req.body.recipient,
+      participants: req.body.participants,
+      chatID: req.body.chatID,
+    });
+
+    if (typeof req.body.recipient === 'string') {
+      console.log("case string");
+      const recipientSnapshot = await db
+        .collection("UserData")
+        .where("username", "==", req.body.recipient)
+        .get();
+
+      if (recipientSnapshot.empty) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const recipientDoc = recipientSnapshot.docs[0];
+      const recipientId = recipientDoc.id;
+
+      const notificationData = {
+        message: `Unread message from from ${req.body.sender}`,
+        recipient: recipientId,
+        sender: req.body.sender,
+        status: "unread",
+        type: "msg",
+      };
+
+      const recipientUserRef = db.collection("UserData").doc(recipientId);
+      const recipientUserDoc = await recipientUserRef.get();
+      const recipientData = recipientUserDoc.data();
+
+      if (recipientData.notifications) {
+        await recipientUserRef.update({
+          notifications: admin.firestore.FieldValue.arrayUnion(notificationData),
+        });
+      } else {
+        await recipientUserRef.set(
+          { notifications: [notificationData] },
+          { merge: true }
+        );
+      }
+    } else {
+      console.log("case array");
+      for (const rec of req.body.recipient) {
+        const recipientSnapshot = await db
+          .collection("UserData")
+          .where("username", "==", rec)
+          .get();
+
+        if (recipientSnapshot.empty) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        const recipientDoc = recipientSnapshot.docs[0];
+        const recipientId = recipientDoc.id;
+
+        const chatName = req.body.participants
+          .filter(element => element !== rec)
+          .join(", ");
+        const notificationData = {
+          message: `Unread message from from ${chatName}`,
+          recipient: recipientId,
+          sender: req.body.sender,
+          status: "unread",
+          type: "msg",
+        };
+
+        const recipientUserRef = db.collection("UserData").doc(recipientId);
+        const recipientUserDoc = await recipientUserRef.get();
+        const recipientData = recipientUserDoc.data();
+
+        if (recipientData.notifications) {
+          await recipientUserRef.update({
+            notifications: admin.firestore.FieldValue.arrayUnion(notificationData),
+          });
+        } else {
+          await recipientUserRef.set(
+            { notifications: [notificationData] },
+            { merge: true }
+          );
+        }
+      }
+    }
+
+    res.status(200).json({ message: "Success" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/updateUserChats', async (req, res) => {
+  const { participants, newChatID } = req.body;
+
+  // Log the inputs for debugging
+  // console.log('Updating chats for user:', username);
+  // console.log('New Chat ID:', newChatID);
+
+  if (!Array.isArray(participants) || participants.length === 0) {
+    return res.status(400).send({ error: 'Invalid participants array' });
+  }
+
+  // Ensure newChatID is a valid string
+  if (typeof newChatID !== 'string' || !newChatID) {
+    console.error('Invalid newChatID:', newChatID);
+    return res.status(400).send({ error: 'Invalid newChatID' });
+  }
+
+  try {
+    const updatePromises = participants.map(async (username) => {
+      // Query the UserData collection to find the user by username
+      const querySnapshot = await db.collection('UserData')
+        .where('username', '==', username)
+        .limit(1)
+        .get();
+
+      if (!querySnapshot.empty) {
+        // Update the chats field for the matched user document
+        const userDoc = querySnapshot.docs[0];
+        await userDoc.ref.update({
+          chats: admin.firestore.FieldValue.arrayUnion(newChatID),
+        });
+      } else {
+        console.warn(`User with username ${username} not found.`);
+      }
+    });
+
+    // Wait for all updates to complete
+    await Promise.all(updatePromises);
+
+    res.status(200).send({ message: 'User chats updated successfully for all participants' });
+  } catch (error) {
+    console.error('Error updating user chats:', error);
+    res.status(500).send({ error: 'Failed to update user chats for participants' });
+  }
+});
+
+app.post('/fetchChatHistory', async (req, res) => {
+  const { chatID } = req.body; // Get chatID from request body
+  // console.log("chat history id = " + chatID);
+
+  if (!chatID) {
+    return res.status(400).json({ error: 'Chat ID is required.' });
+  }
+
+  try {
+    const messagesSnapshot = await db.collection('MessageData')
+      .where('chatID.id', '==', chatID)
+      .orderBy('createdAt') // Ensure messages are ordered by creation time
+      .get();
+
+    const messages = messagesSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.status(200).json({ messages });
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    res.status(500).json({ error: 'Failed to fetch messages. Please try again later.' });
+  }
+});
+
+app.post('/fetchChatInfo', async (req, res) => {
+  const { chatID , sender } = req.body;
+
+  // console.log("my fetch id = " + chatID );
+
+  if (!chatID) {
+    return res.status(400).json({ error: 'Chat ID is required.' });
+  }
+
+  if (!sender) {
+    return res.status(400).json({ error: 'sender is required.' });
+  }
+  
+  try {
+    const querySnapshot = await db.collection('MessageData')
+      .where('chatID.id', '==', chatID)
+      .limit(1)
+      .get();
+
+    if (querySnapshot.empty) {
+      return res.status(404).json({ message: 'No document found' });
+    }
+
+    const participants = querySnapshot.docs[0].data().participants;
+    const recipients = participants.filter(participant => participant !== sender);
+
+    return res.status(200).json({ participants:participants, recipients:recipients });
+  } catch (error) {
+    console.error('Error fetching chat info:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/fetchChatRecipients', async (req, res) => {
+  const { chatID, sender } = req.body;
+
+  console.log("received chatID, sender:" + chatID + " " + sender);
+
+  if (!chatID) {
+    return res.status(400).json({ error: 'Chat ID is required.' });
+  }
+  if (!sender) {
+    return res.status(400).json({ error: 'sender is required.' });
+  }
+
+  try {
+    const querySnapshot = await db.collection('MessageData')
+      .where('chatID.id', '==', chatID)
+      .limit(1)
+      .get();
+
+    if (querySnapshot.empty) {
+      // console.log("okay so it is in fact empty");
+      return res.status(404).json({ message: 'No document found' });
+    }
+
+    const allParticipants = querySnapshot.docs[0].data().participants;
+    const recipients = allParticipants.filter(participant => participant !== sender);
+
+    return res.status(200).json({ recipients: recipients });
+  } catch (error) {
+    console.error('Error fetching recipients:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 app.listen(port, () => {
   console.log("Server running on port " + port);
 });
