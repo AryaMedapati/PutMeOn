@@ -32,13 +32,6 @@ app.use(bp.json({ limit: "50mb" }));
 app.use(cors());
 
 const tempCodeStore = {};
-const userProfile = {
-  username: "",
-  profilePic: "",
-  bio: "",
-  friends: [],
-  isPrivate: false,
-};
 function generateRandomCode(length = 6) {
   return crypto
     .randomBytes(length)
@@ -59,19 +52,6 @@ app.post("/insertUser", async (req, res) => {
     res.status(500).json({ message: error });
   }
 });
-
-app.post("/insertDM", async (req, res) => {
-  try {
-    const msgInfo = db.collection("MessageData").doc();
-    await msgInfo.set(req.body);
-    //console.log("success");
-    res.status(200).json({ message: "Success" });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: error });
-  }
-});
-
 
 app.post("/addFriend", async (req, res) => {
   try {
@@ -606,13 +586,13 @@ app.get("/spotify-login", async (req, res) => {
   // console.log("hello");
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
-      querystring.stringify({
-        response_type: "code",
-        client_id: clientID,
-        scope:
-          "ugc-image-upload user-read-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-modify user-follow-read user-top-read user-read-recently-played user-library-modify user-library-read user-read-email user-read-private",
-        redirect_uri: `${url}/callback`,
-      })
+    querystring.stringify({
+      response_type: "code",
+      client_id: clientID,
+      scope:
+        "ugc-image-upload user-read-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-modify user-follow-read user-top-read user-read-recently-played user-library-modify user-library-read user-read-email user-read-private",
+      redirect_uri: `${url}/callback`,
+    })
   );
 });
 
@@ -643,10 +623,10 @@ app.get("/callback", function (req, res) {
       // Redirect to frontend with tokens
       res.redirect(
         `${mainUrl}/?` +
-          querystring.stringify({
-            access_token: access_token,
-            refresh_token: refresh_token,
-          })
+        querystring.stringify({
+          access_token: access_token,
+          refresh_token: refresh_token,
+        })
       );
     } else {
       // console.log("error");
@@ -766,88 +746,90 @@ app.post("/verify2FACode", (req, res) => {
   delete tempCodeStore[username]; // Remove the code after successful verification
   return res.status(200).json({ message: "Code verified successfully" });
 });
-app.get("/checkUserExists", (req,res) => {
-try{
-  const getUsers = db.collection("UserData");
-  const user = req.query.user;
-  console.log(user);
-  const value = getUsers.where('username', '==', user);
-  const newVal = value.get().then((snapshot) =>{
-    res.status(200).json(snapshot);
-  })
+app.get("/checkUserExists", (req, res) => {
+  try {
+    const getUsers = db.collection("UserData");
+    const user = req.query.user;
+    console.log(user);
+    const value = getUsers.where('username', '==', user);
+    const newVal = value.get().then((snapshot) => {
+      res.status(200).json(snapshot);
+    })
 
-  // res.status(200).json({ message: "user exists" });
-} catch (error) {
-  console.log(error);
-  res.status(500).send(error);
-}
+    // res.status(200).json({ message: "user exists" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
 
 })
 
-app.get("/fetchDMs", async (req, res) => {
-  const userID = req.query.userID;
+app.get('/fetchChats', async (req, res) => {
   try {
-    const snapshot = await db.collection("DMData").where("senderID", "==", userID)
-      .get();
+    const { username } = req.query;
 
-    const dms = snapshot.docs.map(doc => ({
-      docId: doc.id,
-      ...doc.data(),
-    }));
-
-    res.status(200).json(dms);
-  } catch (error) {
-    res.status(500).send("Error fetching DMs");
-  }
-});
-
-app.post("/sendMessage", async (req, res) => {
-  const { senderID, receiverID, chatID, content } = req.body;
-
-  try {
-    const timestamp = new Date().toISOString();
-    await db.collection("DMData").add({
-      senderID,
-      receiverID,
-      chatID,
-      timestamp,
-      content,
-    });
-    res.status(201).send("Message sent successfully");
-  } catch (error) {
-    res.status(500).send("Error sending message");
-  }
-});
-
-app.post("/createDM", async (req, res) => {
-  const { senderID, receiverID } = req.body;
-
-  try {
-    const snapshot = await db.collection("DMData")
-      .where("senderID", "==", senderID)
-      .where("receiverID", "==", receiverID)
-      .get();
-
-    let chatID;
-
-    if (snapshot.empty) {
-      chatID = uuidv4(); // Generate new chatID if no existing chat found
-      await db.collection("DMData").add({
-        senderID,
-        receiverID,
-        chatID,
-        timestamp: new Date().toISOString(),
-        content: "Chat started",
-      });
-    } else {
-      chatID = snapshot.docs[0].data().chatID; // Use existing chatID
+    if (!username) {
+      return res.status(400).json({ error: 'Username is required' });
     }
 
-    res.status(200).json({ chatID });
+    const userSnapshot = await db.collection('UserData')
+      .where('username', '==', username)
+      .limit(1)
+      .get();
+
+    if (userSnapshot.empty) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const userData = userSnapshot.docs[0].data();
+    const userChats = userData.Chats;
+
+    return res.status(200).json({ Chats: userChats });
   } catch (error) {
-    res.status(500).send("Error creating DM");
+    console.error('Error fetching user Chats:', error);
+    return res.status(500).json({ error: 'Failed to fetch user Chats' });
   }
 });
+
+app.post('/fetchChatNames', async (req, res) => {
+  const { chatIDs, currentUser } = req.body;
+  const chatNames = [];
+
+  try {
+    for (const chatID of chatIDs) {
+      const querySnapshot = await firestore.collection('MessageData')
+        .where('chatID', '==', chatID)
+        .limit(1)
+        .get();
+
+      if (!querySnapshot.empty) {
+        const messageDoc = querySnapshot.docs[0];
+        let participants = messageDoc.data().participants;
+        participants = participants.filter(participant => participant !== currentUser)
+          .sort();
+        chatNames.push(participants);
+      }
+    }
+
+    res.status(200).json({ chatNames });
+  } catch (error) {
+    console.error('Error fetching chat names:', error);
+    res.status(500).json({ error: 'Failed to fetch chat names' });
+  }
+});
+
+app.post("/insertChat", async (req, res) => {
+  try {
+    const chatInfo = db.collection("MessageData").doc();
+    await chatInfo.set(req.body);
+    res.status(200).json({ message: "Success" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
+
 /*
 app.post('/sendRandomCode', async (req, res) => {
   const { username } = req.body;

@@ -1,119 +1,236 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { collection, addDoc, where, serverTimestamp, onSnapshot, query, orderBy } from "firebase/firestore";
 import { Card, TextArea, Button, InputGroup } from "@blueprintjs/core";
-import { UserContext } from './UserContext';
+import { v4 as uuidv4 } from 'uuid';
+import { UserContext } from "./UserContext";
 import "./styles/Messages.css";
 
 const Messages = () => {
-  const { username, email } = useContext(UserContext);
-  const [dms, setDms] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [receiverID, setReceiverID] = useState("");
-  const [userList, setUserList] = useState([]);
+  const [chats, setChats] = useState([]);
+  const [chatNames, setChatNames] = useState([]);
+  const [chatDict, setChatDict] = useState({});
+  const [chatHistory, setChatHistory] = useState([]);
+  const [friends, setFriends] = useState([]);
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [recipient, setRecipient] = useState(null);
+  const [participants, setParticipants] = useState([]);
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [chatID, setChatID] = useState("");
+  const [newChatUsername, setNewChatUsername] = useState("");
+  const [newMessage, setNewMessage] = useState("");
+
+  const { username } = useContext(UserContext);
 
   useEffect(() => {
-    const fetchInitialDMs = async () => {
-      const response = await fetch(`http://localhost:3001/fetchDMs?userID=${username}`);
-      const data = await response.json();
-      setDms(data);
+    const fetchChats = async () => {
+      try {
+        const response = await fetch(`http://localhost:3001/fetchChats?username=${username}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch Chats');
+        }
+        const result = await response.json();
+        setChats(result.Chats);
+      } catch (error) {
+        console.error('Error fetching Chats:', error);
+      }
     };
-    fetchInitialDMs();
-  }, [username]);
 
-  const handleCreateDM = async () => {
-    if (receiverID) {
-      const response = await fetch("http://localhost:3001/createDM", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ senderID: username, receiverID }),
-      });
+    fetchChats();
+  }, []);
 
-      if (response.ok) {
-        const { chatID } = await response.json();
-        setChatID(chatID);
-        setReceiverID("");
-      } else {
-        console.error("Error creating DM");
+  useEffect(() => {
+    const fetchChatNames = async (chatIDs, username) => {
+      try {
+        const response = await fetch('http://localhost:3001/fetchChatNames', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ chatIDs, username }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch chat names');
+        }
+
+        const data = await response.json();
+        console.log('Chat Names:', data.chatNames);
+        setChatNames(data.chatNames);
+      } catch (error) {
+        console.error('Error:', error);
       }
-    }
-  };
+    };
 
-  const handleSendMessage = async () => {
-    if (newMessage.trim() && chatID) {
-      const response = await fetch("http://localhost:3001/sendMessage", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          senderID: username,
-          receiverID,
-          chatID,
-          content: newMessage,
-        }),
+    fetchChatNames();
+  }, [chats]);
+
+  useEffect(() => {
+    const dict = chats.reduce((acc, id, index) => {
+      acc[id] = chatNames[index];
+      return acc;
+    }, {});
+    setChatDict(dict);
+  }, [chats, chatNames]);
+  /*
+  useEffect(() => {
+    const queryMessages = query(
+      messagesRef,
+      where("chatID", "==", chatID),
+      orderBy("createdAt")
+    );
+    const unsuscribe = onSnapshot(queryMessages, (snapshot) => {
+      let messages = [];
+      snapshot.forEach((doc) => {
+        messages.push({ ...doc.data(), id: doc.id });
       });
+      console.log(messages);
+      setMessages(messages);
+    });
 
-      if (response.ok) {
-        setDms((prev) => [
-          ...prev,
-          { senderID: username, content: newMessage, chatID },
-        ]);
-        setNewMessage("");
-      } else {
-        console.error("Error sending message");
+    return () => unsuscribe();
+  }, []);
+  */
+
+  useEffect(() => {
+    const fetchFriendsList = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/fetchFriends", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username: username }),
+        });
+        const data = await res.json();
+        setFriends(data.friends);
+      } catch (error) {
+        console.error(error);
       }
+    };
+
+    fetchFriendsList();
+  }, []);
+
+  const handleNewChat = (recipient) => {
+    const newChatID = uuidv4();
+    setSelectedChat(newChatID);
+    setIsCreatingChat(false);
+    setRecipient([recipient]);
+    setParticipants([recipient, username]);
+    setParticipants(participants.sort());
+    setNewChatUsername("");
+  };
+
+  const handleSearchUser = (e) => {
+    const searchValue = e.target.value;
+    setNewChatUsername(searchValue);
+    const regex = new RegExp(searchValue, 'i');
+    setFilteredUsers(friends.filter(friend => regex.test(friend)));
+  };
+
+  const handleSendMessage = async (event) => {
+    event.preventDefault();
+
+    if (newMessage === "") return;
+    if (!selectedChat) return;
+
+    const res = await fetch("http://localhost:3001/insertChat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: newMessage,
+        createdAt: serverTimestamp(),
+        user: username,
+        recipient: recipient,
+        participants: participants,
+        chatID: selectedChat,
+      }),
+    });
+
+    setNewMessage("");
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
-  };
-
-  const handleUserSearch = async (query) => {
-    const response = await fetch("http://localhost:3001/fetchUsers");
-    const users = await response.json();
-    const filtered = users.filter(user => user.username.toLowerCase().includes(query.toLowerCase()));
-    setFilteredUsers(filtered);
-  };
-
-  const handleInputChange = (e) => {
-    setReceiverID(e.target.value);
-    handleUserSearch(e.target.value);
   };
 
   return (
     <div className="messages-container">
-      <div className="user-search">
-        <InputGroup
-          placeholder="Type a username..."
-          value={receiverID}
-          onChange={handleInputChange}
-        />
-        <Button onClick={handleCreateDM}>Create DM</Button>
-        <div className="user-list">
-          {filteredUsers.map(user => (
-            <div key={user.docId} onClick={() => setReceiverID(user.username)}>
-              {user.username}
+      <div className="chats-list">
+        <Button
+          icon="plus"
+          onClick={() => setIsCreatingChat(!isCreatingChat)}
+          className="new-chat-button"
+        >
+          New Chat
+        </Button>
+
+        {isCreatingChat && (
+          <div className="new-chat-input">
+            <InputGroup
+              placeholder="Type a username..."
+              value={newChatUsername}
+              onChange={handleSearchUser}
+            />
+            <div className="user-suggestions">
+              {filteredUsers.map(user => (
+                <Card
+                  key={user}
+                  className="user-suggestion"
+                  onClick={() => handleNewChat(user)}
+                >
+                  {user}
+                </Card>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
-      <div className="dm-list">
-        {dms.map(dm => (
-          <Card key={dm.chatID} className="dm-card">
-            {dm.senderID}: {dm.content}
+          </div>
+        )}
+
+        {Object.entries(chatDict).map(([chatID, chatName]) => (
+          <Card
+            key={chatID}
+            className={`chat-card ${selectedChat && selectedChat.id === chatID ? 'active-chat' : ''}`}
+            onClick={() => setSelectedChat({ id: chatID, name: chatName })} // Set both id and name in selectedChat
+          >
+            {chatName} {/* Display the chat name */}
           </Card>
-        ))}
-      </div>
-      <div className="message-input">
-        <TextArea
-          placeholder="Type your message..."
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-        />
-        <Button onClick={handleSendMessage}>Send</Button>
+        ))}      
+        </div>
+      <div className="chat-content">
+        {selectedChat ? (
+          <>
+            <div className="message-list">
+              {selectedChat.messages.map((message, index) => (
+                <Card key={index} className="message-card">
+                  {message.text}
+                </Card>
+              ))}
+            </div>
+
+            <div className="message-input">
+              <TextArea
+                className="message-textarea"
+                placeholder="Type your message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                growVertically={true}
+                fill={true}
+              />
+            </div>
+          </>
+        ) : (
+          <div className="no-chat-selected">Select a chat to view messages</div>
+        )}
       </div>
     </div>
   );
+
 };
 
 export default Messages;
