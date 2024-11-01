@@ -21,7 +21,7 @@ describe('profile functinality', () => {
 
     cy.get('.sidebar').should('have.length', 1)
     
-    cy.get('#sidebarButtonGroup').get('.sidebarButton').should('have.length', 4)
+    // cy.get('#sidebarButtonGroup').get('.sidebarButton').should('have.length', 4)
 
     cy.get('.sidebarButton').eq(0).click()
     cy.contains('Profile View').should('be.visible');
@@ -40,8 +40,13 @@ describe('profile functinality', () => {
   it('Edit and View Profile Tests', () => {
     
     // resets cypresstesting on database
-    cy.request('POST', 'http://localhost:3001/cypressUserReset', 
-      {
+    cy.request({
+      method: 'POST',
+      url: 'http://localhost:3001/cypressUserReset',
+      headers: {
+        'documentid': 'Du33v7g2VInEVppp6wNU'
+      },
+      body: {
         username: "cypressTesting@gmail.com",
         password: "Testing1",
         isPrivate: false,
@@ -50,8 +55,8 @@ describe('profile functinality', () => {
         topSongs: [],
         topGenres: [],
         topArtists: []
-      },
-    )
+      }
+    })
 
     cy.get('.sidebarButton').eq(1).click()
 

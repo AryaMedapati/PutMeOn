@@ -33,6 +33,7 @@ import GV from "./statistics/GenreVisual";
 import TH from "./statistics/TrackVisual";
 import AH from "./statistics/ArtistVisual";
 import PStat from "./statistics/PutMeOnStats";
+import CompareFriend from "./statistics/CompareFriend";
 import Login from "./Login";
 import CreateAccount from "./CreateAccount";
 import EditCollabPlaylist from "./EditCollabPlaylist";
@@ -56,7 +57,7 @@ function App(props) {
     const storedUser = localstorage.get("user");
     const storedPass = localstorage.get("pass");
 
-    // console.log(storedLoggedIn);
+    console.log(storedUser);
     // if (storedLoggedIn) {
     //   setIsLoggedIn(true);
     // }
@@ -146,8 +147,11 @@ function App(props) {
         <Route path="/stats" element={<Stats />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/playlists" element={<Playlists />} />
-          <Route path="/playlists/new-playlist" element={<NewPlaylist />} />
-          <Route path="/playlists/edit-collab-playlist" element={<EditCollabPlaylist />} />
+        <Route path="/playlists/new-playlist" element={<NewPlaylist />} />
+        <Route
+          path="/playlists/edit-collab-playlist"
+          element={<EditCollabPlaylist />}
+        />
         <Route path="/create-account" element={<CreateAccount />} />
         <Route path="/login" element={<Login />} />
         <Route path="/spotify" element={<Messages />} />
@@ -160,6 +164,7 @@ function App(props) {
         <Route path="/trackvis" element={<TH />} />
         <Route path="/artistvis" element={<AH />} />
         <Route path="/customstats" element={<PStat />} />
+        <Route path="/comparefriend" element={<CompareFriend />} />
       </Routes>
     </div>
   );

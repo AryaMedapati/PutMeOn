@@ -16,10 +16,13 @@ const clientID = "6e24baf59c484801a146e21891775723";
 const clientSecret = "177482208fff40f7991ac0b139b2627e";
 let accessToken = "";
 let refreshToken = "";
+
+let user = "";
 const { ArrayTimestamp } = require("@blueprintjs/icons");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require('uuid');
+
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -34,6 +37,73 @@ app.use(bp.json({ limit: "50mb" }));
 app.use(cors());
 
 const tempCodeStore = {};
+
+const userProfile = {
+  username: "",
+  profilePic: "",
+  bio: "",
+  friends: [],
+  isPrivate: false,
+};
+// async function updateField() {
+//   await updateDoc(docRef, {
+//     fieldName: "newValue" // Specify the field and its new value
+//   });
+// }
+async function saveToken(user) {
+  // console.log("user: "+ user);
+  try {
+    const getUsers = db.collection("UserData");
+    // const user = user;
+    const value = getUsers.where('username', '==', user);
+    const snapshot = await value.get();
+
+    if (!snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      const userData = userDoc.data();
+      // console.log(userData);
+      await userDoc.ref.update({
+        accessToken: accessToken
+      });
+
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+async function saveRecentlyPlayed(user, song, likes, likedBy, laughingLikes, laughingLikedBy, fire, fireLikedBy, comments, totalLikes, totalReactions, totalComments) {
+  // console.log("user: "+ user);
+  console.log(likedBy);
+  try {
+    const getUsers = db.collection("UserData");
+    // const user = user;
+    const value = getUsers.where('username', '==', user);
+    const snapshot = await value.get();
+
+    if (!snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      const userData = userDoc.data();
+      // console.log(userData);
+      await userDoc.ref.update({
+        recentlyPlayed: song,
+        currentLikes: likes,
+        likedBy: likedBy,
+        currentLaughingLikes: laughingLikes,
+        laughingLikedBy: laughingLikedBy,
+        fire: fire,
+        fireLikedBy: fireLikedBy,
+        comments: comments,
+        totalLikes: totalLikes,
+        totalReactions: totalReactions,
+        totalComments: totalComments
+      });
+
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 function generateRandomCode(length = 6) {
   return crypto
     .randomBytes(length)
@@ -427,7 +497,7 @@ app.post("/updateUserbyUsername", async (req, res) => {
 
 app.post("/cypressUserReset", async (req, res) => {
   try {
-    const docId = "Du33v7g2VInEVppp6wNU";
+    const docId = req.headers["documentid"];
     const userRef = db.collection("UserData").doc(docId);
     await userRef.set(req.body, { merge: false });
 
@@ -991,6 +1061,8 @@ app.get("/artistChart", async (req, res) => {
 });
 
 app.get("/spotify-login", async (req, res) => {
+  user = req.query.user;
+  console.log(user);
   // console.log("hello");
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
@@ -1028,13 +1100,24 @@ app.get("/callback", function (req, res) {
       const refresh_token = body.refresh_token;
       accessToken = body.access_token;
       refreshToken = body.refreshToken;
+      saveToken(user);
       // Redirect to frontend with tokens
+      // res.send(`
+      //   <script>
+      //     window.opener.postMessage({
+      //       access_token: "${access_token}",
+      //       refresh_token: "${refresh_token}"
+      //     }, "*");
+      //     window.close();
+      //   </script>
+      // `);
       res.redirect(
-        `${mainUrl}/?` +
-        querystring.stringify({
-          access_token: access_token,
-          refresh_token: refresh_token,
-        })
+
+        `${frontUrl}/transferToken?` +
+          querystring.stringify({
+            access_token: access_token,
+            refresh_token: refresh_token,
+          })
       );
     } else {
       // console.log("error");
@@ -1064,7 +1147,7 @@ app.get("/profile", async (req, res) => {
 
 app.post("/generate2FACode", async (req, res) => {
   const { username } = req.body;
-
+  user = username
   // Validate input
   if (!username) {
     return res.status(400).json({ message: "Username is required" });
@@ -1169,8 +1252,6 @@ app.get("/checkUserExists", (req, res) => {
     console.log(error);
     res.status(500).send(error);
   }
-
-    // res.status(200).json({ message: "user exists" });
 });
 
 app.post("/fetchChats", async (req, res) => {

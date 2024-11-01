@@ -3,6 +3,8 @@ import "./styles/Login.css"
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from "react-router-dom";
 import {getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword } from "firebase/auth";
 import Login from "./Login";
+import localstorage from 'localstorage-slim';
+
 
 import { UserContext } from "./UserContext";
 
@@ -109,6 +111,8 @@ function CreateAccount() {
               const errorCode = error.code;
               const errorMessage = error.message;
             });
+            localstorage.set('user', userName);
+            localstorage.set('pass', pass);
             nav("/", {state:{user: userName}});
         } catch (error) {
           console.log(error);

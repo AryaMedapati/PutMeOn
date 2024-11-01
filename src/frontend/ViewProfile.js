@@ -21,31 +21,65 @@ const ViewProfile = () => {
   const [selectedArtists, setSelectedArtists] = useState([]);
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
   const [progress, setProgress] = useState(0);
+  const [totalLikes, setTotalLikes] = useState(0);
+  const [totalReactions, setTotalReactions] = useState(0);
+  const [totalComments, setTotalComments] = useState(0);
+  const [currentLikes, setCurrentLikes] = useState(0);
+  const [currentReactions, setCurrentReactions] = useState(0);
+  const [currentComments, setCurrentComments] = useState(0);
+  const { username, setUsername } = useContext(UserContext);
 
   const fileInputRef = useRef(null);
   const imageContainerRef = useRef(null);
   const nav = useNavigate();
 
   const db = getFirestore();
-  const { username } = useContext(UserContext);
+  // const { username } = useContext(UserContext);
 
-  const linkSpotifyAccount = () => {
-    const spotifyAuthUrl = `http://localhost:3001/spotify-login`;
+  const linkSpotifyAccount = async () => {
+    const user = localstorage.get('user');
+    const spotifyAuthUrl = `http://localhost:3001/spotify-login?user=${user}`;
+    
+    // const accessTokenFromUrl = params.get('access_token');
+    // const refreshTokenFromUrl = params.get('refresh_token');
+    // console.log(accessTokenFromUrl);
     window.open(spotifyAuthUrl, "_blank", "noopener,noreferrer");
+    // await fetch(`http://localhost:3001/saveToken?user=${username}`);
   };
   const handleLogOut = () => {
     const auth = getAuth();
-    signOut(auth).then(function() {
-      console.log('Signed Out');
-      // setIsLoggedIn(false);
-      localstorage.set('user', "");
-      localstorage.set('pass', "")
-      nav("/login");
-    }).catch((error) => {
-      console.log(error);
-    })
-
+    signOut(auth)
+      .then(function () {
+        console.log("Signed Out");
+        // setIsLoggedIn(false);
+        localstorage.set("user", "");
+        localstorage.set("pass", "");
+        nav("/login");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
+  async function getSaved() {
+    const user = localstorage.get('user');
+    const url = "http://localhost:3001";
+    const response = await fetch(
+      `${url}/getRecentlyPlayed?user=${user}`
+    );
+    const data = await response.json();
+    const totalLikesTemp = data.totalLikes || 0;
+    setTotalLikes(totalLikesTemp);
+    const totalReactionsTemp = data.totalReactions || 0;
+    setTotalReactions(totalReactionsTemp);
+    const totalCommentsTemp = data.totalComments || 0;
+    setTotalComments(totalCommentsTemp);
+    const currentCommentsTemp = data.comments ? data.comments.length : 0;
+    setCurrentComments(currentCommentsTemp);
+    const currentReactionsTemp = (data.fire + data.currentLaughingLikes) || 0;
+    setCurrentReactions(currentReactionsTemp);
+    const currentLikesTemp = data.currentLikes || 0;
+    setCurrentLikes(currentLikesTemp);
+  }
 
   const displayImage = (base64String) => {
     const img = document.createElement("img");
@@ -78,6 +112,9 @@ const ViewProfile = () => {
   useEffect(() => {
     displayImage(pfp);
   }, [pfp]);
+  useEffect(() => {
+    getSaved();
+  }, []);
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -193,24 +230,27 @@ const ViewProfile = () => {
         />
       </div>
       <div>
-      {currentlyPlaying ? (
-        <div>
-          <h3>Currently Listening To:</h3>
-          <p><strong>Track:</strong> {currentlyPlaying.name}</p>
-          <p><strong>Artist:</strong> {currentlyPlaying.artist}</p>
-          <p><strong>Album:</strong> {currentlyPlaying.album}</p>
-          {/* <p><strong>Progress:</strong> {Math.floor(currentlyPlaying.progress_ms / 60000)}:{Math.floor((currentlyPlaying.progress_ms % 60000) / 1000).toString().padStart(2, '0')} / {Math.floor(currentlyPlaying.duration_ms / 60000)}:{Math.floor((currentlyPlaying.duration_ms % 60000) / 1000).toString().padStart(2, '0')}</p> */}
-        </div>
-      ) : (
-        <p>No song is currently playing, or your account is unlinked.</p>
-      )}
-    </div>
-    <div style={{ marginTop: "20px" }}>
-        <Button
-          text="Log Out"
-          intent="primary"
-          onClick={handleLogOut}
-        />
+        {currentlyPlaying ? (
+          <div>
+            <h3>Currently Listening To:</h3>
+            <p>
+              <strong>Track:</strong> {currentlyPlaying.name}
+            </p>
+            <p>
+              <strong>Artist:</strong> {currentlyPlaying.artist}
+            </p>
+            <p>
+              <strong>Album:</strong> {currentlyPlaying.album}
+            </p>
+            {/* <p><strong>Progress:</strong> {Math.floor(currentlyPlaying.progress_ms / 60000)}:{Math.floor((currentlyPlaying.progress_ms % 60000) / 1000).toString().padStart(2, '0')} / {Math.floor(currentlyPlaying.duration_ms / 60000)}:{Math.floor((currentlyPlaying.duration_ms % 60000) / 1000).toString().padStart(2, '0')}</p> */}
+          </div>
+        ) : (
+          <p>No song is currently playing, or your account is unlinked.</p>
+        )}
+      </div>
+      <SpotifyTrackerButton />
+      <div style={{ marginTop: "20px" }}>
+        <Button text="Log Out" intent="primary" onClick={handleLogOut} />
       </div>
     </div>
   );
