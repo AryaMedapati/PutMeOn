@@ -74,7 +74,7 @@ const ViewProfile = () => {
     setTotalReactions(totalReactionsTemp);
     const totalCommentsTemp = data.totalComments;
     setTotalComments(totalCommentsTemp);
-    const currentCommentsTemp = data.comments.length;
+    const currentCommentsTemp = data.comments ? data.comments.length : 0;
     setCurrentComments(currentCommentsTemp);
     const currentReactionsTemp = data.fire + data.currentLaughingLikes;
     setCurrentReactions(currentReactionsTemp);
