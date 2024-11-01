@@ -26,6 +26,7 @@ import TH from "./statistics/TrackVisual"
 import AH from "./statistics/ArtistVisual"
 import Login from "./Login";
 import CreateAccount from "./CreateAccount";
+import EditCollabPlaylist from "./EditCollabPlaylist";
 
 function App(props) {
 
@@ -139,6 +140,7 @@ function App(props) {
           <Route path="/messages" element={<Messages />} />
           <Route path="/playlists" element={<Playlists />} />
           <Route path="/playlists/new-playlist" element={<NewPlaylist />} />
+          <Route path="/playlists/edit-collab-playlist" element={<EditCollabPlaylist />} />
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/login" element={<Login />} />       
           <Route path="/spotify" element={<Messages />} />       
