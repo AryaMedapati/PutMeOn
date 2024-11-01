@@ -16,6 +16,7 @@ import Home from "./Home";
 import Stats from "./statistics/Stats";
 import Messages from "./Messages";
 import Playlists from "./Playlists";
+import NewPlaylist from "./NewPlaylist";
 import Profile from "./Profile";
 import Tracks from "./statistics/TopTracks";
 import Artists from "./statistics/TopArtists";
@@ -137,6 +138,7 @@ function App(props) {
           <Route path="/stats" element={<Stats />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/playlists" element={<Playlists />} />
+          <Route path="/playlists/new-playlist" element={<NewPlaylist />} />
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/login" element={<Login />} />       
           <Route path="/spotify" element={<Messages />} />       

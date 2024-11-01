@@ -91,7 +91,8 @@ function CreateAccount() {
           topSongs: [],
           topGenres: [],
           topArtists: [],
-          pdf: ""
+          pdf: "",
+          playlists: []
         }),
         });
         try {
