@@ -16,10 +16,13 @@ const clientID = "6e24baf59c484801a146e21891775723";
 const clientSecret = "177482208fff40f7991ac0b139b2627e";
 let accessToken = "";
 let refreshToken = "";
+
+let user = "";
 const { ArrayTimestamp } = require("@blueprintjs/icons");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require('uuid');
+
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -34,6 +37,73 @@ app.use(bp.json({ limit: "50mb" }));
 app.use(cors());
 
 const tempCodeStore = {};
+
+const userProfile = {
+  username: "",
+  profilePic: "",
+  bio: "",
+  friends: [],
+  isPrivate: false,
+};
+// async function updateField() {
+//   await updateDoc(docRef, {
+//     fieldName: "newValue" // Specify the field and its new value
+//   });
+// }
+async function saveToken(user) {
+  // console.log("user: "+ user);
+  try {
+    const getUsers = db.collection("UserData");
+    // const user = user;
+    const value = getUsers.where('username', '==', user);
+    const snapshot = await value.get();
+
+    if (!snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      const userData = userDoc.data();
+      // console.log(userData);
+      await userDoc.ref.update({
+        accessToken: accessToken
+      });
+
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+async function saveRecentlyPlayed(user, song, likes, likedBy, laughingLikes, laughingLikedBy, fire, fireLikedBy, comments, totalLikes, totalReactions, totalComments) {
+  // console.log("user: "+ user);
+  console.log(likedBy);
+  try {
+    const getUsers = db.collection("UserData");
+    // const user = user;
+    const value = getUsers.where('username', '==', user);
+    const snapshot = await value.get();
+
+    if (!snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      const userData = userDoc.data();
+      // console.log(userData);
+      await userDoc.ref.update({
+        recentlyPlayed: song,
+        currentLikes: likes,
+        likedBy: likedBy,
+        currentLaughingLikes: laughingLikes,
+        laughingLikedBy: laughingLikedBy,
+        fire: fire,
+        fireLikedBy: fireLikedBy,
+        comments: comments,
+        totalLikes: totalLikes,
+        totalReactions: totalReactions,
+        totalComments: totalComments
+      });
+
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 function generateRandomCode(length = 6) {
   return crypto
     .randomBytes(length)
@@ -991,6 +1061,8 @@ app.get("/artistChart", async (req, res) => {
 });
 
 app.get("/spotify-login", async (req, res) => {
+  user = req.query.user;
+  console.log(user);
   // console.log("hello");
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
@@ -1028,13 +1100,24 @@ app.get("/callback", function (req, res) {
       const refresh_token = body.refresh_token;
       accessToken = body.access_token;
       refreshToken = body.refreshToken;
+      saveToken(user);
       // Redirect to frontend with tokens
+      // res.send(`
+      //   <script>
+      //     window.opener.postMessage({
+      //       access_token: "${access_token}",
+      //       refresh_token: "${refresh_token}"
+      //     }, "*");
+      //     window.close();
+      //   </script>
+      // `);
       res.redirect(
-        `${mainUrl}/?` +
-        querystring.stringify({
-          access_token: access_token,
-          refresh_token: refresh_token,
-        })
+
+        `${frontUrl}/transferToken?` +
+          querystring.stringify({
+            access_token: access_token,
+            refresh_token: refresh_token,
+          })
       );
     } else {
       // console.log("error");
@@ -1064,7 +1147,7 @@ app.get("/profile", async (req, res) => {
 
 app.post("/generate2FACode", async (req, res) => {
   const { username } = req.body;
-
+  user = username
   // Validate input
   if (!username) {
     return res.status(400).json({ message: "Username is required" });
@@ -1170,12 +1253,78 @@ app.get("/checkUserExists", (req, res) => {
     res.status(500).send(error);
   }
 
-    // res.status(200).json({ message: "user exists" });
+
+})
+app.get("/recentlyPlayed", async (req, res) => {
+  try {
+    const userN = req.query.user;
+    const usersCollection = db.collection('UserData');
+    const val = usersCollection.where('username', '==', userN);
+    const snapshot = await val.get();
+    if (snapshot.empty) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const userDoc = snapshot.docs[0];
+    const token = userDoc.data().accessToken; 
+    // console.log(token);
+    const recentlyPlayed = await axios.get(
+      `https://api.spotify.com/v1/me/player/recently-played?limit=1`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    // console.log(recentlyPlayed)
+
+    res.status(200).json({ data: recentlyPlayed.data });
   } catch (error) {
     console.log(error);
-    res.status(500).send(error);
+    // res.status(500).json({ message: error });
   }
 });
+
+app.post("/saveRecentlyPlayed", async(req, res) => {
+  const song = req.body.song;
+  const user = req.body.user;
+  const currentLikes = req.body.likes;
+  const likedBy = req.body.likedBy;
+  const laughingLikes = req.body.laughing;
+  const laughingLikedBy = req.body.laughingLikedBy;
+  const fire = req.body.fire;
+  const fireLikedBy = req.body.fireLikedBy;
+  const comments = req.body.comments;
+  const totalLikes = req.body.totalLikes;
+  const totalReactions = req.body.totalReactions;
+  const totalComments = req.body.totalComments
+  console.log(likedBy);
+  await saveRecentlyPlayed(user, song, currentLikes, likedBy, laughingLikes, laughingLikedBy, fire, fireLikedBy, comments, totalLikes, totalReactions, totalComments);
+  res.status(200).json({ message: "Success" });
+
+})
+app.get("/getRecentlyPlayed", async (req, res) => {
+  const username = req.query.user;
+  console.log(username);
+  try {
+    const userDoc = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    if (userDoc.empty) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const userProfile = userDoc.docs[0].data();
+    res.status(200).json(userProfile);
+  } catch (error) {
+    console.error("Error fetching profile data:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
 
 app.post("/fetchChats", async (req, res) => {
   try {
