@@ -61,7 +61,6 @@ function Profile() {
       >
         <ProfileContent activeContent={activeContent} />
       </div>
-      <FriendsAndNotifications />
     </div>
   );
 }
