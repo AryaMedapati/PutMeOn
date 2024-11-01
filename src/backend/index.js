@@ -671,8 +671,7 @@ app.post("/generateReport", async (req, res) => {
       .get();
 
     if (recipientSnapshot.empty) {
-      console.log("No listening data found for the user.");
-      return null;
+      return res.status(404).json({ message: "No data found" });
     }
 
     const recipientDoc = recipientSnapshot.docs[0];
@@ -681,28 +680,60 @@ app.post("/generateReport", async (req, res) => {
     const filteredData = listeningData.filter(
       (item) => item.time_played >= unixTime
     );
-    const trackCountMap = {};
+
+    let totalTime = 0;
+    const trackMap = {};
     const artistMap = {};
+    const artistListenTime = {};
+
     filteredData.forEach((item) => {
-      const trackId = item.track_id;
-      const artists = item.artists;
-      artists.forEach((artist) => {
-        if (artistMap[artist.id]) {
-          artistMap[artist.id].count += 1;
-        } else {
-          artistMap[artist.id] = { artist: artist.id, count: 1 };
-        }
-      });
-      if (trackCountMap[trackId]) {
-        trackCountMap[trackId].count += 1;
-      } else {
-        trackCountMap[trackId] = { track: item.track_id, count: 1 };
+      const { track_id, track_name, duration, popularity, artists } = item;
+
+      totalTime += Math.round(duration / 60000);
+
+      if (!trackMap[track_id]) {
+        trackMap[track_id] = {
+          trackId: track_id,
+          track_name,
+          count: 0,
+        };
       }
+      trackMap[track_id].count += 1;
+
+      artists.forEach((artist) => {
+        const { id: artistId, name: artistName } = artist;
+
+        if (!artistMap[artistId]) {
+          artistMap[artistId] = {
+            artistId,
+            name: artistName,
+            count: 0,
+          };
+        }
+        artistMap[artistId].count += 1;
+
+        if (!artistListenTime[artistId]) {
+          artistListenTime[artistId] = {
+            artistId,
+            name: artistName,
+            minutes: 0,
+          };
+        }
+        artistListenTime[artistId].minutes += Math.round(duration / 60000);
+      });
     });
 
-    res.status(200).json({ trackMap: trackCountMap, artistMap: artistMap });
+    res.status(200).json({
+      totalTime: Math.round(totalTime),
+      trackMap: Object.values(trackMap).sort((a, b) => b.count - a.count),
+      artistMap: Object.values(artistMap).sort((a, b) => b.count - a.count),
+      artistListenTime: Object.values(artistListenTime).sort(
+        (a, b) => b.minutes - a.minutes
+      ),
+    });
   } catch (error) {
     console.log(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

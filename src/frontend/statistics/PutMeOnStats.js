@@ -1,12 +1,19 @@
-import React, { useState, useContext, UserContext, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
+import { jsPDF } from "jspdf";
 import "../styles/PutMeOnStats.css";
+import { UserContext } from "../UserContext";
 import localstorage from "localstorage-slim";
 
 const PStat = () => {
   const [date, setDate] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [reportData, setReportData] = useState({ trackMap: {}, artistMap: {} });
+  const [reportData, setReportData] = useState({
+    totalTime: 0,
+    trackMap: [],
+    artistMap: [],
+    artistListenTime: [],
+  });
   const [username, setUsername] = useState("");
   const { email } = useContext(UserContext);
 
@@ -15,12 +22,65 @@ const PStat = () => {
       setUsername(email);
     } else {
       const storedUsername = localstorage.get("user");
-      console.log(storedUsername);
       if (storedUsername) {
         setUsername(storedUsername);
       }
     }
   }, [email]);
+
+  const generatePDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Listening Report", 20, 20);
+    doc.setFontSize(12);
+
+    doc.text(`Total Time Listened: ${reportData.totalTime} minutes`, 20, 30);
+
+    doc.line(20, 35, 190, 35);
+    doc.text("Top Songs by Play Count:", 20, 40);
+
+    let y = 50;
+    reportData.trackMap.forEach(({ trackId, count, track_name }) => {
+      if (y > 260) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.text(`Track: ${track_name} - Play Count: ${count}`, 20, y);
+      y += 10;
+    });
+
+    doc.line(20, y, 190, y);
+    y += 5;
+    doc.text("Top Artists by Play Count:", 20, y);
+    y += 10;
+
+    reportData.artistMap.forEach(({ artistId, count, name }) => {
+      if (y > 260) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.text(`Artist: ${name} - Play Count: ${count}`, 20, y);
+      y += 10;
+    });
+
+    doc.line(20, y, 190, y);
+    y += 5;
+    doc.text("Top Artists by Listening Time:", 20, y);
+    y += 10;
+
+    reportData.artistListenTime.forEach(({ artistId, minutes, name }) => {
+      if (y > 260) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.text(`Artist: ${name} - Minutes Listened: ${minutes}`, 20, y);
+      y += 10;
+    });
+
+    const formattedDate = date.replace(/-/g, "_");
+    doc.save(`listening_report_${formattedDate}.pdf`);
+  };
 
   const isValidDate = (date) => {
     const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
@@ -49,12 +109,11 @@ const PStat = () => {
       if (response.ok) {
         const data = await response.json();
         setReportData(data);
+        console.log(data);
       } else {
-        console.error("Error fetching report:", response.statusText);
         setErrorMessage("Failed to fetch the report. Please try again later.");
       }
     } catch (error) {
-      console.error("Error:", error);
       setErrorMessage("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -84,39 +143,58 @@ const PStat = () => {
         <p>Loading report...</p>
       ) : (
         <div className="report-container">
-          <h3>Track Report</h3>
-          {Object.keys(reportData.trackMap).length > 0 ? (
-            Object.entries(reportData.trackMap).map(([trackId, { count }]) => (
-              <div key={trackId} className="report-item">
-                <p>
-                  <strong>Track ID:</strong> {trackId}
-                </p>
-                <p>
-                  <strong>Play Count:</strong> {count}
-                </p>
-              </div>
-            ))
-          ) : (
-            <p>No track data available.</p>
-          )}
+          <h3>Total Time Listened: {reportData.totalTime} minutes</h3>
 
-          <h3>Artist Report</h3>
-          {Object.keys(reportData.artistMap).length > 0 ? (
-            Object.entries(reportData.artistMap).map(
-              ([artistId, { count }]) => (
+          <div className="stat-item">
+            <h3>Top Songs by Play Count</h3>
+            {Object.keys(reportData.trackMap).length > 0 ? (
+              reportData.trackMap.map(({ trackId, track_name, count }) => (
+                <div key={trackId} className="report-item">
+                  <p>
+                    <strong>{track_name}</strong>
+                  </p>
+                  <p>Play Count: {count}</p>
+                </div>
+              ))
+            ) : (
+              <p>No track data available.</p>
+            )}
+          </div>
+
+          <div className="stat-item">
+            <h3>Top Artists by Play Count</h3>
+            {Object.keys(reportData.artistMap).length > 0 ? (
+              reportData.artistMap.map(({ artistId, name, count }) => (
                 <div key={artistId} className="report-item">
                   <p>
-                    <strong>Artist ID:</strong> {artistId}
+                    <strong>{name}</strong>
                   </p>
-                  <p>
-                    <strong>Play Count:</strong> {count}
-                  </p>
+                  <p>Play Count: {count}</p>
                 </div>
-              )
-            )
-          ) : (
-            <p>No artist data available.</p>
-          )}
+              ))
+            ) : (
+              <p>No artist data available.</p>
+            )}
+          </div>
+
+          <div className="stat-item">
+            <h3>Top Artists by Listening Time</h3>
+            {Object.keys(reportData.artistListenTime).length > 0 ? (
+              reportData.artistListenTime.map(({ artistId, name, minutes }) => (
+                <div key={artistId} className="report-item">
+                  <p>
+                    <strong>{name}</strong>
+                  </p>
+                  <p>Minutes Listened: {minutes}</p>
+                </div>
+              ))
+            ) : (
+              <p>No artist listening time data available.</p>
+            )}
+          </div>
+          <button onClick={generatePDF} className="download-button">
+            Download PDF
+          </button>
         </div>
       )}
     </div>
