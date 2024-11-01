@@ -1171,10 +1171,6 @@ app.get("/checkUserExists", (req, res) => {
   }
 
     // res.status(200).json({ message: "user exists" });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send(error);
-  }
 });
 
 app.post("/fetchChats", async (req, res) => {
@@ -1473,6 +1469,55 @@ app.post('/fetchChatRecipients', async (req, res) => {
     console.error('Error fetching recipients:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+app.post('/fetchPrivacySettings', async (req, res) => {
+  const { username } = req.body;
+
+  if (!username) {
+    return res.status(400).json({ error: 'username is required.' });
+  }
+
+  try {
+    const querySnapshot = await db.collection('UserData')
+      .where('username', '==', username)
+      .limit(1)
+      .get();
+
+    if (querySnapshot.empty) {
+      // console.log("okay so it is in fact empty");
+      return res.status(404).json({ message: 'No document found' });
+    }
+
+    const privacySettings = querySnapshot.docs[0].data().privacySettings;
+    
+    return res.status(200).json({ privacySettings: privacySettings });
+  } catch (error) {
+    console.error('Error fetching privacy settings:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/setPrivacySettings', async (req, res) => {
+  const { username , privacySettings , isPrivate, twoStepAuth } = req.body;
+
+  if (!username) {
+    return res.status(400).json({ error: 'username is required.' });
+  }
+  if (!privacySettings) {
+    return res.status(400).json({ error: 'privacy settings is required.' });
+  }
+
+  try {
+    await setDoc(doc(db, "UserData", username), {
+      privacySettings: privacySettings,
+      isPrivate: isPrivate,
+      twoStepAuth: twoStepAuth,
+    }, { merge: true });
+  } catch (error) {
+    console.error("Error saving settings:", error);
+  }
+
 });
 
 

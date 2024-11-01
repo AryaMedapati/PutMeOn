@@ -97,17 +97,6 @@ const ViewProfile = () => {
         fetchProfileData();
     }, [username]);
   
-  useEffect(() => {
-    const fetchCurrentlyPlaying = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/currentlyPlaying");
-        setCurrentlyPlaying(response.data);
-      } catch (error) {
-        console.error("Error fetching currently playing song:", error);
-      }
-    };
-    fetchProfileData();
-  }, [username]);
 
   const fetchCurrentlyPlaying = async () => {
     try {
