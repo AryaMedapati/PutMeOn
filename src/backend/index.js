@@ -65,8 +65,9 @@ async function saveToken(user) {
     console.log(error);
   }
 }
-async function saveRecentlyPlayed(user, song, likes, likedBy) {
+async function saveRecentlyPlayed(user, song, likes, likedBy, laughingLikes, laughingLikedBy, fire, fireLikedBy, comments, totalLikes, totalReactions, totalComments) {
   // console.log("user: "+ user);
+  console.log(likedBy);
   try {
     const getUsers = db.collection("UserData");
     // const user = user;
@@ -80,7 +81,15 @@ async function saveRecentlyPlayed(user, song, likes, likedBy) {
       await userDoc.ref.update({
         recentlyPlayed: song,
         currentLikes: likes,
-        likedBy: likedBy
+        likedBy: likedBy,
+        currentLaughingLikes: laughingLikes,
+        laughingLikedBy: laughingLikedBy,
+        fire: fire,
+        fireLikedBy: fireLikedBy,
+        comments: comments,
+        totalLikes: totalLikes,
+        totalReactions: totalReactions,
+        totalComments: totalComments
       });
 
     }
@@ -861,13 +870,23 @@ app.get("/recentlyPlayed", async (req, res) => {
   }
 });
 
-app.post("/saveRecentlyPlayed", (req, res) => {
+app.post("/saveRecentlyPlayed", async(req, res) => {
   const song = req.body.song;
   const user = req.body.user;
   const currentLikes = req.body.likes;
   const likedBy = req.body.likedBy;
-  console.log(currentLikes);
-  saveRecentlyPlayed(user, song, currentLikes, likedBy);
+  const laughingLikes = req.body.laughing;
+  const laughingLikedBy = req.body.laughingLikedBy;
+  const fire = req.body.fire;
+  const fireLikedBy = req.body.fireLikedBy;
+  const comments = req.body.comments;
+  const totalLikes = req.body.totalLikes;
+  const totalReactions = req.body.totalReactions;
+  const totalComments = req.body.totalComments
+  console.log(likedBy);
+  await saveRecentlyPlayed(user, song, currentLikes, likedBy, laughingLikes, laughingLikedBy, fire, fireLikedBy, comments, totalLikes, totalReactions, totalComments);
+  res.status(200).json({ message: "Success" });
+
 })
 app.get("/getRecentlyPlayed", async (req, res) => {
   const username = req.query.user;

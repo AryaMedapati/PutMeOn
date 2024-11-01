@@ -13,12 +13,29 @@ const Home = () => {
   const [info, setInfo] = useState([]);
   const[friends, setFriends] = useState([]);
   const [liked, setLiked] = useState(false);
+  const [laughingLiked, setLaughingLiked] = useState(false);
+  const [fireLiked, setFireLiked] = useState(false);
   const [currentLikes, setCurrentLikes] = useState([]);
+  const [currentLaughingLikes, setCurrentLaughingLikes] = useState([]);
+  const [currentFireLikes, setCurrentFireLikes] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [commentsStatus, setCommentsStatus] = useState("");
+  const [showCommentInput, setShowCommentInput] = useState(false);
   const [likedBy, setLikedBy] = useState([]);
+  const [laughingLikedBy, setLaughingLikedBy] = useState([]);
+  const [fireLikedBy, setFireLikedBy] = useState([]);
   const [likedStatus, setLikedStatus] = useState([]);
+  const [laughingLikedStatus, setLaughingLikedStatus] = useState([]);
+  const [fireLikedStatus, setFireLikedStatus] = useState([]);
+  const [totalLikes, setTotalLikes] = useState(Array(friends.length).fill(0));
+  const [totalReactions, setTotalReactions] = useState(Array(friends.length).fill(0));
+  const [totalComments, setTotalComments] = useState(Array(friends.length).fill(0));
 
+  // const [emojiLikes, setEmojiLikes] = useState([]);
+  // const emojis = ['😀', '😢', '😍', '😂', '😎', '🤔']; 
 
-  const [likes, setLikes] = useState(0);
+  // const [likes, setLikes] = useState(0);
   const username = localstorage.get('user');
   async function getRecentlyPlayed(user) {
     const url = "http://localhost:3001";
@@ -30,25 +47,52 @@ const Home = () => {
     // console.log(data);
     return data.data.items[0];
   };
-  async function getSaved(user, i, temp, temp2) {
+  async function getSaved(user, i, currentLikesTemp, likedByTemp, currentLaughingLikesTemp, laughingLikedByTemp, currentFireLikesTemp, fireLikedByTemp, commentsTemp, totalLikesTemp, totalReactionsTemp, totalCommentsTemp) {
 
     const url = "http://localhost:3001";
     const response = await fetch(
       `${url}/getRecentlyPlayed?user=${user}`
     );
     const data = await response.json();
-    temp[i] = data.currentLikes;
-    setCurrentLikes(temp);
-    temp2[i] = data.likedBy;
-    if (temp2[i]) {
-      console.log()
-      setLikedBy(temp2);
+    currentLikesTemp[i] = data.currentLikes;
+    setCurrentLikes(currentLikesTemp);
+    totalLikesTemp[i] = data.totalLikes;
+    setTotalLikes(totalLikesTemp);
+    currentLaughingLikesTemp[i] = data.currentLaughingLikes;
+    setCurrentLaughingLikes(currentLaughingLikesTemp);
+    currentFireLikesTemp[i] = data.fire;
+    setCurrentFireLikes(currentFireLikesTemp);
+    totalReactionsTemp[i] = data.totalReactions;
+    setTotalReactions(totalReactionsTemp);
+    totalCommentsTemp[i] = data.totalComments;
+    setTotalComments(totalCommentsTemp);
+    likedByTemp[i] = data.likedBy;
+    if (likedByTemp[i]) {
+      setLikedBy(likedByTemp);
     }
     else {
-      temp2[i] = [];
-      setLikedBy(temp2);
-
+      likedByTemp[i] = [];
+      setLikedBy(likedByTemp);
     }
+    laughingLikedByTemp[i] = data.laughingLikedBy;
+    if (laughingLikedByTemp[i]) {
+      setLaughingLikedBy(laughingLikedByTemp);
+    }
+    else {
+      laughingLikedByTemp[i] = [];
+      setLaughingLikedBy(laughingLikedByTemp);
+    }
+    fireLikedByTemp[i] = data.fireLikedBy;
+    if (fireLikedByTemp[i]) {
+      setFireLikedBy(fireLikedByTemp);
+    }
+    else {
+      fireLikedByTemp[i] = [];
+      setFireLikedBy(fireLikedByTemp);
+    }
+    commentsTemp[i] = data.comments || [];
+    setComments(commentsTemp);
+
       
     // console.log(data);
     return data.recentlyPlayed;
@@ -56,7 +100,7 @@ const Home = () => {
   if (location.state) {
     passIn2 = location.state.user;
   }
-  const toggleLike = (index) => {
+  const toggleLike = async(index) => {
     const userLiked = likedBy[index]?.includes(username);
   
     if (userLiked) {
@@ -70,15 +114,64 @@ const Home = () => {
     updatedLikedStatus[index] = !userLiked;
     setLikedStatus(updatedLikedStatus);
   };
+  const toggleLaughingLike = (index) => {
+    const userLiked = laughingLikedBy[index]?.includes(username);
+  
+    if (userLiked) {
+      setLaughingLiked(false);
+      handleLaughingLike2(index);
+    } else {
+      setLaughingLiked(true);
+      handleLaughingLike(index);
+    }
+    const updatedLikedStatus = laughingLikedStatus;
+    updatedLikedStatus[index] = !userLiked;
+    setLaughingLikedStatus(updatedLikedStatus);
+  };
+  const toggleFireLike = (index) => {
+    const userLiked = fireLikedBy[index]?.includes(username);
+  
+    if (userLiked) {
+      setFireLiked(false);
+      handleFireLike2(index);
+    } else {
+      setFireLiked(true);
+      handleFireLike(index);
+    }
+    const updatedLikedStatus = fireLikedStatus;
+    updatedLikedStatus[index] = !userLiked;
+    setFireLikedStatus(updatedLikedStatus);
+  };
   useEffect(() => {
     const initialLikedStatus = likedBy.map(likedByUsers => likedByUsers.includes(username));
     setLikedStatus(initialLikedStatus);
   }, [likedBy]);
+  useEffect(() => {
+    const initialLaughingLikedStatus = laughingLikedBy.map(likedByUsers => likedByUsers.includes(username));
+    setLikedStatus(initialLaughingLikedStatus);
+  }, [laughingLikedBy]);
+  useEffect(() => {
+    const initialFireLikedStatus = fireLikedBy.map(likedByUsers => likedByUsers.includes(username));
+    setLikedStatus(initialFireLikedStatus);
+  }, [fireLikedBy]);
+  useEffect(() => {
+    const initialComments = comments.map(likedByUsers => likedByUsers.includes(username));
+    setCommentsStatus(initialComments);
+  }, [fireLikedBy]);
+  
   // const friends = ["test3@email.com", "test4@email.com", "test2@email.com"];
   async function getReady(friendsList) {
     const tracks =[]
     const tempCurrentLikes = currentLikes;
     const tempLikedBy = likedBy;
+    const tempCurrentLaughingLikes = currentLaughingLikes;
+    const tempLaughingLikedBy = laughingLikedBy;
+    const tempCurrentFireLikes = currentFireLikes;
+    const tempFireLikedBy = fireLikedBy;
+    const commentsTemp = comments;
+    const totalLikesTemp = totalLikes;
+    const totalReactionsTemp = totalReactions;
+    const totalCommentsTemp = totalComments;
     console.log(tempCurrentLikes);
 
     console.log(friendsList);
@@ -88,14 +181,40 @@ const Home = () => {
       console.log(track);
       tracks.push(track);
       console.log(tracks);
-      const savedTrack = await getSaved(friendsList[i], i, tempCurrentLikes, tempLikedBy);
+      const savedTrack = await getSaved(friendsList[i], i, tempCurrentLikes, tempLikedBy, tempCurrentLaughingLikes, tempLaughingLikedBy, tempCurrentFireLikes, tempFireLikedBy, commentsTemp, totalLikesTemp, totalReactionsTemp, totalCommentsTemp);
       console.log(savedTrack);
       console.log(track.track.id);
       if (savedTrack != track.track.id) {
+        const tempTotalLikes =  totalLikes;
+        tempTotalLikes[i] += tempCurrentLikes[i];
+        setTotalLikes(tempTotalLikes);
         tempCurrentLikes[i] = 0;
+        const tempTotalReactions = totalReactions;
+        tempTotalReactions[i] += tempCurrentLaughingLikes[i] + tempCurrentFireLikes[i];
+        setTotalReactions(tempTotalReactions);
+        const tempTotalComments = totalComments;
+        tempTotalComments[i] += comments[i].length;
+        setTotalComments(tempTotalComments);
+        tempCurrentLaughingLikes[i] = 0;
+        tempCurrentFireLikes[i] = 0;
         setCurrentLikes(tempCurrentLikes);
+        setCurrentLaughingLikes(tempCurrentLaughingLikes);
+        setCurrentFireLikes(tempCurrentFireLikes);
+        const tempLikedBy2 = likedBy || [];
+        tempLikedBy2[i] = [];
+        const tempLaughingLikedBy2 = laughingLikedBy || [];
+        tempLaughingLikedBy2[i] = [];
+        const tempFireLikedBy2 = fireLikedBy || [];
+        tempFireLikedBy2[i] = [];
+        const tempComments = comments || [];
+        tempComments[i] = []
+        setComments(tempComments);
+        setLikedBy(tempLikedBy2);
+        setLaughingLikedBy(tempLaughingLikedBy2);
+        setFireLikedBy(tempFireLikedBy2);
+
       }
-      saveRecentlyPlayed(friendsList[i], track.track.id, currentLikes[i], likedBy[i]);
+      saveRecentlyPlayed(friendsList[i], track.track.id, currentLikes[i], likedBy[i], currentLaughingLikes[i], laughingLikedBy[i], currentFireLikes[i], fireLikedBy[i], comments[i], totalLikes[i], totalReactions[i], totalComments[i]);
     }
     setInfo(tracks);
     if (friendsList.length == 0) {
@@ -121,21 +240,23 @@ const Home = () => {
       console.error(error);
     }
   };
-  async function saveRecentlyPlayed (userName, song, currentLikesUser, likedBy) {
-    console.log(currentLikes);
+  async function saveRecentlyPlayed (userName, song, currentLikesUser, likedByT, currentLaughingLikesUser, laughingLikedBy, currentFireLikesUser, fireLikedBy, comments, totalLikes, totalReactions, totalComments) {
+    // console.log(currentLikes);
+    console.log(likedByT);
+    console.log(laughingLikedBy);
     try {
       const res = await fetch(`http://localhost:3001/saveRecentlyPlayed`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ user: userName, song: song, likes: currentLikesUser, likedBy:likedBy }),
+        body: JSON.stringify({ user: userName, song: song, likes: currentLikesUser, likedBy:likedByT, laughing: currentLaughingLikesUser, laughingLikedBy: laughingLikedBy, fire:currentFireLikesUser, fireLikedBy: fireLikedBy, comments: comments, totalLikes:totalLikes, totalReactions: totalReactions, totalComments: totalComments }),
       });
-      const data = await res.json();
+      // const data = await res.json();
       // console.log(data);
       // setFriends(data.friends);
       // console.log(friends);
-      return data.friends
+      // return data.friends
     } catch (error) {
       console.error(error);
     }
@@ -143,29 +264,96 @@ const Home = () => {
   const handleLike = (index) => {
     if (!likedBy[index].includes(username)) {
       console.log(index);
-      let updatedLikes = currentLikes;
+      const updatedLikes = currentLikes;
       updatedLikes[index]++;
       setCurrentLikes(updatedLikes);
-      let likedByTemp = likedBy;
+      const likedByTemp = likedBy;
       likedByTemp[index].push(username);
-      console.log(currentLikes);
-      saveRecentlyPlayed(friends[index], info[index].track.id, updatedLikes[index], likedByTemp[index]);
+      console.log(likedByTemp[index]);
+      console.log(laughingLikedBy[index]);
+      saveRecentlyPlayed(friends[index], info[index].track.id, updatedLikes[index], likedByTemp[index], currentLaughingLikes[index], laughingLikedBy[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
     }
-
-
   }
+  
   const handleLike2 = (index) => {
-    let updatedLikes = currentLikes;
-    updatedLikes[index]--;
-    setCurrentLikes(updatedLikes);
-    const likedByTemp = likedBy;
-    likedByTemp[index] = likedByTemp[index].filter(user => user !== username);
-    setLikedBy(likedByTemp);
-    saveRecentlyPlayed(friends[index], info[index].track.id, updatedLikes[index], likedByTemp[index]);
-
+    if (likedBy[index].includes(username)) {
+      const updatedLikes = currentLikes;
+      updatedLikes[index]--;
+      setCurrentLikes(updatedLikes);
+      const likedByTemp = likedBy;
+      likedByTemp[index] = likedByTemp[index].filter(user => user !== username);
+      // setLikedBy(likedByTemp);
+      console.log(likedByTemp[index]);
+      setLikedBy(likedByTemp);
+      saveRecentlyPlayed(friends[index], info[index].track.id, updatedLikes[index], likedByTemp[index], currentLaughingLikes[index], laughingLikedBy[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
+    }
   }
-  const handleComment = () => {
-
+  
+  
+  
+  const handleLaughingLike = (index) => {
+    if (!laughingLikedBy[index].includes(username)) {
+      console.log(index);
+      const updatedLikes = currentLaughingLikes;
+      updatedLikes[index]++;
+      setCurrentLaughingLikes(updatedLikes);
+      const likedByTemp2 = laughingLikedBy;
+      likedByTemp2[index].push(username);
+      console.log(currentLikes);
+      saveRecentlyPlayed(friends[index], info[index].track.id, currentLikes[index], likedBy[index], updatedLikes[index], likedByTemp2[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
+    }
+  }
+  const handleLaughingLike2 = (index) => {
+    if (laughingLikedBy[index].includes(username)) {
+      const updatedLikes = currentLaughingLikes;
+      updatedLikes[index]--;
+      setCurrentLaughingLikes(updatedLikes);
+      const likedByTemp = laughingLikedBy;
+      likedByTemp[index] = likedByTemp[index].filter(user => user !== username);
+      setLaughingLikedBy(likedByTemp);
+      saveRecentlyPlayed(friends[index], info[index].track.id, currentLikes[index], likedBy[index], updatedLikes[index], likedByTemp[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);  
+    }
+  }
+  const handleFireLike = (index) => {
+    if (!fireLikedBy[index].includes(username)) {
+      console.log(index);
+      const updatedLikes = currentFireLikes;
+      updatedLikes[index]++;
+      setCurrentFireLikes(updatedLikes);
+      const likedByTemp3 = fireLikedBy;
+      likedByTemp3[index].push(username);
+      console.log(currentLikes);
+      saveRecentlyPlayed(friends[index], info[index].track.id, currentLikes[index], likedBy[index], currentLaughingLikes[index], laughingLikedBy[index], updatedLikes[index], likedByTemp3[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
+    }
+  }
+  const handleFireLike2 = (index) => {
+    if (fireLikedBy[index].includes(username)) {
+      const updatedLikes = currentFireLikes;
+      updatedLikes[index]--;
+      setCurrentFireLikes(updatedLikes);
+      const likedByTemp3 = fireLikedBy;
+      likedByTemp3[index] = likedByTemp3[index].filter(user => user !== username);
+      setFireLikedBy(likedByTemp3);
+      saveRecentlyPlayed(friends[index], info[index].track.id, currentLikes[index], likedBy[index], currentLaughingLikes[index], laughingLikedBy[index], updatedLikes[index], likedByTemp3[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
+    }
+  }
+  const saveNewComment = (index) => {
+    console.log(index);
+    console.log(newComment);
+    const tempComments = [...comments] || [];
+    if (!tempComments[index]) {
+      tempComments[index] = [];
+  }
+    console.log(tempComments);
+    const newVal = username + ": " + newComment;
+    tempComments[index].push(newVal);
+    setComments(tempComments);
+    setNewComment('');
+    setShowCommentInput(false);
+    saveRecentlyPlayed(friends[index], info[index].track.id, currentLikes[index], likedBy[index], currentLaughingLikes[index], laughingLikedBy[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
+  }
+  const handleComment = (e) => {
+    setNewComment(e.target.value);
   }
   useEffect(() => {
     const fetchAndSetData = async () => {
@@ -211,6 +399,9 @@ const Home = () => {
                 // console.log(artistName);
                 const timeSinceListened = getTimeSincePlayed(track.played_at);
                 const userLiked = likedBy[index]?.includes(username);
+                const userLaughingLiked = laughingLikedBy[index]?.includes(username);
+                const userFireLiked = fireLikedBy[index]?.includes(username);
+
 
                 return (
                     <div className="track-activity" key={index}>
@@ -223,17 +414,54 @@ const Home = () => {
                         </div>
                         <div className="time">{timeSinceListened}</div>
                         <div className="interaction-buttons">
+
                 <button
-                    className={`like-button ${liked ? 'liked' : ''}`}
+                    className={`like-button ${userLiked ? 'liked' : ''}`}
                     onClick={() =>toggleLike(index)}
                 >
-                    {userLiked ? '❤️' : '🤍'} {currentLikes[index]}
+                    {userLiked ? '❤️' : '❤️'} {currentLikes[index]}
                 </button>
-                <button className="comment-button" onClick={() => handleComment(track.id)}>
+                <button
+                    className={`like-button ${userLaughingLiked ? 'liked' : ''}`}
+                    onClick={() =>toggleLaughingLike(index)}
+                >
+                    {userLaughingLiked ? '😂' : '😂'} {currentLaughingLikes[index]}
+                </button>
+                <button
+                    className={`like-button ${userFireLiked ? 'liked' : ''}`}
+                    onClick={() => toggleFireLike(index)}
+                >
+                    {userFireLiked ? '🔥' : '🔥'} {currentFireLikes[index]}
+                </button>
+                {/* <button
+                    className="comment-button"
+                    onClick={() => saveNewComment(index)}
+                >
                     Comment
-                </button>
+                </button> */}
             </div>
-                    </div>
+            <div className="comment-section">
+            <button onClick={() => setShowCommentInput(!showCommentInput)}>
+                {showCommentInput ? 'Cancel' : 'Comment'}
+            </button>
+            {showCommentInput && (
+                <div>
+                    <input
+                        type="text"
+                        value={newComment}
+                        onChange={handleComment}
+                        placeholder="Type your comment here..."
+                    />
+                    <button onClick={() => saveNewComment(index)}>Submit</button>
+                </div>
+            )}
+            <div className="comments-list">
+                {comments[index] && comments[index].map((comment, commentIndex) => (
+                    <div key={commentIndex}>{comment}</div>
+                ))}
+            </div>
+        </div>
+            </div>
                 );
             })}
         </div>

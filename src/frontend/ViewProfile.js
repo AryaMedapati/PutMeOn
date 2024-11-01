@@ -20,6 +20,13 @@ const ViewProfile = () => {
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedArtists, setSelectedArtists] = useState([]);
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const [totalLikes, setTotalLikes] = useState(0);
+  const [totalReactions, setTotalReactions] = useState(0);
+  const [totalComments, setTotalComments] = useState(0);
+  const [currentLikes, setCurrentLikes] = useState(0);
+  const [currentReactions, setCurrentReactions] = useState(0);
+  const [currentComments, setCurrentComments] = useState(0);
+
   const { username, setUsername } = useContext(UserContext);
 
 
@@ -53,6 +60,26 @@ const ViewProfile = () => {
     })
 
   };
+  async function getSaved() {
+    const user = localstorage.get('user');
+    const url = "http://localhost:3001";
+    const response = await fetch(
+      `${url}/getRecentlyPlayed?user=${user}`
+    );
+    const data = await response.json();
+    const totalLikesTemp = data.totalLikes;
+    setTotalLikes(totalLikesTemp);
+    const totalReactionsTemp = data.totalReactions;
+    setTotalReactions(totalReactionsTemp);
+    const totalCommentsTemp = data.totalComments;
+    setTotalComments(totalCommentsTemp);
+    const currentCommentsTemp = data.comments.length;
+    setCurrentComments(currentCommentsTemp);
+    const currentReactionsTemp = data.fire + data.currentLaughingLikes;
+    setCurrentReactions(currentReactionsTemp);
+    const currentLikesTemp = data.currentLikes;
+    setCurrentLikes(currentLikesTemp);
+  }
 
   const displayImage = (base64String) => {
     const img = document.createElement("img");
@@ -85,6 +112,9 @@ const ViewProfile = () => {
   useEffect(() => {
     displayImage(pfp);
   }, [pfp]);
+  useEffect(() => {
+    getSaved();
+  }, []);
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -195,6 +225,16 @@ const ViewProfile = () => {
           onClick={handleLogOut}
         />
       </div>
+      <div style={{ marginTop: "20px" }}>
+          <p><strong>Current Likes:</strong> {currentLikes}</p>
+          <p><strong>Current Reactions:</strong> {currentReactions}</p>
+          <p><strong>Current Comments:</strong> {currentComments}</p>
+
+          <p style={{ marginTop: "20px" }}><strong>Total Likes:</strong> {totalLikes}</p>
+          <p><strong>Total Reactions:</strong> {totalReactions}</p>
+          <p><strong>Total Comments:</strong> {totalComments}</p>
+      </div>
+
     </div>
 
   );
