@@ -8,6 +8,7 @@ import { UserContext } from "./UserContext";
 
 
 import defaultPfp from "./images/defaultPfp";
+import CollabPlaylist from "./CollabPlaylist";
 
 
 function CreateAccount() {
@@ -91,7 +92,10 @@ function CreateAccount() {
           topSongs: [],
           topGenres: [],
           topArtists: [],
-          pdf: ""
+          pdf: "",
+          playlists: [],
+          sharedPlaylists: [],
+          collabPlaylists: [],
         }),
         });
         try {

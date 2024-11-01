@@ -399,7 +399,6 @@ const EditProfile = () => {
                     }}
                     onClick={handleSaveChanges}
                     text="Save Changes" />
-
             </div>
         </div>
     );

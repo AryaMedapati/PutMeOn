@@ -19,7 +19,7 @@ function Login() {
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const nav = useNavigate();
-  const { setUsername } = useContext(UserContext);
+  const { setUsername, setEmail } = useContext(UserContext);
 
   const handleUser = (e) => {
     setUserName(e.target.value);
@@ -49,7 +49,6 @@ function Login() {
       const users = await returnVal.json();
       let track = false;
       for (let i = 0; i < users.length; i++) {
-        debugger;
         if (users[i].username === username && users[i].password === pass) {
           tempUser = users[i];
           console.log("here");
@@ -96,6 +95,7 @@ function Login() {
                 });
               setUsername(users[i].docId);
               // setUsername(username);
+              setEmail(username);
               // setIsLoggedIn(true);
               localstorage.set('user', username);
               localstorage.set('pass', pass);
