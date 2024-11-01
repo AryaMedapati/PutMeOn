@@ -8,6 +8,7 @@ const cors = require("cors");
 const axios = require("axios");
 const request = require("request");
 const querystring = require("querystring");
+const cron = require("node-cron");
 const { createCanvas } = require("canvas");
 const { Chart, registerables } = require("chart.js");
 Chart.register(...registerables);
@@ -15,6 +16,7 @@ const clientID = "6e24baf59c484801a146e21891775723";
 const clientSecret = "177482208fff40f7991ac0b139b2627e";
 let accessToken = "";
 let refreshToken = "";
+const { ArrayTimestamp } = require("@blueprintjs/icons");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require('uuid');
@@ -213,13 +215,50 @@ app.post("/acceptFriendRequest", async (req, res) => {
   }
 });
 
+app.post("/removeFriend", async (req, res) => {
+  try {
+    const { recipientUsername, senderUsername } = req.body;
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", recipientUsername)
+      .get();
+    const senderSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", senderUsername)
+      .get();
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const senderDoc = senderSnapshot.docs[0];
+    const recipientId = recipientDoc.id;
+    const senderId = senderDoc.id;
+
+    const recipientUserRef = db.collection("UserData").doc(recipientId);
+    const senderUserRef = db.collection("UserData").doc(senderId);
+
+    await recipientUserRef.update({
+      friends_list: admin.firestore.FieldValue.arrayRemove(senderUsername),
+    });
+
+    await senderUserRef.update({
+      friends_list: admin.firestore.FieldValue.arrayRemove(recipientUsername),
+    });
+
+    res.json({
+      message: `Removed ${recipientUsername} and ${senderUsername} as friends`,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
 app.get("/fetchUsers", async (req, res) => {
   try {
     const getUsers = db.collection("UserData");
     const snapshot = await getUsers.get();
     const users = snapshot.docs.map((doc) => ({
       docId: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
     res.status(200).json(users);
   } catch (error) {
@@ -245,10 +284,10 @@ app.get("/fetchUserByUsername", async (req, res) => {
 
 app.get("/fetchCurrentUser", async (req, res) => {
   try {
-    const docId = req.headers['documentid'];
+    const docId = req.headers["documentid"];
     const userDoc = db.collection("UserData").doc(docId);
     const doc = await userDoc.get();
-    const user = doc.data()
+    const user = doc.data();
     res.status(200).json(user);
   } catch (error) {
     console.log(error);
@@ -337,14 +376,33 @@ app.post("/fetchFriends", async (req, res) => {
 
 app.post("/updateUser", async (req, res) => {
   try {
-    const docId = req.headers['documentid'];
-    const userRef = db.collection('UserData').doc(docId);
+    const docId = req.headers["documentid"];
+    const userRef = db.collection("UserData").doc(docId);
     await userRef.set(req.body, { merge: true });
 
-    res.status(200).send('User updated successfully');
+    res.status(200).send("User updated successfully");
   } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).send('Error updating user');
+    console.error("Error updating user:", error);
+    res.status(500).send("Error updating user");
+  }
+});
+
+app.post("/updateUserbyUsername", async (req, res) => {
+  try {
+    const username = req.headers['username'];
+    const recipientSnapshot = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    const userDoc = recipientSnapshot.docs[0];
+    const userRef = userDoc.ref;
+    await userRef.set(req.body, { merge: true });
+
+    res.status(200).send("User updated successfully");
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).send("Error updating user");
   }
 });
 
@@ -370,13 +428,13 @@ app.post("/updateUserbyUsername", async (req, res) => {
 app.post("/cypressUserReset", async (req, res) => {
   try {
     const docId = "Du33v7g2VInEVppp6wNU";
-    const userRef = db.collection('UserData').doc(docId);
+    const userRef = db.collection("UserData").doc(docId);
     await userRef.set(req.body, { merge: false });
 
     res.status(200).send('User updated successfully');
   } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).send('Error updating user');
+    console.error("Error updating user:", error);
+    res.status(500).send("Error updating user");
   }
 });
 
@@ -394,7 +452,7 @@ app.get("/topTracks", async (req, res) => {
         },
       }
     );
-    console.log(topTracksResponse)
+    console.log(topTracksResponse);
 
     res.status(200).json({ data: topTracksResponse.data.items });
   } catch (error) {
@@ -453,6 +511,299 @@ app.get("/currentlyPlaying", async (req, res) => {
   } catch (error) {
     // console.error("Error fetching currently playing song:", error);
     // res.status(500).json({ message: "Failed to fetch currently playing song." });
+  }
+});
+
+async function logTrackToDatabase(
+  userId,
+  artists,
+  duration,
+  progress,
+  popularity,
+  time_played,
+  track_id,
+  track_name
+) {
+  try {
+    const recipientSnapshot = await db
+      .collection("UserListening")
+      .where("user_id", "==", userId)
+      .get();
+
+    let recipientRef;
+    if (recipientSnapshot.empty) {
+      recipientRef = await db.collection("UserListening").add({
+        user_id: userId,
+        listening_data: [],
+      });
+      console.log("New document created for user.");
+    } else {
+      recipientRef = db
+        .collection("UserListening")
+        .doc(recipientSnapshot.docs[0].id);
+    }
+
+    const trackData = {
+      artists,
+      duration,
+      popularity,
+      progress,
+      time_played,
+      track_id,
+      track_name,
+    };
+
+    await recipientRef.update({
+      listening_data: admin.firestore.FieldValue.arrayUnion(trackData),
+    });
+
+    // const recipientDoc = recipientSnapshot.docs[0];
+    // const recipientId = recipientDoc.id;
+    // const recipientUserRef = db.collection("UserData").doc(recipientId);
+
+    // await recipientUserRef.update({
+    //   listening_data: admin.firestore.FieldValue.arrayUnion(
+    //     artists,
+    //     duration,
+    //     popularity,
+    //     progress,
+    //     time_played,
+    //     track_id,
+    //     track_name
+    //   ),
+    // });
+    console.log("Track added to database");
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function getLastPlayedTrackForUser(username) {
+  console.log(username);
+  const recipientSnapshot = await db
+    .collection("UserListening")
+    .where("user_id", "==", username)
+    .get();
+
+  if (recipientSnapshot.empty) {
+    console.log("No listening data found for the user.");
+    return null;
+  }
+
+  const recipientDoc = recipientSnapshot.docs[0];
+  const listeningData = recipientDoc.data().listening_data;
+
+  // Check if there is any listening data
+  if (!listeningData || listeningData.length === 0) {
+    console.log("No listening history found for the user.");
+    return null;
+  }
+
+  const lastPlayedData = listeningData[listeningData.length - 1];
+  console.log(lastPlayedData);
+  const {
+    artist_names,
+    duration,
+    popularity,
+    progress,
+    time_played,
+    track_id,
+    track_name,
+  } = lastPlayedData;
+
+  return {
+    track_id,
+    time_played,
+  };
+}
+
+async function trackCurrentlyPlaying(userId, accessToken) {
+  try {
+    const currentlyPlayingResponse = await axios.get(
+      "https://api.spotify.com/v1/me/player/currently-playing",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (currentlyPlayingResponse.data && currentlyPlayingResponse.data.item) {
+      const track = currentlyPlayingResponse.data;
+      const artists = track.item.artists;
+      const duration = track.item.duration_ms;
+      const progress = track.progress_ms;
+      const popularity = track.item.popularity;
+      const timestamp = track.timestamp;
+      const trackId = track.item.id;
+      const name = track.item.name;
+      console.log(artists);
+      console.log(duration);
+      console.log(progress);
+      console.log(popularity);
+      console.log(timestamp);
+      console.log(trackId);
+      console.log(name);
+
+      const progressMs = currentlyPlayingResponse.data.progress_ms;
+      const lastPlayed = await getLastPlayedTrackForUser(userId);
+      const listenedAtLeast30Sec = progressMs >= 30000;
+
+      if (lastPlayed) {
+        const lastPlayedTrackId = lastPlayed.track_id;
+        const lastPlayedProgressMs = lastPlayed.progress;
+
+        if (trackId === lastPlayedTrackId) {
+          if (listenedAtLeast30Sec) {
+            if (progressMs > lastPlayedProgressMs) {
+              console.log(
+                "Not logging, already playing longer than last entry."
+              );
+              return;
+            } else if (lastPlayedProgressMs - progressMs >= 30000) {
+              await logTrackToDatabase(
+                userId,
+                artists,
+                duration,
+                progress,
+                popularity,
+                timestamp,
+                trackId,
+                name
+              );
+              console.log(`New entry logged for: ${name}`);
+            }
+          }
+        } else if (listenedAtLeast30Sec) {
+          await logTrackToDatabase(
+            userId,
+            artists,
+            duration,
+            progress,
+            popularity,
+            timestamp,
+            trackId,
+            name
+          );
+          console.log(`New track logged: ${name}`);
+        }
+      } else if (listenedAtLeast30Sec) {
+        await logTrackToDatabase(
+          userId,
+          artists,
+          duration,
+          progress,
+          popularity,
+          timestamp,
+          trackId,
+          name
+        );
+        console.log(`First entry logged for: ${name}`);
+      }
+    } else {
+      console.log("No song is currently playing.");
+    }
+  } catch (error) {
+    console.error("Error fetching currently playing song:", error);
+  }
+}
+
+const startSpotifyTracking = (username, token) => {
+  console.log("before cron schedule");
+  cron.schedule("*/30 * * * * *", () => {
+    console.log("about to track currently playing");
+    console.log(username);
+    trackCurrentlyPlaying(username, token);
+  });
+};
+
+app.post("/startTracking", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const token = accessToken;
+
+    console.log("before tracking function call");
+
+    startSpotifyTracking(username, token);
+    res.status(200).json({ message: "Spotify tracking started." });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.post("/generateReport", async (req, res) => {
+  try {
+    const { username, time } = req.body;
+    const unixTime = new Date(time).getTime();
+    const recipientSnapshot = await db
+      .collection("UserListening")
+      .where("user_id", "==", username)
+      .get();
+
+    if (recipientSnapshot.empty) {
+      return res.status(404).json({ message: "No data found" });
+    }
+
+    const recipientDoc = recipientSnapshot.docs[0];
+    const listeningData = recipientDoc.data().listening_data;
+
+    const filteredData = listeningData.filter(
+      (item) => item.time_played >= unixTime
+    );
+
+    let totalTime = 0;
+    const trackMap = {};
+    const artistMap = {};
+    const artistListenTime = {};
+
+    filteredData.forEach((item) => {
+      const { track_id, track_name, duration, popularity, artists } = item;
+
+      totalTime += Math.round(duration / 60000);
+
+      if (!trackMap[track_id]) {
+        trackMap[track_id] = {
+          trackId: track_id,
+          track_name,
+          count: 0,
+        };
+      }
+      trackMap[track_id].count += 1;
+
+      artists.forEach((artist) => {
+        const { id: artistId, name: artistName } = artist;
+
+        if (!artistMap[artistId]) {
+          artistMap[artistId] = {
+            artistId,
+            name: artistName,
+            count: 0,
+          };
+        }
+        artistMap[artistId].count += 1;
+
+        if (!artistListenTime[artistId]) {
+          artistListenTime[artistId] = {
+            artistId,
+            name: artistName,
+            minutes: 0,
+          };
+        }
+        artistListenTime[artistId].minutes += Math.round(duration / 60000);
+      });
+    });
+
+    res.status(200).json({
+      totalTime: Math.round(totalTime),
+      trackMap: Object.values(trackMap).sort((a, b) => b.count - a.count),
+      artistMap: Object.values(artistMap).sort((a, b) => b.count - a.count),
+      artistListenTime: Object.values(artistListenTime).sort(
+        (a, b) => b.minutes - a.minutes
+      ),
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -819,7 +1170,12 @@ app.get("/checkUserExists", (req, res) => {
     res.status(500).send(error);
   }
 
-})
+    // res.status(200).json({ message: "user exists" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+});
 
 app.post("/fetchChats", async (req, res) => {
   try {
