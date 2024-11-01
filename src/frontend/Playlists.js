@@ -7,6 +7,9 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/
 import {getAuth} from 'firebase/auth';
 import "./styles/Playlists.css";
 import { UserContext } from "./UserContext";
+import PlaylistList from "./PlaylistList";
+import SharedPlaylists from './SharedPlaylists';
+import CollabPlaylist from './CollabPlaylist';
 
 
 const Playlists = (props) => {
@@ -57,6 +60,7 @@ const Playlists = (props) => {
           twoStepAuth: twoStepAuth,
           pdf: du
         });
+        document.getElementById("uploading").innerHTML = "Done";
         alert("File uploaded successfully.");
       } catch (error) {
         console.error("Error saving settings:", error);
@@ -71,7 +75,9 @@ const Playlists = (props) => {
         twoStepAuth: twoStepAuth,
         pdf: du
       });
+      
       alert("File uploaded successfully.");
+      
     }
   };
   const handleFileSave = async() => {
@@ -88,6 +94,7 @@ const Playlists = (props) => {
               break;
             case 'running':
               console.log('Upload is running');
+              document.getElementById("uploading").innerHTML = "Uploading...";
               break;
           }
         }, 
@@ -121,11 +128,15 @@ const Playlists = (props) => {
   }
   return (
 <div className="outer-container">
-  <div className="inner-container">
+  <PlaylistList/>
+  <SharedPlaylists/>
+  <CollabPlaylist/>
+  {/* <div className="inner-container">
     <h2>Upload Extensive Listening History</h2>
     <input type="file" onChange={handleFileChange} />
     <button className="saveFile" onClick={handleFileSave}>Save File</button>
-  </div>
+    <p id="uploading"></p>
+  </div> */}
 </div>
   );
 };

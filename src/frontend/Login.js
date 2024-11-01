@@ -5,7 +5,10 @@ import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from "react
 
 import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth";
 import { UserContext } from "./UserContext";
-import CreateAccount from "./CreateAccount"
+import localstorage from 'localstorage-slim';
+
+import CreateAccount from "./CreateAccount";
+
 
 let tempUser = "";
 
@@ -16,7 +19,7 @@ function Login() {
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const nav = useNavigate();
-  const { setUsername } = useContext(UserContext);
+  const { setUsername, setEmail } = useContext(UserContext);
 
   const handleUser = (e) => {
     setUserName(e.target.value);
@@ -90,7 +93,12 @@ function Login() {
                   const errorCode = error.code;
                   const errorMessage = error.message;
                 });
-              setUsername(username);
+              setUsername(users[i].docId);
+              // setUsername(username);
+              setEmail(username);
+              // setIsLoggedIn(true);
+              localstorage.set('user', username);
+              localstorage.set('pass', pass);
               nav("/", { user: users[i] })
             } catch (error) {
               console.log(error);
@@ -137,7 +145,7 @@ function Login() {
               const errorCode = error.code;
               const errorMessage = error.message;
             });
-          setUsername(username);
+          // setUsername(username);
           closeModal(); // Close the 2FA modal on successful verification
           const returnVal = await fetch("http://localhost:3001/fetchUsers");
           const users = await returnVal.json();
@@ -166,12 +174,6 @@ function Login() {
       }).catch((error) => {
         console.log(error);
       });
-  }
-  const handleSubmitWithSpotify = async (e) => {
-    e.preventDefault();
-    window.location.href = "http://localhost:3001/spotify-login";
-    //const returnVal = await res.json();
-    // console.log(returnVal);
   }
 
   return (
@@ -213,18 +215,13 @@ function Login() {
             onChange={handleRememberMe}
           />
         </div>
-        <button type="submit">Login</button>
+        <button id="login" type="submit">Login</button>
         <div className="alreadyHaveAccount">
           <Link to="/create-account">Don't have an account? Sign up</Link>
         </div>
         <div className="buttonDiv">
           <button type="submit" className="gButton" onClick={handleSubmitWithGoogle}>
             Login with Google
-          </button>
-        </div>
-        <div className="buttonDiv">
-          <button type="submit" className="spoButton" onClick={handleSubmitWithSpotify}>
-            Login with Spotify
           </button>
         </div>
         <Routes>

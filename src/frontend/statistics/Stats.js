@@ -6,6 +6,7 @@ import Genres from "./TopGenres";
 import GV from "./GenreVisual"
 import TH from "./TrackVisual"
 import AH from "./ArtistVisual"
+import PStat from "./PutMeOnStats"
 import "./../styles/Stats.css";
 
 const Stats = () => {
@@ -19,6 +20,7 @@ const Stats = () => {
           <Link to="/genrevis">GenreVisual</Link>
           <Link to="/trackvis">TrackVisual</Link>
           <Link to="/artistvis">ArtistVisual</Link>
+          <Link to="/customstats">PutMeOnStats</Link>
         {/* </button> */}
       </nav>
       <Routes>
@@ -28,6 +30,7 @@ const Stats = () => {
         <Route path="/genrevis" element={<GV/>} />
         <Route path="/trackvis" element={<TH/>} />
         <Route path="/artistvis" element={<AH/>} />
+        <Route path="/customstats" element={<PStat />} />
       </Routes>
     </div>
   );
