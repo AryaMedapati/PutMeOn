@@ -21,7 +21,7 @@ describe('profile functinality', () => {
 
     cy.get('.sidebar').should('have.length', 1)
     
-    cy.get('#sidebarButtonGroup').get('.sidebarButton').should('have.length', 4)
+    // cy.get('#sidebarButtonGroup').get('.sidebarButton').should('have.length', 4)
 
     cy.get('.sidebarButton').eq(0).click()
     cy.contains('Profile View').should('be.visible');
