@@ -20,17 +20,32 @@ const ViewProfile = () => {
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [selectedArtists, setSelectedArtists] = useState([]);
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const [totalLikes, setTotalLikes] = useState(0);
+  const [totalReactions, setTotalReactions] = useState(0);
+  const [totalComments, setTotalComments] = useState(0);
+  const [currentLikes, setCurrentLikes] = useState(0);
+  const [currentReactions, setCurrentReactions] = useState(0);
+  const [currentComments, setCurrentComments] = useState(0);
+
+  const { username, setUsername } = useContext(UserContext);
+
 
   const fileInputRef = useRef(null);
   const imageContainerRef = useRef(null);
   const nav = useNavigate();
 
   const db = getFirestore();
-  const { username } = useContext(UserContext);
+  // const { username } = useContext(UserContext);
 
-  const linkSpotifyAccount = () => {
-    const spotifyAuthUrl = `http://localhost:3001/spotify-login`;
+  const linkSpotifyAccount = async () => {
+    const user = localstorage.get('user');
+    const spotifyAuthUrl = `http://localhost:3001/spotify-login?user=${user}`;
+    
+    // const accessTokenFromUrl = params.get('access_token');
+    // const refreshTokenFromUrl = params.get('refresh_token');
+    // console.log(accessTokenFromUrl);
     window.open(spotifyAuthUrl, "_blank", "noopener,noreferrer");
+    // await fetch(`http://localhost:3001/saveToken?user=${username}`);
   };
   const handleLogOut = () => {
     const auth = getAuth();
@@ -46,6 +61,26 @@ const ViewProfile = () => {
         console.log(error);
       });
   };
+  async function getSaved() {
+    const user = localstorage.get('user');
+    const url = "http://localhost:3001";
+    const response = await fetch(
+      `${url}/getRecentlyPlayed?user=${user}`
+    );
+    const data = await response.json();
+    const totalLikesTemp = data.totalLikes || 0;
+    setTotalLikes(totalLikesTemp);
+    const totalReactionsTemp = data.totalReactions || 0;
+    setTotalReactions(totalReactionsTemp);
+    const totalCommentsTemp = data.totalComments || 0;
+    setTotalComments(totalCommentsTemp);
+    const currentCommentsTemp = data.comments ? data.comments.length : 0;
+    setCurrentComments(currentCommentsTemp);
+    const currentReactionsTemp = (data.fire + data.currentLaughingLikes) || 0;
+    setCurrentReactions(currentReactionsTemp);
+    const currentLikesTemp = data.currentLikes || 0;
+    setCurrentLikes(currentLikesTemp);
+  }
 
   const displayImage = (base64String) => {
     const img = document.createElement("img");
@@ -78,6 +113,9 @@ const ViewProfile = () => {
   useEffect(() => {
     displayImage(pfp);
   }, [pfp]);
+  useEffect(() => {
+    getSaved();
+  }, []);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -188,6 +226,16 @@ const ViewProfile = () => {
       <div style={{ marginTop: "20px" }}>
         <Button text="Log Out" intent="primary" onClick={handleLogOut} />
       </div>
+      <div style={{ marginTop: "20px" }}>
+          <p><strong>Current Likes:</strong> {currentLikes}</p>
+          <p><strong>Current Reactions:</strong> {currentReactions}</p>
+          <p><strong>Current Comments:</strong> {currentComments}</p>
+
+          <p style={{ marginTop: "20px" }}><strong>Total Likes:</strong> {totalLikes}</p>
+          <p><strong>Total Reactions:</strong> {totalReactions}</p>
+          <p><strong>Total Comments:</strong> {totalComments}</p>
+      </div>
+
     </div>
   );
 };

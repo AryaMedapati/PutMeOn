@@ -8,6 +8,7 @@ const ProfileSidebar = ({ onChangeContent }) => {
     const [hoverEdit, setHoverEdit] = useState(false);
     const [hoverUsername, setHoverUsername] = useState(false);
     const [hoverPrivacy, setHoverPrivacy] = useState(false);
+    const [hoverFriends, setHoverFriends] = useState(false);
 
     return (
         <div className="sidebar">
@@ -65,6 +66,16 @@ const ProfileSidebar = ({ onChangeContent }) => {
                     onMouseLeave={() => setHoverPrivacy(false)}
                     onClick={() => onChangeContent('privacy')}
                     text="Privacy and Security" />
+                <Button
+                    className="sidebarButton"
+                    style={{...buttonStyle,
+                        backgroundColor: hoverFriends ? colors.text : colors.background,
+                        color: hoverFriends ? colors.background : colors.text,
+                    }}
+                    onMouseEnter={() => setHoverFriends(true)}
+                    onMouseLeave={() => setHoverFriends(false)}
+                    onClick={() => onChangeContent('friends')}
+                    text="Friends" />
 
             </ButtonGroup>
         </div>
