@@ -333,7 +333,7 @@ function FriendsAndNotifications() {
       <Dialog
         isOpen={isRemoveDialogOpen}
         onClose={closeRemoveDialog}
-        title="Remove Friend"
+        title="Unadd Friend"
       >
         <div className="bp3-dialog-body">
           Are you sure you want to remove {friendToRemove} as a friend?
