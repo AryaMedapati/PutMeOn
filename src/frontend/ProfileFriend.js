@@ -33,17 +33,12 @@ function FriendsAndNotifications() {
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [selectedUser, setSelectedUser] = useState("");
+  const [filteredOptions, setFilteredOptions] = useState([]);
   const { email } = useContext(UserContext);
 
   const handleSearchChange = (e, { searchQuery }) => {
     setSearchTerm(searchQuery);
   };
-
-  const filteredOptions = usernames.map((name) => ({
-    key: name,
-    text: name,
-    value: name,
-  }));
 
   const fetchUsers = async () => {
     try {
@@ -51,12 +46,13 @@ function FriendsAndNotifications() {
       const data = await res.json();
       console.log(data);
       setUsers(data);
-      const extractedUsernames = [
-        ...new Set(
-          data.map((user) => user.username).filter((username) => username)
-        ),
-      ];
-      setUsernames(extractedUsernames);
+      const extractedOptions = data.map((user) => ({
+        key: user.username,
+        value: user.username,
+        text: user.username,
+        image: { avatar: true, src: user.pfp },
+      }));
+      setFilteredOptions(extractedOptions);
     } catch (error) {
       console.error(error);
     }
@@ -246,11 +242,11 @@ function FriendsAndNotifications() {
         options={filteredOptions}
         onSearchChange={handleSearchChange}
         onChange={(e, { value }) => {
-          setSelectedUser(value); 
+          setSelectedUser(value);
         }}
         onBlur={() => {
           if (selectedUser) {
-            sendFriendRequest(selectedUser); 
+            sendFriendRequest(selectedUser);
             setSelectedUser("");
           }
         }}
