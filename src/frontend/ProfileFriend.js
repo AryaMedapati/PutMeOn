@@ -91,7 +91,14 @@ function FriendsAndNotifications() {
         }),
       });
       const data = await res.json();
-      setFriendRequests(data.friendRequests);
+      console.log(data.friendRequests);
+      setFriendRequests(
+        data.friendRequests.map((request) => ({
+          username: request.username,
+          pfp: request.pfp,
+        }))
+      );
+      console.log(friendRequests);
     } catch (error) {
       console.error(error);
     }
@@ -109,7 +116,12 @@ function FriendsAndNotifications() {
         }),
       });
       const data = await res.json();
-      setFriends(data.friends);
+      setFriends(
+        data.friends.map((friend) => ({
+          username: friend.username,
+          pfp: friend.pfp,
+        }))
+      );
     } catch (error) {
       console.error(error);
     }
@@ -262,13 +274,27 @@ function FriendsAndNotifications() {
               friends.map((friend, index) => (
                 <MenuItem
                   key={index}
-                  text={`${friend}`}
+                  text={
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <img
+                        src={friend.pfp}
+                        alt={`${friend.username}'s profile`}
+                        style={{
+                          width: "24px",
+                          height: "24px",
+                          borderRadius: "50%",
+                          marginRight: "8px",
+                        }}
+                      />
+                      {friend.username}
+                    </div>
+                  }
                   labelElement={
                     <Button
                       small
                       minimal
                       intent="danger"
-                      onClick={() => confirmRemoveFriend(friend)}
+                      onClick={() => confirmRemoveFriend(friend.username)}
                     >
                       Remove
                     </Button>
@@ -292,12 +318,29 @@ function FriendsAndNotifications() {
         content={
           <Menu>
             {friendRequests.length > 0 ? (
-              friendRequests.map((sender, index) => (
-                <MenuItem key={index} text={`Friend request from ${sender}`}>
+              friendRequests.map((request, index) => (
+                <MenuItem
+                  key={index}
+                  text={
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <img
+                        src={request.pfp}
+                        alt={`${request.username}'s profile`}
+                        style={{
+                          width: "24px",
+                          height: "24px",
+                          borderRadius: "50%",
+                          marginRight: "8px",
+                        }}
+                      />
+                      Friend request from {request.username}
+                    </div>
+                  }
+                >
                   <Button
                     small
                     intent="success"
-                    onClick={() => acceptFriendRequest(sender)}
+                    onClick={() => acceptFriendRequest(request.username)}
                   >
                     Accept
                   </Button>
@@ -313,6 +356,7 @@ function FriendsAndNotifications() {
           <MdPersonAddAlt1 className="icon" />
         </div>
       </Popover>
+
       <Popover
         isOpen={showNotifications}
         onInteraction={(nextOpenState) => setShowNotifications(nextOpenState)}
