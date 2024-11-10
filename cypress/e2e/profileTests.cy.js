@@ -2,7 +2,7 @@ describe('profile functinality', () => {
   beforeEach(() => {
     cy.visit('http://localhost:5002/login/')
     // cy.visit('http://localhost:5002/')
-    // cy.visit('http://localhost:3000/')
+    // cy.visit('http://localhost:3000/login')
     cy.wait(500)
 
     cy.get('#user').type('cypressTesting@gmail.com')

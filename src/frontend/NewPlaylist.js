@@ -210,6 +210,7 @@ const NewPlaylist = () => {
                     >
                         <span>{song}</span>
                         <Button
+                            className="delete-card-button"
                             icon="cross"
                             minimal={true}
                             onClick={() => handleSongTagRemove(index)}

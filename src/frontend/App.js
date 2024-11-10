@@ -106,6 +106,7 @@ function App(props) {
             </Link>
             <Link to={{ pathname: "/playlists" }}>
               <div
+                id="playlistPage"
                 onMouseEnter={() => setIsPlayHovered(true)}
                 onMouseLeave={() => setIsPlayHovered(false)}
               >
