@@ -254,6 +254,7 @@ const Messages = () => {
       return;
     }
 
+    const timestamp = new Date().toISOString()
     try {
       const res = await fetch("http://localhost:3001/insertChat", {
         method: "POST",
@@ -266,7 +267,7 @@ const Messages = () => {
           recipient: recipient,
           participants: participants,
           chatID: selectedChat,
-          createdAt: new Date().toISOString(),
+          createdAt: timestamp,
         }),
       });
 
@@ -275,7 +276,15 @@ const Messages = () => {
       }
 
       setNewMessage("");
-      fetchMessages();
+      setChatHistory((prevHistory) => [...prevHistory, 
+        {text: newMessage,
+        sender: email,
+        recipient: recipient,
+        participants: participants,
+        chatID: selectedChat,
+        createdAt: timestamp,
+        }
+      ]);
     } catch (error) {
       console.error('Error sending message:', error);
     }
