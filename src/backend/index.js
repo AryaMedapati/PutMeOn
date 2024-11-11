@@ -33,7 +33,7 @@ const mainUrl = "https://put-me-on-418b7.web.app";
 // app.use(express.json());
 // app.use(json());
 
-app.use(bp.json({ limit: "50mb" }));
+app.use(bp.json({ limit: "100mb" }));
 app.use(cors());
 
 const tempCodeStore = {};
@@ -1624,6 +1624,19 @@ app.post('/fetchChatRecipients', async (req, res) => {
   }
 });
 
+app.get("/fetchTopSongs", async (req, res) => {
+  try {
+    console.log('test1')
+    const getSongs = db.collection("spotifySongs");
+    const snapshot = await getSongs.get();
+    console.log('test2')
+    const songs = snapshot.docs.map(doc.data);
+    res.status(200).json(songs);
+  } catch (error) {
+    // console.log(error);
+    res.status(500).send(error);
+  }
+});
 
 app.listen(port, () => {
   console.log("Server running on port " + port);
