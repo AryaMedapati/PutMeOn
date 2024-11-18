@@ -4,6 +4,7 @@ import { Card, TextArea, Button, InputGroup } from "@blueprintjs/core";
 import { v4 as uuidv4 } from 'uuid';
 import { UserContext } from "./UserContext";
 import "./styles/Messages.css";
+import localstorage from "localstorage-slim";
 
 const Messages = () => {
   const [chats, setChats] = useState([]);
@@ -31,7 +32,7 @@ const Messages = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: email }),
+        body: JSON.stringify({ username: email || localstorage.get("user")}),
       });
       const data = await res.json();
       setChats(data.chats || []); // Ensure chats is always an array
@@ -48,7 +49,7 @@ const Messages = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ chatID:chatID , sender: email }),
+        body: JSON.stringify({ chatID:chatID , sender: email || localstorage.get("user") }),
       });
       const data = await res.json();
       setParticipants(data.participants || []);      
@@ -57,6 +58,18 @@ const Messages = () => {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    if (email) {
+      setUsername(email);
+    } else {
+      const storedUsername = localstorage.get("user");
+      console.log(storedUsername);
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    }
+  }, [email]);
 
   useEffect(() => {
     if (email) {
@@ -129,7 +142,7 @@ const Messages = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ username: email }),
+          body: JSON.stringify({ username: email || localstorage.get("user")}),
         });
 
         if (!res.ok) {
@@ -263,7 +276,7 @@ const Messages = () => {
         },
         body: JSON.stringify({
           text: newMessage,
-          sender: email,
+          sender: email || localstorage.get("user"),
           recipient: recipient,
           participants: participants,
           chatID: selectedChat,
@@ -278,7 +291,7 @@ const Messages = () => {
       setNewMessage("");
       setChatHistory((prevHistory) => [...prevHistory, 
         {text: newMessage,
-        sender: email,
+        sender: email || localstorage.get("user"),
         recipient: recipient,
         participants: participants,
         chatID: selectedChat,
