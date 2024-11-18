@@ -21,7 +21,7 @@ const csv = require("csv-parser");
 
 // Function to upload data from CSV to Firebase
 async function uploadSongs() {
-  const datasetPath = path.join(__dirname, "../../datasets/top_10000_1950-now.csv");
+  const datasetPath = path.join(__dirname, "../../datasets/top_1000_1950-now.csv");
 
   // Open the CSV file and read data row by row
   fs.createReadStream(datasetPath)

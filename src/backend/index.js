@@ -1629,8 +1629,8 @@ app.get("/fetchTopSongs", async (req, res) => {
     console.log('test1')
     const getSongs = db.collection("spotifySongs");
     const snapshot = await getSongs.get();
-    console.log('test2')
-    const songs = snapshot.docs.map(doc.data);
+    console.log(snapshot)
+    const songs = snapshot.docs.map(doc => doc.data());
     res.status(200).json(songs);
   } catch (error) {
     // console.log(error);
