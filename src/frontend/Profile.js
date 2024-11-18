@@ -33,6 +33,7 @@ function Profile() {
   });
   const { username } = useContext(UserContext);
 
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -60,7 +61,6 @@ function Profile() {
       >
         <ProfileContent activeContent={activeContent} />
       </div>
-      <FriendsAndNotifications />
     </div>
   );
 }

@@ -8,12 +8,16 @@ import {
   Menu,
   MenuItem,
   Icon,
+  Dialog,
 } from "@blueprintjs/core";
 import { FaUserFriends } from "react-icons/fa";
 import { IoMdNotifications } from "react-icons/io";
 import { MdPersonAddAlt1 } from "react-icons/md";
 import { UserContext } from "./UserContext";
 import { ToastContainer, toast } from "react-toastify";
+import localstorage from "localstorage-slim";
+import { Dropdown } from "semantic-ui-react";
+import "semantic-ui-css/components/dropdown.min.css";
 
 function FriendsAndNotifications() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,8 +29,16 @@ function FriendsAndNotifications() {
   const [showFriendRequests, setShowFriendRequests] = useState(false);
   const [friends, setFriends] = useState([]);
   const [showFriends, setShowFriends] = useState(false);
+  const [friendToRemove, setFriendToRemove] = useState(null);
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
+  const [username, setUsername] = useState("");
+  const [selectedUser, setSelectedUser] = useState("");
+  const [filteredOptions, setFilteredOptions] = useState([]);
   const { email } = useContext(UserContext);
-  console.log(email)
+
+  const handleSearchChange = (e, { searchQuery }) => {
+    setSearchTerm(searchQuery);
+  };
 
   const fetchUsers = async () => {
     try {
@@ -34,12 +46,13 @@ function FriendsAndNotifications() {
       const data = await res.json();
       console.log(data);
       setUsers(data);
-      const extractedUsernames = [
-        ...new Set(
-          data.map((user) => user.username).filter((username) => username)
-        ),
-      ];
-      setUsernames(extractedUsernames);
+      const extractedOptions = data.map((user) => ({
+        key: user.username,
+        value: user.username,
+        text: user.username,
+        image: { avatar: true, src: user.pfp },
+      }));
+      setFilteredOptions(extractedOptions);
     } catch (error) {
       console.error(error);
     }
@@ -47,12 +60,15 @@ function FriendsAndNotifications() {
 
   const fetchNotifs = async () => {
     try {
+      console.log(username);
       const res = await fetch("http://localhost:3001/fetchNotifications", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: email }),
+        body: JSON.stringify({
+          username: username || localstorage.get("user"),
+        }),
       });
       const data = await res.json();
       console.log(data);
@@ -70,10 +86,19 @@ function FriendsAndNotifications() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: email }),
+        body: JSON.stringify({
+          username: username || localstorage.get("user"),
+        }),
       });
       const data = await res.json();
-      setFriendRequests(data.friendRequests);
+      console.log(data.friendRequests);
+      setFriendRequests(
+        data.friendRequests.map((request) => ({
+          username: request.username,
+          pfp: request.pfp,
+        }))
+      );
+      console.log(friendRequests);
     } catch (error) {
       console.error(error);
     }
@@ -86,10 +111,17 @@ function FriendsAndNotifications() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: email }),
+        body: JSON.stringify({
+          username: username || localstorage.get("user"),
+        }),
       });
       const data = await res.json();
-      setFriends(data.friends);
+      setFriends(
+        data.friends.map((friend) => ({
+          username: friend.username,
+          pfp: friend.pfp,
+        }))
+      );
     } catch (error) {
       console.error(error);
     }
@@ -102,7 +134,10 @@ function FriendsAndNotifications() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: recipientUsername, sender: email }),
+        body: JSON.stringify({
+          username: recipientUsername,
+          sender: username || localstorage.get("user"),
+        }),
       });
 
       const result = await response.json();
@@ -127,7 +162,7 @@ function FriendsAndNotifications() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            recipientUsername: email,
+            recipientUsername: username || localstorage.get("user"),
             senderUsername: senderUsername,
           }),
         }
@@ -148,9 +183,57 @@ function FriendsAndNotifications() {
     }
   };
 
+  const removeFriend = async (senderUsername) => {
+    try {
+      const response = await fetch("http://localhost:3001/removeFriend", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          recipientUsername: username,
+          senderUsername: senderUsername,
+        }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        toast.success(result.message);
+        fetchFriendsList();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error accepting friend request:", error);
+      toast.error("Failed to accept friend request.");
+    }
+  };
+
+  const confirmRemoveFriend = (friendUsername) => {
+    setFriendToRemove(friendUsername);
+    setIsRemoveDialogOpen(true);
+  };
+
+  const closeRemoveDialog = () => {
+    setFriendToRemove(null);
+    setIsRemoveDialogOpen(false);
+  };
+
   const filteredUsers = usernames.filter((username) =>
     username.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  useEffect(() => {
+    if (email) {
+      setUsername(email);
+    } else {
+      const storedUsername = localstorage.get("user");
+      console.log(storedUsername);
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    }
+  }, [email]);
 
   useEffect(() => {
     fetchUsers();
@@ -163,40 +246,24 @@ function FriendsAndNotifications() {
 
   return (
     <div>
-      <InputGroup
-        leftIcon="search"
-        onChange={(e) => setSearchTerm(e.target.value)}
+      <Dropdown
         placeholder="Search users..."
-        value={searchTerm}
+        fluid
+        search
+        selection
+        options={filteredOptions}
+        onSearchChange={handleSearchChange}
+        onChange={(e, { value }) => {
+          setSelectedUser(value);
+        }}
+        onBlur={() => {
+          if (selectedUser) {
+            sendFriendRequest(selectedUser);
+            setSelectedUser("");
+          }
+        }}
         style={{ marginBottom: "20px", width: "300px" }}
       />
-      {filteredUsers.length > 0 ? (
-        filteredUsers.map((name, index) => (
-          <Card
-            key={index}
-            style={{ margin: "10px", padding: "10px", width: "250px" }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              {name}
-              <Button
-                small
-                intent="primary"
-                onClick={() => sendFriendRequest(name)}
-              >
-                Add Friend
-              </Button>
-            </div>
-          </Card>
-        ))
-      ) : (
-        <p>No users found.</p>
-      )}
 
       <Popover
         isOpen={showFriends}
@@ -205,7 +272,34 @@ function FriendsAndNotifications() {
           <Menu>
             {friends.length > 0 ? (
               friends.map((friend, index) => (
-                <MenuItem key={index} text={`${friend}`} />
+                <MenuItem
+                  key={index}
+                  text={
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <img
+                        src={friend.pfp}
+                        alt={`${friend.username}'s profile`}
+                        style={{
+                          width: "24px",
+                          height: "24px",
+                          borderRadius: "50%",
+                          marginRight: "8px",
+                        }}
+                      />
+                      {friend.username}
+                    </div>
+                  }
+                  labelElement={
+                    <Button
+                      small
+                      minimal
+                      intent="danger"
+                      onClick={() => confirmRemoveFriend(friend.username)}
+                    >
+                      Remove
+                    </Button>
+                  }
+                />
               ))
             ) : (
               <MenuItem text="No friends" />
@@ -224,12 +318,29 @@ function FriendsAndNotifications() {
         content={
           <Menu>
             {friendRequests.length > 0 ? (
-              friendRequests.map((sender, index) => (
-                <MenuItem key={index} text={`Friend request from ${sender}`}>
+              friendRequests.map((request, index) => (
+                <MenuItem
+                  key={index}
+                  text={
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <img
+                        src={request.pfp}
+                        alt={`${request.username}'s profile`}
+                        style={{
+                          width: "24px",
+                          height: "24px",
+                          borderRadius: "50%",
+                          marginRight: "8px",
+                        }}
+                      />
+                      Friend request from {request.username}
+                    </div>
+                  }
+                >
                   <Button
                     small
                     intent="success"
-                    onClick={() => acceptFriendRequest(sender)}
+                    onClick={() => acceptFriendRequest(request.username)}
                   >
                     Accept
                   </Button>
@@ -245,6 +356,7 @@ function FriendsAndNotifications() {
           <MdPersonAddAlt1 className="icon" />
         </div>
       </Popover>
+
       <Popover
         isOpen={showNotifications}
         onInteraction={(nextOpenState) => setShowNotifications(nextOpenState)}
@@ -264,6 +376,29 @@ function FriendsAndNotifications() {
           <IoMdNotifications className="icon" />
         </div>
       </Popover>
+      <Dialog
+        isOpen={isRemoveDialogOpen}
+        onClose={closeRemoveDialog}
+        title="Remove Friend"
+      >
+        <div className="bp3-dialog-body">
+          Are you sure you want to remove {friendToRemove} as a friend?
+        </div>
+        <div className="bp3-dialog-footer">
+          <Button intent="none" onClick={closeRemoveDialog}>
+            Cancel
+          </Button>
+          <Button
+            intent="danger"
+            onClick={() => {
+              removeFriend(friendToRemove);
+              closeRemoveDialog();
+            }}
+          >
+            Remove
+          </Button>
+        </div>
+      </Dialog>
 
       <ToastContainer autoClose={3000} position="top-right" />
     </div>
