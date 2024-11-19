@@ -103,6 +103,27 @@ async function saveRecentlyPlayed(user, song, likes, likedBy, laughingLikes, lau
     console.log(error);
   }
 }
+async function savePopularityScore(user, popScore) {
+  // console.log("user: "+ user);
+  try {
+    const getUsers = db.collection("UserData");
+    // const user = user;
+    const value = getUsers.where('username', '==', user);
+    const snapshot = await value.get();
+
+    if (!snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      const userData = userDoc.data();
+      // console.log(userData);
+      await userDoc.ref.update({
+        popScore:popScore
+      });
+
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 function generateRandomCode(length = 6) {
   return crypto
@@ -1284,6 +1305,32 @@ app.get("/recentlyPlayed", async (req, res) => {
     // res.status(500).json({ message: error });
   }
 });
+
+app.post("/savePopScore", async(req,res) => {
+  const popScore = req.body.popScore;
+  const user = req.body.user;
+  await savePopularityScore(user, popScore);
+  res.status(200).json({ message: "Success" });
+})
+app.get("/getPopScore", async(req,res) => {
+  const username = req.query.user;
+  try {
+    const userDoc = await db
+      .collection("UserData")
+      .where("username", "==", username)
+      .get();
+
+    if (userDoc.empty) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const userProfile = userDoc.docs[0].data();
+    res.status(200).json(userProfile);
+  } catch (error) {
+    console.error("Error fetching profile data:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+})
 
 app.post("/saveRecentlyPlayed", async(req, res) => {
   const song = req.body.song;

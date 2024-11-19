@@ -1,61 +1,76 @@
-.leaderboard {
-  width: 300px;
-  margin: 0 auto;
-  margin-top: 50px;
+/* Leaderboard container styling */
+.leaderboard-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
   padding: 20px;
-  border: 2px solid #4caf50;
+  background-color: #f9f9f9;
   border-radius: 10px;
-  background: #f9f9f9;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   font-family: Arial, sans-serif;
-  text-align: center;
 }
 
-.leaderboard h2 {
-  margin-bottom: 10px;
-  font-size: 1.5rem;
-  color: #333;
-}
-
-.leaderboard .sort-dropdown {
-  margin-bottom: 15px;
-  padding: 5px 10px;
-  font-size: 1rem;
-  border: 1px solid #4caf50;
+/* Dropdown styling */
+.sort-dropdown {
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 60px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
   border-radius: 5px;
   background-color: #fff;
-  color: #4caf50;
+  outline: none;
   cursor: pointer;
 }
 
-.leaderboard .sort-dropdown:hover {
-  background-color: #f3f3f3;
-}
-
-.leaderboard ol {
-  list-style: none;
-  padding: 0;
-}
-
-.leaderboard li {
+.leaderboard-item {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
-  margin-bottom: 5px;
-  border-bottom: 1px solid #ddd;
+  align-items: center;
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
 }
 
-.leaderboard .rank {
+.leaderboard-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02);
+}
+
+
+.leaderboard-item.current-user {
+  background-color: lightgreen; 
+  border: 2px solid darkgreen; 
+  font-weight: bold; 
+}
+
+.leaderboard-item .rank {
+  font-size: 16px;
   font-weight: bold;
-  color: #4caf50;
-}
-
-.leaderboard .name {
-  flex: 1;
-  text-align: left;
-}
-
-.leaderboard .score {
-  font-weight: bold;
+  margin-right: 15px;
   color: #333;
+}
+.leaderboard-item p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.leaderboard-item .name {
+  font-weight: bold;
+}
+
+.leaderboard-item .score {
+  color: #555;
+}
+
+/* Loading message */
+.loading-message {
+  text-align: center;
+  font-size: 18px;
+  color: #888;
 }
