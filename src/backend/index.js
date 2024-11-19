@@ -495,6 +495,68 @@ app.post("/fetchFriends", async (req, res) => {
   }
 });
 
+app.post("/setChatTheme", async (req, res) => {
+  try {
+    const { chatID, theme } = req.body;
+
+    if (!chatID || !theme) {
+      return res.status(400).json({ message: "chatID and theme are required" });
+    }
+
+    const chatThemeRef = db.collection("ChatTheme");
+
+    const existingThemeDoc = await chatThemeRef
+      .where("chatId", "==", chatID)
+      .get();
+
+    if (!existingThemeDoc.empty) {
+      const docId = existingThemeDoc.docs[0].id;
+      await chatThemeRef.doc(docId).update({
+        theme: theme,
+      });
+      return res.status(200).json({ message: "Theme updated successfully." });
+    } else {
+      await chatThemeRef.add({
+        chatId: chatID,
+        theme: theme,
+      });
+      return res.status(201).json({ message: "Chat theme set successfully." });
+    }
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "Error setting chat theme", error: error.message });
+  }
+});
+
+app.post("/getChatTheme", async (req, res) => {
+  try {
+    const { chatID } = req.body;
+
+    if (!chatID) {
+      return res.status(400).json({ message: "chatID is required" });
+    }
+
+    const chatThemeRef = db.collection("ChatTheme");
+    const chatThemeSnapshot = await chatThemeRef
+      .where("chatId", "==", chatID)
+      .get();
+
+    if (!chatThemeSnapshot.empty) {
+      const chatThemeDoc = chatThemeSnapshot.docs[0].data();
+      return res.status(200).json({ theme: chatThemeDoc.theme });
+    } else {
+      return res.status(200).json({ theme: "default" });
+    }
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Error fetching chat theme", error: error.message });
+  }
+});
+
 app.post("/updateUser", async (req, res) => {
   try {
     const docId = req.headers["documentid"];
