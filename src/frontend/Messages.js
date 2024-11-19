@@ -35,6 +35,11 @@ const Messages = () => {
   const [newChatUsername, setNewChatUsername] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [chatTheme, setChatTheme] = useState("default");
+  const [showThemeOptions, setShowThemeOptions] = useState(false);
+
+  const handleToggleThemeOptions = () => {
+    setShowThemeOptions((prev) => !prev);
+  };
 
   const { username, email } = useContext(UserContext);
 
@@ -118,15 +123,13 @@ const Messages = () => {
   useEffect(() => {
     console.log(chats);
     if (!chats || chats.length == 0 || !chatNames || chatNames.length == 0) {
-      console.log("enters if")
+      console.log("enters if");
       setChatDict({});
       // console.log("chats = " + chats);
       // console.log("chat names = " + chatNames);
       // console.log("chat dict early return case = " + chatDict);
       return;
     }
-
-
 
     const dict = chats.reduce((acc, id, index) => {
       acc[id] = chatNames[index] || `Chat ${id}`;
@@ -210,6 +213,7 @@ const Messages = () => {
 
   useEffect(() => {
     fetchMessages();
+    setShowThemeOptions(false);
   }, [selectedChat]);
 
   useEffect(() => {
@@ -573,10 +577,26 @@ const Messages = () => {
         {selectedChat ? (
           <>
             <div className="theme-selector">
-              <Button onClick={() => handleChangeTheme("white")}>White</Button>
-              <Button onClick={() => handleChangeTheme("blue")}>Blue</Button>
-              <Button onClick={() => handleChangeTheme("green")}>Green</Button>
-              {/* Add more theme buttons as needed */}
+              <Button onClick={handleToggleThemeOptions}>
+                Change Chat Theme
+              </Button>
+              {showThemeOptions && (
+                <div className="theme-options">
+                  <Button onClick={() => handleChangeTheme("white")}>
+                    White
+                  </Button>
+                  <Button onClick={() => handleChangeTheme("blue")}>
+                    Blue
+                  </Button>
+                  <Button onClick={() => handleChangeTheme("green")}>
+                    Green
+                  </Button>
+                  <Button onClick={() => handleChangeTheme("yellow")}>
+                    Yellow
+                  </Button>
+                  <Button onClick={() => handleChangeTheme("red")}>Red</Button>
+                </div>
+              )}
             </div>
             <div className="message-list">
               {chatHistory.length > 0 ? (
