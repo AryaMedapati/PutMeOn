@@ -1669,16 +1669,47 @@ app.post("/fetchChatHistory", async (req, res) => {
   }
 
   try {
+    // const messagesSnapshot = await db
+    //   .collection("MessageData")
+    //   .where("chatID.id", "==", chatID)
+    //   .orderBy("createdAt") // Ensure messages are ordered by creation time
+    //   .get();
+
+    // const messages = messagesSnapshot.docs.map((doc) => ({
+    //   id: doc.id,
+    //   ...doc.data(),
+    // }));
+
+    // res.status(200).json({ messages });
     const messagesSnapshot = await db
       .collection("MessageData")
       .where("chatID.id", "==", chatID)
-      .orderBy("createdAt") // Ensure messages are ordered by creation time
+      .orderBy("createdAt")
       .get();
 
-    const messages = messagesSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    // Map messages and fetch profile pictures
+    console.log("before")
+    const messages = await Promise.all(
+      messagesSnapshot.docs.map(async (doc) => {
+        const messageData = doc.data();
+        const userSnapshot = await db
+          .collection("UserData")
+          .where("username", "==", messageData.sender)
+          .limit(1)
+          .get();
+
+        const userData = userSnapshot.empty
+          ? { pfp: "" }
+          : userSnapshot.docs[0].data();
+
+        return {
+          id: doc.id,
+          ...messageData,
+          pfp: userData.pfp || "",
+        };
+      })
+    );
+    console.log("after")
 
     res.status(200).json({ messages });
   } catch (error) {

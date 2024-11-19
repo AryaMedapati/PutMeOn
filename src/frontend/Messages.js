@@ -36,6 +36,7 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [chatTheme, setChatTheme] = useState("default");
   const [showThemeOptions, setShowThemeOptions] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleToggleThemeOptions = () => {
     setShowThemeOptions((prev) => !prev);
@@ -189,6 +190,8 @@ const Messages = () => {
   const fetchMessages = async () => {
     if (!selectedChat || !selectedChat.id) return;
 
+    setLoading(true);
+
     try {
       const response = await fetch("http://localhost:3001/fetchChatHistory", {
         method: "POST",
@@ -208,6 +211,8 @@ const Messages = () => {
       }
     } catch (error) {
       console.error("Error fetching messages:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -441,6 +446,8 @@ const Messages = () => {
     }
   };
 
+  console.log(chatHistory);
+
   return (
     <div className="messages-container">
       <div className="chats-list">
@@ -598,17 +605,33 @@ const Messages = () => {
                 </div>
               )}
             </div>
-            <div className="message-list">
-              {chatHistory.length > 0 ? (
-                chatHistory.map((message) => (
-                  <Card key={message.id} className="message-card">
-                    {`${message.sender}: ${message.text}`}
-                  </Card>
-                ))
-              ) : (
-                <div className="no-messages">No messages in this chat</div>
-              )}
-            </div>
+
+            {loading ? (
+              <div className="loading-chat">
+                <p>Loading chat...</p>
+                {/* You can replace this with a spinner from a library like React Spinner */}
+              </div>
+            ) : (
+              <div className="message-list">
+                {chatHistory.length > 0 ? (
+                  chatHistory.map((message) => (
+                    <Card key={message.id} className="message-card">
+                      <div className="message-content">
+                        <img
+                          src={message.pfp || "/path/to/default-avatar.png"}
+                          className="message-pfp"
+                        />
+                        <div className="message-text">
+                          <strong>{message.sender}:</strong> {message.text}
+                        </div>
+                      </div>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="no-messages">No messages in this chat</div>
+                )}
+              </div>
+            )}
 
             <form className="message-input" onSubmit={handleSendMessage}>
               <TextArea
