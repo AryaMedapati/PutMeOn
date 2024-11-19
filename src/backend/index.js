@@ -124,6 +124,27 @@ async function savePopularityScore(user, popScore) {
     console.log(error);
   }
 }
+async function saveFollowers(user, followers) {
+  // console.log("user: "+ user);
+  try {
+    const getUsers = db.collection("UserData");
+    // const user = user;
+    const value = getUsers.where('username', '==', user);
+    const snapshot = await value.get();
+
+    if (!snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      const userData = userDoc.data();
+      // console.log(userData);
+      await userDoc.ref.update({
+        followers:followers
+      });
+
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 function generateRandomCode(length = 6) {
   return crypto
@@ -1312,6 +1333,12 @@ app.post("/savePopScore", async(req,res) => {
   await savePopularityScore(user, popScore);
   res.status(200).json({ message: "Success" });
 })
+app.post("/saveFollowers", async(req,res) => {
+  const followers = req.body.followers;
+  const user = req.body.user;
+  await saveFollowers(user, followers);
+  res.status(200).json({ message: "Success" });
+})
 app.get("/getPopScore", async(req,res) => {
   const username = req.query.user;
   try {
@@ -1369,6 +1396,20 @@ app.get("/getRecentlyPlayed", async (req, res) => {
     console.error("Error fetching profile data:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
+});
+app.get("/getFollowers", async (req,res) => {
+  const token = accessToken;
+  const response = await axios.get(
+    `https://api.spotify.com/v1/me`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  const followers = response.data.followers.total;
+  console.log("Followers:" + followers);
+  res.status(200).json({ data: followers });
 });
 
 
