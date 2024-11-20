@@ -18,6 +18,12 @@ import { ToastContainer, toast } from "react-toastify";
 import localstorage from "localstorage-slim";
 import { Dropdown } from "semantic-ui-react";
 import "semantic-ui-css/components/dropdown.min.css";
+import "semantic-ui-css/components/icon.min.css";
+import "semantic-ui-css/components/input.min.css";
+import "semantic-ui-css/components/transition.min.css";
+
+// import "semantic-ui-css/components/dropdown.min.css";
+// import "semantic-ui-css/semantic.min.css";
 
 function FriendsAndNotifications() {
   const [searchTerm, setSearchTerm] = useState("");

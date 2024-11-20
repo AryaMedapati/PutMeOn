@@ -495,6 +495,68 @@ app.post("/fetchFriends", async (req, res) => {
   }
 });
 
+app.post("/setChatTheme", async (req, res) => {
+  try {
+    const { chatID, theme } = req.body;
+
+    if (!chatID || !theme) {
+      return res.status(400).json({ message: "chatID and theme are required" });
+    }
+
+    const chatThemeRef = db.collection("ChatTheme");
+
+    const existingThemeDoc = await chatThemeRef
+      .where("chatId", "==", chatID)
+      .get();
+
+    if (!existingThemeDoc.empty) {
+      const docId = existingThemeDoc.docs[0].id;
+      await chatThemeRef.doc(docId).update({
+        theme: theme,
+      });
+      return res.status(200).json({ message: "Theme updated successfully." });
+    } else {
+      await chatThemeRef.add({
+        chatId: chatID,
+        theme: theme,
+      });
+      return res.status(201).json({ message: "Chat theme set successfully." });
+    }
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "Error setting chat theme", error: error.message });
+  }
+});
+
+app.post("/getChatTheme", async (req, res) => {
+  try {
+    const { chatID } = req.body;
+
+    if (!chatID) {
+      return res.status(400).json({ message: "chatID is required" });
+    }
+
+    const chatThemeRef = db.collection("ChatTheme");
+    const chatThemeSnapshot = await chatThemeRef
+      .where("chatId", "==", chatID)
+      .get();
+
+    if (!chatThemeSnapshot.empty) {
+      const chatThemeDoc = chatThemeSnapshot.docs[0].data();
+      return res.status(200).json({ theme: chatThemeDoc.theme });
+    } else {
+      return res.status(200).json({ theme: "default" });
+    }
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Error fetching chat theme", error: error.message });
+  }
+});
+
 app.post("/updateUser", async (req, res) => {
   try {
     const docId = req.headers["documentid"];
@@ -1607,16 +1669,47 @@ app.post("/fetchChatHistory", async (req, res) => {
   }
 
   try {
+    // const messagesSnapshot = await db
+    //   .collection("MessageData")
+    //   .where("chatID.id", "==", chatID)
+    //   .orderBy("createdAt") // Ensure messages are ordered by creation time
+    //   .get();
+
+    // const messages = messagesSnapshot.docs.map((doc) => ({
+    //   id: doc.id,
+    //   ...doc.data(),
+    // }));
+
+    // res.status(200).json({ messages });
     const messagesSnapshot = await db
       .collection("MessageData")
       .where("chatID.id", "==", chatID)
-      .orderBy("createdAt") // Ensure messages are ordered by creation time
+      .orderBy("createdAt")
       .get();
 
-    const messages = messagesSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    // Map messages and fetch profile pictures
+    console.log("before")
+    const messages = await Promise.all(
+      messagesSnapshot.docs.map(async (doc) => {
+        const messageData = doc.data();
+        const userSnapshot = await db
+          .collection("UserData")
+          .where("username", "==", messageData.sender)
+          .limit(1)
+          .get();
+
+        const userData = userSnapshot.empty
+          ? { pfp: "" }
+          : userSnapshot.docs[0].data();
+
+        return {
+          id: doc.id,
+          ...messageData,
+          pfp: userData.pfp || "",
+        };
+      })
+    );
+    console.log("after")
 
     res.status(200).json({ messages });
   } catch (error) {
