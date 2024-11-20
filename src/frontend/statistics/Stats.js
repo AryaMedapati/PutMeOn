@@ -6,35 +6,59 @@ import Genres from "./TopGenres";
 import GV from "./GenreVisual";
 import TH from "./TrackVisual";
 import AH from "./ArtistVisual";
-import PStat from "./PutMeOnStats";
-import CompareFriend from "./CompareFriend";
-import "./../styles/Stats.css";
+import "../styles/Stats.css";
 
 const Stats = () => {
   return (
-    <div>
-      <nav>
-        {/* <button> */}
-        <Link to="/toptracks">TopTracks</Link>
-        <Link to="/topartists">TopArtists</Link>
-        <Link to="/topgenres">TopGenres</Link>
-        <Link to="/genrevis">GenreVisual</Link>
-        <Link to="/trackvis">TrackVisual</Link>
-        <Link to="/artistvis">ArtistVisual</Link>
-        <Link to="/customstats">PutMeOnStats</Link>
-        <Link to="/comparefriend">CompareFriend</Link>
-        {/* </button> */}
+    <div className="stats-container">
+      <nav className="navbar">
+        <div className="logo">
+          <h1>Music Stats</h1>
+        </div>
+        <div className="nav-links">
+          <Link to="/toptracks" className="nav-link">
+            <div className="nav-item">
+              <span className="nav-icon">🎵</span>Top Tracks
+            </div>
+          </Link>
+          <Link to="/topartists" className="nav-link">
+            <div className="nav-item">
+              <span className="nav-icon">🎤</span>Top Artists
+            </div>
+          </Link>
+          <Link to="/topgenres" className="nav-link">
+            <div className="nav-item">
+              <span className="nav-icon">🎧</span>Top Genres
+            </div>
+          </Link>
+          <Link to="/genrevis" className="nav-link">
+            <div className="nav-item">
+              <span className="nav-icon">📊</span>Genre Visual
+            </div>
+          </Link>
+          <Link to="/trackvis" className="nav-link">
+            <div className="nav-item">
+              <span className="nav-icon">🔊</span>Track Visual
+            </div>
+          </Link>
+          <Link to="/artistvis" className="nav-link">
+            <div className="nav-item">
+              <span className="nav-icon">👤</span>Artist Visual
+            </div>
+          </Link>
+        </div>
       </nav>
-      <Routes>
-        <Route path="/toptracks" element={<Tracks />} />
-        <Route path="/topartists" element={<Artists />} />
-        <Route path="/topgenres" element={<Genres />} />
-        <Route path="/genrevis" element={<GV />} />
-        <Route path="/trackvis" element={<TH />} />
-        <Route path="/artistvis" element={<AH />} />
-        <Route path="/customstats" element={<PStat />} />
-        <Route path="/comparefriend" element={<CompareFriend />} />
-      </Routes>
+
+      <div className="content-container">
+        <Routes>
+          <Route path="/toptracks" element={<Tracks />} />
+          <Route path="/topartists" element={<Artists />} />
+          <Route path="/topgenres" element={<Genres />} />
+          <Route path="/genrevis" element={<GV />} />
+          <Route path="/trackvis" element={<TH />} />
+          <Route path="/artistvis" element={<AH />} />
+        </Routes>
+      </div>
     </div>
   );
 };
