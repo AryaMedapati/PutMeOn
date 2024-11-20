@@ -12,11 +12,7 @@ import { Card, TextArea, Button, InputGroup } from "@blueprintjs/core";
 import { v4 as uuidv4 } from "uuid";
 import { UserContext } from "./UserContext";
 import "./styles/Messages.css";
-import { Dropdown } from "semantic-ui-react";
-import "semantic-ui-css/components/dropdown.min.css";
-import "semantic-ui-css/components/icon.min.css";
-import "semantic-ui-css/components/input.min.css";
-import "semantic-ui-css/components/transition.min.css";
+import localstorage from "localstorage-slim";
 
 const Messages = () => {
   const [chats, setChats] = useState([]);
@@ -54,8 +50,7 @@ const Messages = () => {
         body: JSON.stringify({ username: email }),
       });
       const data = await res.json();
-      console.log(data);
-      setChats(data.chats || []); // Ensure chats is always an array
+      setChats(data.chats || []);
     } catch (error) {
       console.error(error);
     }
@@ -96,7 +91,7 @@ const Messages = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ chatIDs: chats, currentUser: email }), // Ensure chats is passed correctly
+          body: JSON.stringify({ chatIDs: chats, currentUser: email }), 
         });
 
         if (!response.ok) {
@@ -112,7 +107,7 @@ const Messages = () => {
           throw new Error("Unexpected response format for chat names.");
         }
 
-        setChatNames(data.chatNames); // Ensure chatNames is set from response
+        setChatNames(data.chatNames);
       } catch (error) {
         console.error("Error fetching chat names:", error);
       }
@@ -132,14 +127,20 @@ const Messages = () => {
       return;
     }
 
+    console.log("chats is " + chats);
+    console.log("chat names is " + chatNames);
+
     const dict = chats.reduce((acc, id, index) => {
-      acc[id] = chatNames[index] || `Chat ${id}`;
+      console.log ("at index" + index + "chat names is " + chatNames[index]);
+      acc[id] = chatNames[index];
       return acc;
     }, {});
     console.log(dict);
 
     setChatDict(dict);
-    // console.log("chat dict = " + chatDict);
+    Object.entries(dict).forEach(([key, value]) => {
+      console.log(`${key}: ${value}`);
+    });
   }, [chats, chatNames]);
 
   useEffect(() => {
@@ -256,9 +257,12 @@ const Messages = () => {
     }
 
     const newChatID = uuidv4();
+    console.log("recipient is " + recipient);
     const participantArray = [recipient, email].sort();
+    console.log("participant array is " + participantArray);
 
-    setSelectedChat({ id: newChatID, name: [recipient].sort() });
+    if (Array.isArray(recipient) ? setSelectedChat({ id: newChatID, name: recipient.sort() }) : setSelectedChat({ id: newChatID, name: [recipient] }));
+    // setSelectedChat({ id: newChatID, name: [recipient].sort() });
     setIsCreatingChat(false);
     setRecipient(recipient);
     setParticipants(participantArray);
@@ -272,8 +276,8 @@ const Messages = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          participants: participantArray, // Use email to identify the user
-          newChatID: newChatID, // The new chat ID to append
+          participants: participantArray, 
+          newChatID: newChatID, 
         }),
       });
       console.log(res);
@@ -310,7 +314,7 @@ const Messages = () => {
 
       setClickedChat(false);
     }
-  }, [clickedChat]); // Dependency array with selectedChat
+  }, [clickedChat]);
 
   // const handleSearchUser = (e) => {
   //   const searchValue = e.target.value.trim();
@@ -376,6 +380,7 @@ const Messages = () => {
       return;
     }
 
+    const timestamp = new Date().toISOString()
     try {
       const res = await fetch("http://localhost:3001/insertChat", {
         method: "POST",
@@ -388,7 +393,7 @@ const Messages = () => {
           recipient: recipient,
           participants: participants,
           chatID: selectedChat,
-          createdAt: new Date().toISOString(),
+          createdAt: timestamp,
         }),
       });
 
@@ -397,7 +402,15 @@ const Messages = () => {
       }
 
       setNewMessage("");
-      fetchMessages();
+      setChatHistory((prevHistory) => [...prevHistory, 
+        {text: newMessage,
+        sender: email,
+        recipient: recipient,
+        participants: participants,
+        chatID: selectedChat,
+        createdAt: timestamp,
+        }
+      ]);
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -419,7 +432,11 @@ const Messages = () => {
     const newChatID = uuidv4();
     const participantArray = [...groupParticipants, email].sort();
 
+    console.log("participant array = " + participantArray);
+    console.log("group participants = " + groupParticipants);
+
     setSelectedChat({ id: newChatID, name: groupParticipants.sort() });
+    console.log("selected chat post update = " + selectedChat.name);
     setIsCreatingGroup(false);
     setRecipient(groupParticipants);
     setParticipants(participantArray);
@@ -431,8 +448,8 @@ const Messages = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          participants: participantArray, // Use email to identify the user
-          newChatID: newChatID, // The new chat ID to append
+          participants: participantArray,
+          newChatID: newChatID,
         }),
       });
 
@@ -481,10 +498,8 @@ const Messages = () => {
                     key={user}
                     className="user-suggestion"
                     onClick={() => {
-                      setGroupParticipants((prev) => [...prev, user]);
-                      setFilteredUsers((prev) =>
-                        prev.filter((u) => u !== user)
-                      ); // Remove selected user from suggestions
+                      setGroupParticipants(prev => [...prev, user]);
+                      setFilteredUsers(prev => prev.filter(u => u !== user)); 
                     }}
                   >
                     {user}
