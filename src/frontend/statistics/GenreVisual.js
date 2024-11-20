@@ -2,14 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
-// Register necessary components of Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const GV = () => {
   const [genres, setGenres] = useState([]);
   const [genreTimeline, setGenreTimeline] = useState("Last 4 Weeks");
 
-  // Fetch genre data and process it
   const fetchTopArtists = async (timeline) => {
     const url = "http://localhost:3001"; 
     const response = await fetch(`${url}/topArtists?timeline=${timeline}`);
@@ -56,7 +54,7 @@ const GV = () => {
   };
 
   useEffect(() => {
-    const timeline = "short_term"; // default timeline
+    const timeline = "short_term"; 
     fetchTopArtists(timeline);
   }, []);
 
@@ -70,14 +68,13 @@ const GV = () => {
     fetchTopArtists(action);
   };
 
-  // Prepare data for Pie Chart
   const pieChartData = {
-    labels: genres.map((item) => item.genre), // genre names as labels
+    labels: genres.map((item) => item.genre), 
     datasets: [
       {
-        data: genres.map((item) => item.count), // genre counts as data points
+        data: genres.map((item) => item.count), 
         backgroundColor: [
-          "#FF6F61", // Example colors for the segments
+          "#FF6F61", 
           "#FFB74D",
           "#81C784",
           "#64B5F6",
