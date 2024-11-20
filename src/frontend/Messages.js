@@ -32,10 +32,10 @@ const Messages = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: email || localstorage.get("user")}),
+        body: JSON.stringify({ username: email }),
       });
       const data = await res.json();
-      setChats(data.chats || []); // Ensure chats is always an array
+      setChats(data.chats || []);
     } catch (error) {
       console.error(error);
     }
@@ -49,7 +49,7 @@ const Messages = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ chatID:chatID , sender: email || localstorage.get("user") }),
+        body: JSON.stringify({ chatID:chatID , sender: email }),
       });
       const data = await res.json();
       setParticipants(data.participants || []);      
@@ -58,18 +58,6 @@ const Messages = () => {
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    if (email) {
-      setUsername(email);
-    } else {
-      const storedUsername = localstorage.get("user");
-      console.log(storedUsername);
-      if (storedUsername) {
-        setUsername(storedUsername);
-      }
-    }
-  }, [email]);
 
   useEffect(() => {
     if (email) {
@@ -88,7 +76,7 @@ const Messages = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ chatIDs: chats, currentUser: email }), // Ensure chats is passed correctly
+          body: JSON.stringify({ chatIDs: chats, currentUser: email }), 
         });
 
         if (!response.ok) {
@@ -101,7 +89,7 @@ const Messages = () => {
           throw new Error('Unexpected response format for chat names.');
         }
 
-        setChatNames(data.chatNames); // Ensure chatNames is set from response
+        setChatNames(data.chatNames);
       } catch (error) {
         console.error('Error fetching chat names:', error);
       }
@@ -142,7 +130,7 @@ const Messages = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ username: email || localstorage.get("user")}),
+          body: JSON.stringify({ username: email }),
         });
 
         if (!res.ok) {
@@ -218,8 +206,8 @@ const Messages = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          participants: participantArray, // Use email to identify the user
-          newChatID: newChatID, // The new chat ID to append
+          participants: participantArray, 
+          newChatID: newChatID, 
         }),
       });
 
@@ -245,7 +233,7 @@ const Messages = () => {
 
       setClickedChat(false);
     }
-  }, [clickedChat]); // Dependency array with selectedChat
+  }, [clickedChat]);
 
 
   const handleSearchUser = (e) => {
@@ -276,7 +264,7 @@ const Messages = () => {
         },
         body: JSON.stringify({
           text: newMessage,
-          sender: email || localstorage.get("user"),
+          sender: email,
           recipient: recipient,
           participants: participants,
           chatID: selectedChat,
@@ -291,7 +279,7 @@ const Messages = () => {
       setNewMessage("");
       setChatHistory((prevHistory) => [...prevHistory, 
         {text: newMessage,
-        sender: email || localstorage.get("user"),
+        sender: email,
         recipient: recipient,
         participants: participants,
         chatID: selectedChat,
@@ -335,8 +323,8 @@ const Messages = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          participants: participantArray, // Use email to identify the user
-          newChatID: newChatID, // The new chat ID to append
+          participants: participantArray,
+          newChatID: newChatID,
         }),
       });
 
@@ -386,7 +374,7 @@ const Messages = () => {
                     className="user-suggestion"
                     onClick={() => {
                       setGroupParticipants(prev => [...prev, user]);
-                      setFilteredUsers(prev => prev.filter(u => u !== user)); // Remove selected user from suggestions
+                      setFilteredUsers(prev => prev.filter(u => u !== user)); 
                     }}
                   >
                     {user}
