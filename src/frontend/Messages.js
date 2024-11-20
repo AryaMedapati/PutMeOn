@@ -1,15 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
-import {
-  collection,
-  addDoc,
-  where,
-  serverTimestamp,
-  onSnapshot,
-  query,
-  orderBy,
-} from "firebase/firestore";
+import React, { useState, useEffect, useContext } from 'react';
+import { collection, addDoc, where, serverTimestamp, onSnapshot, query, orderBy } from "firebase/firestore";
 import { Card, TextArea, Button, InputGroup } from "@blueprintjs/core";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from 'uuid';
 import { UserContext } from "./UserContext";
 import "./styles/Messages.css";
 import localstorage from "localstorage-slim";
@@ -57,11 +49,11 @@ const Messages = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ chatID: chatID, sender: email }),
+        body: JSON.stringify({ chatID:chatID , sender: email }),
       });
       const data = await res.json();
-      setParticipants(data.participants || []);
-      setRecipient(data.recipients || []);
+      setParticipants(data.participants || []);      
+      setRecipient(data.recipients || [])
     } catch (error) {
       console.error(error);
     }
@@ -79,29 +71,27 @@ const Messages = () => {
         if (!chats || chats.length === 0 || !email) return;
         // console.log("(fetch chat names) chats are = " + chats);
 
-        const response = await fetch("http://localhost:3001/fetchChatNames", {
-          method: "POST",
+        const response = await fetch('http://localhost:3001/fetchChatNames', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ chatIDs: chats, currentUser: email }),
+          body: JSON.stringify({ chatIDs: chats, currentUser: email }), 
         });
 
         if (!response.ok) {
-          throw new Error(
-            "Failed to fetch chat names. Please try again later."
-          );
+          throw new Error('Failed to fetch chat names. Please try again later.');
         }
 
         const data = await response.json();
 
         if (!Array.isArray(data.chatNames)) {
-          throw new Error("Unexpected response format for chat names.");
+          throw new Error('Unexpected response format for chat names.');
         }
 
         setChatNames(data.chatNames);
       } catch (error) {
-        console.error("Error fetching chat names:", error);
+        console.error('Error fetching chat names:', error);
       }
     };
 
@@ -121,7 +111,7 @@ const Messages = () => {
     console.log("chat names is " + chatNames);
 
     const dict = chats.reduce((acc, id, index) => {
-      console.log("at index" + index + "chat names is " + chatNames[index]);
+      console.log ("at index" + index + "chat names is " + chatNames[index]);
       acc[id] = chatNames[index];
       return acc;
     }, {});
@@ -144,18 +134,16 @@ const Messages = () => {
         });
 
         if (!res.ok) {
-          throw new Error(
-            "Failed to fetch friends list. Please try again later."
-          );
+          throw new Error('Failed to fetch friends list. Please try again later.');
         }
 
         const data = await res.json();
         if (!Array.isArray(data.friends)) {
-          throw new Error("Unexpected response format for friends list.");
+          throw new Error('Unexpected response format for friends list.');
         }
         setFriends(data.friends);
       } catch (error) {
-        console.error("Error fetching friends list:", error);
+        console.error('Error fetching friends list:', error);
       }
     };
 
@@ -168,16 +156,16 @@ const Messages = () => {
     if (!selectedChat || !selectedChat.id) return;
 
     try {
-      const response = await fetch("http://localhost:3001/fetchChatHistory", {
-        method: "POST",
+      const response = await fetch('http://localhost:3001/fetchChatHistory', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ chatID: selectedChat.id }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch messages. Please try again later.");
+        throw new Error('Failed to fetch messages. Please try again later.');
       }
 
       const data = await response.json();
@@ -185,7 +173,7 @@ const Messages = () => {
         setChatHistory(data.messages);
       }
     } catch (error) {
-      console.error("Error fetching messages:", error);
+      console.error('Error fetching messages:', error);
     }
   };
 
@@ -195,7 +183,7 @@ const Messages = () => {
 
   const handleNewChat = async (recipient) => {
     if (!recipient) {
-      console.error("Recipient is not valid.");
+      console.error('Recipient is not valid.');
       return;
     }
 
@@ -204,11 +192,7 @@ const Messages = () => {
     const participantArray = [recipient, email].sort();
     console.log("participant array is " + participantArray);
 
-    if (
-      Array.isArray(recipient)
-        ? setSelectedChat({ id: newChatID, name: recipient.sort() })
-        : setSelectedChat({ id: newChatID, name: [recipient] })
-    );
+    if (Array.isArray(recipient) ? setSelectedChat({ id: newChatID, name: recipient.sort() }) : setSelectedChat({ id: newChatID, name: [recipient] }));
     // setSelectedChat({ id: newChatID, name: [recipient].sort() });
     setIsCreatingChat(false);
     setRecipient(recipient);
@@ -222,18 +206,19 @@ const Messages = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          participants: participantArray,
-          newChatID: newChatID,
+          participants: participantArray, 
+          newChatID: newChatID, 
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to update chats. Please try again later.");
+        throw new Error('Failed to update chats. Please try again later.');
       }
 
       fetchChats();
+
     } catch (error) {
-      console.error("Error updating chats:", error);
+      console.error('Error updating chats:', error);
     }
   };
 
@@ -250,26 +235,27 @@ const Messages = () => {
     }
   }, [clickedChat]);
 
+
   const handleSearchUser = (e) => {
     const searchValue = e.target.value.trim();
     setNewChatUsername(searchValue);
-    const regex = new RegExp(searchValue, "i");
-    setFilteredUsers(friends.filter((friend) => regex.test(friend)));
+    const regex = new RegExp(searchValue, 'i');
+    setFilteredUsers(friends.filter(friend => regex.test(friend)));
   };
 
   const handleSendMessage = async (event) => {
     event.preventDefault();
 
     if (!newMessage.trim()) {
-      console.warn("Cannot send an empty message.");
+      console.warn('Cannot send an empty message.');
       return;
     }
     if (!selectedChat) {
-      console.error("No chat selected to send the message.");
+      console.error('No chat selected to send the message.');
       return;
     }
 
-    const timestamp = new Date().toISOString();
+    const timestamp = new Date().toISOString()
     try {
       const res = await fetch("http://localhost:3001/insertChat", {
         method: "POST",
@@ -287,28 +273,26 @@ const Messages = () => {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to send message. Please try again later.");
+        throw new Error('Failed to send message. Please try again later.');
       }
 
       setNewMessage("");
-      setChatHistory((prevHistory) => [
-        ...prevHistory,
-        {
-          text: newMessage,
-          sender: email,
-          recipient: recipient,
-          participants: participants,
-          chatID: selectedChat,
-          createdAt: timestamp,
-        },
+      setChatHistory((prevHistory) => [...prevHistory, 
+        {text: newMessage,
+        sender: email,
+        recipient: recipient,
+        participants: participants,
+        chatID: selectedChat,
+        createdAt: timestamp,
+        }
       ]);
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error('Error sending message:', error);
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage(e);
     }
@@ -316,7 +300,7 @@ const Messages = () => {
 
   const handleNewGroup = async () => {
     if (groupParticipants.length < 2) {
-      console.error("Need to pick at least 2 members for a group chat.");
+      console.error('Need to pick at least 2 members for a group chat.');
       return;
     }
 
@@ -345,14 +329,16 @@ const Messages = () => {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to update group chat. Please try again later.");
+        throw new Error('Failed to update group chat. Please try again later.');
       }
 
       fetchChats();
+
     } catch (error) {
-      console.error("Error updating group chat:", error);
+      console.error('Error updating group chat:', error);
     }
   };
+
 
   return (
     <div className="messages-container">
@@ -382,15 +368,13 @@ const Messages = () => {
             />
             <div className="user-suggestions">
               {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
+                filteredUsers.map(user => (
                   <Card
                     key={user}
                     className="user-suggestion"
                     onClick={() => {
-                      setGroupParticipants((prev) => [...prev, user]);
-                      setFilteredUsers((prev) =>
-                        prev.filter((u) => u !== user)
-                      );
+                      setGroupParticipants(prev => [...prev, user]);
+                      setFilteredUsers(prev => prev.filter(u => u !== user)); 
                     }}
                   >
                     {user}
@@ -413,7 +397,7 @@ const Messages = () => {
             />
             <div className="user-suggestions">
               {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
+                filteredUsers.map(user => (
                   <Card
                     key={user}
                     className="user-suggestion"
@@ -433,15 +417,13 @@ const Messages = () => {
           Object.entries(chatDict).map(([chatID, chatName]) => (
             <Card
               key={chatID}
-              className={`chat-card ${
-                selectedChat && selectedChat.id === chatID ? "active-chat" : ""
-              }`}
+              className={`chat-card ${selectedChat && selectedChat.id === chatID ? 'active-chat' : ''}`}
               onClick={() => {
                 setSelectedChat({ id: chatID, name: chatName });
                 setClickedChat(true);
               }}
             >
-              {Array.isArray(chatName) ? chatName.join(", ") : chatName}
+              {Array.isArray(chatName) ? chatName.join(', ') : chatName}
             </Card>
           ))
         ) : (
@@ -471,9 +453,7 @@ const Messages = () => {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
               />
-              <Button type="submit" icon="send-message">
-                Send
-              </Button>
+              <Button type="submit" icon="send-message">Send</Button>
             </form>
           </>
         ) : (
