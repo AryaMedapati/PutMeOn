@@ -12,11 +12,7 @@ import { Card, TextArea, Button, InputGroup } from "@blueprintjs/core";
 import { v4 as uuidv4 } from "uuid";
 import { UserContext } from "./UserContext";
 import "./styles/Messages.css";
-import { Dropdown } from "semantic-ui-react";
-import "semantic-ui-css/components/dropdown.min.css";
-import "semantic-ui-css/components/icon.min.css";
-import "semantic-ui-css/components/input.min.css";
-import "semantic-ui-css/components/transition.min.css";
+import localstorage from "localstorage-slim";
 
 const Messages = () => {
   const [chats, setChats] = useState([]);
@@ -34,13 +30,6 @@ const Messages = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [newChatUsername, setNewChatUsername] = useState("");
   const [newMessage, setNewMessage] = useState("");
-  const [chatTheme, setChatTheme] = useState("default");
-  const [showThemeOptions, setShowThemeOptions] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const handleToggleThemeOptions = () => {
-    setShowThemeOptions((prev) => !prev);
-  };
 
   const { username, email } = useContext(UserContext);
 
@@ -54,8 +43,7 @@ const Messages = () => {
         body: JSON.stringify({ username: email }),
       });
       const data = await res.json();
-      console.log(data);
-      setChats(data.chats || []); // Ensure chats is always an array
+      setChats(data.chats || []);
     } catch (error) {
       console.error(error);
     }
@@ -96,7 +84,7 @@ const Messages = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ chatIDs: chats, currentUser: email }), // Ensure chats is passed correctly
+          body: JSON.stringify({ chatIDs: chats, currentUser: email }),
         });
 
         if (!response.ok) {
@@ -106,13 +94,12 @@ const Messages = () => {
         }
 
         const data = await response.json();
-        console.log(data);
 
         if (!Array.isArray(data.chatNames)) {
           throw new Error("Unexpected response format for chat names.");
         }
 
-        setChatNames(data.chatNames); // Ensure chatNames is set from response
+        setChatNames(data.chatNames);
       } catch (error) {
         console.error("Error fetching chat names:", error);
       }
@@ -122,9 +109,7 @@ const Messages = () => {
   }, [chats, email]);
 
   useEffect(() => {
-    console.log(chats);
     if (!chats || chats.length == 0 || !chatNames || chatNames.length == 0) {
-      console.log("enters if");
       setChatDict({});
       // console.log("chats = " + chats);
       // console.log("chat names = " + chatNames);
@@ -132,14 +117,19 @@ const Messages = () => {
       return;
     }
 
+    console.log("chats is " + chats);
+    console.log("chat names is " + chatNames);
+
     const dict = chats.reduce((acc, id, index) => {
-      acc[id] = chatNames[index] || `Chat ${id}`;
+      console.log("at index" + index + "chat names is " + chatNames[index]);
+      acc[id] = chatNames[index];
       return acc;
     }, {});
-    console.log(dict);
 
     setChatDict(dict);
-    // console.log("chat dict = " + chatDict);
+    Object.entries(dict).forEach(([key, value]) => {
+      console.log(`${key}: ${value}`);
+    });
   }, [chats, chatNames]);
 
   useEffect(() => {
@@ -163,19 +153,6 @@ const Messages = () => {
         if (!Array.isArray(data.friends)) {
           throw new Error("Unexpected response format for friends list.");
         }
-        // setFriends(
-        //   data.friends.map((friend) => ({
-        //     username: friend.username,
-        //     pfp: friend.pfp,
-        //   }))
-        // );
-        console.log(data.friends);
-        console.log(
-          data.friends.map((friend) => ({
-            username: friend.username,
-            pfp: friend.pfp,
-          }))
-        );
         setFriends(data.friends);
       } catch (error) {
         console.error("Error fetching friends list:", error);
@@ -189,8 +166,6 @@ const Messages = () => {
 
   const fetchMessages = async () => {
     if (!selectedChat || !selectedChat.id) return;
-
-    setLoading(true);
 
     try {
       const response = await fetch("http://localhost:3001/fetchChatHistory", {
@@ -211,59 +186,34 @@ const Messages = () => {
       }
     } catch (error) {
       console.error("Error fetching messages:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchMessages();
-    setShowThemeOptions(false);
   }, [selectedChat]);
-
-  useEffect(() => {
-    if (!selectedChat || !selectedChat.id) return;
-
-    getChatTheme(selectedChat.id);
-  }, [selectedChat]);
-
-  const getChatTheme = async (chatID) => {
-    try {
-      const res = await fetch("http://localhost:3001/getChatTheme", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ chatID }),
-      });
-      const data = await res.json();
-
-      if (data.theme) {
-        setChatTheme(data.theme);
-      } else {
-        setChatTheme("default");
-      }
-    } catch (error) {
-      console.error("Error fetching chat theme:", error);
-    }
-  };
 
   const handleNewChat = async (recipient) => {
-    console.log(recipient);
     if (!recipient) {
       console.error("Recipient is not valid.");
       return;
     }
 
     const newChatID = uuidv4();
+    console.log("recipient is " + recipient);
     const participantArray = [recipient, email].sort();
+    console.log("participant array is " + participantArray);
 
-    setSelectedChat({ id: newChatID, name: [recipient].sort() });
+    if (
+      Array.isArray(recipient)
+        ? setSelectedChat({ id: newChatID, name: recipient.sort() })
+        : setSelectedChat({ id: newChatID, name: [recipient] })
+    );
+    // setSelectedChat({ id: newChatID, name: [recipient].sort() });
     setIsCreatingChat(false);
     setRecipient(recipient);
     setParticipants(participantArray);
     setNewChatUsername("");
-    console.log("after");
 
     try {
       const res = await fetch("http://localhost:3001/updateUserChats", {
@@ -272,20 +222,8 @@ const Messages = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          participants: participantArray, // Use email to identify the user
-          newChatID: newChatID, // The new chat ID to append
-        }),
-      });
-      console.log(res);
-
-      const themeRes = await fetch("http://localhost:3001/setChatTheme", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chatID: newChatID,
-          theme: "white", // Default theme
+          participants: participantArray,
+          newChatID: newChatID,
         }),
       });
 
@@ -310,58 +248,13 @@ const Messages = () => {
 
       setClickedChat(false);
     }
-  }, [clickedChat]); // Dependency array with selectedChat
+  }, [clickedChat]);
 
-  // const handleSearchUser = (e) => {
-  //   const searchValue = e.target.value.trim();
-  //   setNewChatUsername(searchValue);
-  //   const regex = new RegExp(searchValue, "i");
-  //   console.log(friends.filter((friend) => regex.test(friend.username)));
-  //   console.log(friends.filter((friend) => regex.test(friend)));
-  //   // setFilteredUsers(friends.filter((friend) => regex.test(friend)));
-  //   setFilteredUsers(friends.filter((friend) => regex.test(friend.username)));
-  // };
-
-  const handleChangeTheme = async (newTheme) => {
-    try {
-      const res = await fetch("http://localhost:3001/setChatTheme", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chatID: selectedChat.id,
-          theme: newTheme,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to change chat theme.");
-      }
-
-      setSelectedChat((prev) => ({ ...prev, theme: newTheme }));
-    } catch (error) {
-      console.error("Error changing theme:", error);
-    }
-  };
-
-  const handleSearchUser = (searchValue) => {
-    const trimmedSearchValue = searchValue.trim();
-    setNewChatUsername(trimmedSearchValue);
-
-    const regex = new RegExp(trimmedSearchValue, "i");
-
-    const filtered = friends.filter((friend) => regex.test(friend.username));
-
-    console.log(filtered); // Log filtered results for debugging
-    setFilteredUsers(
-      filtered.map((friend) => ({
-        key: friend.username,
-        text: friend.username,
-        value: friend.username,
-        image: { avatar: true, src: friend.pfp }, // Optional: Add profile picture if available
-      }))
-    );
+  const handleSearchUser = (e) => {
+    const searchValue = e.target.value.trim();
+    setNewChatUsername(searchValue);
+    const regex = new RegExp(searchValue, "i");
+    setFilteredUsers(friends.filter((friend) => regex.test(friend)));
   };
 
   const handleSendMessage = async (event) => {
@@ -376,6 +269,7 @@ const Messages = () => {
       return;
     }
 
+    const timestamp = new Date().toISOString();
     try {
       const res = await fetch("http://localhost:3001/insertChat", {
         method: "POST",
@@ -388,7 +282,7 @@ const Messages = () => {
           recipient: recipient,
           participants: participants,
           chatID: selectedChat,
-          createdAt: new Date().toISOString(),
+          createdAt: timestamp,
         }),
       });
 
@@ -397,7 +291,17 @@ const Messages = () => {
       }
 
       setNewMessage("");
-      fetchMessages();
+      setChatHistory((prevHistory) => [
+        ...prevHistory,
+        {
+          text: newMessage,
+          sender: email,
+          recipient: recipient,
+          participants: participants,
+          chatID: selectedChat,
+          createdAt: timestamp,
+        },
+      ]);
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -419,7 +323,11 @@ const Messages = () => {
     const newChatID = uuidv4();
     const participantArray = [...groupParticipants, email].sort();
 
+    console.log("participant array = " + participantArray);
+    console.log("group participants = " + groupParticipants);
+
     setSelectedChat({ id: newChatID, name: groupParticipants.sort() });
+    console.log("selected chat post update = " + selectedChat.name);
     setIsCreatingGroup(false);
     setRecipient(groupParticipants);
     setParticipants(participantArray);
@@ -431,8 +339,8 @@ const Messages = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          participants: participantArray, // Use email to identify the user
-          newChatID: newChatID, // The new chat ID to append
+          participants: participantArray,
+          newChatID: newChatID,
         }),
       });
 
@@ -445,8 +353,6 @@ const Messages = () => {
       console.error("Error updating group chat:", error);
     }
   };
-
-  console.log(chatHistory);
 
   return (
     <div className="messages-container">
@@ -469,7 +375,7 @@ const Messages = () => {
 
         {isCreatingGroup && (
           <div className="new-group-chat-input">
-            {/* <InputGroup
+            <InputGroup
               placeholder="Type a username..."
               value={newChatUsername}
               onChange={handleSearchUser}
@@ -484,7 +390,7 @@ const Messages = () => {
                       setGroupParticipants((prev) => [...prev, user]);
                       setFilteredUsers((prev) =>
                         prev.filter((u) => u !== user)
-                      ); // Remove selected user from suggestions
+                      );
                     }}
                   >
                     {user}
@@ -493,46 +399,14 @@ const Messages = () => {
               ) : (
                 <div className="no-suggestions">No users found</div>
               )}
-            </div> */}
-            <Dropdown
-              placeholder="Search users..."
-              fluid
-              search
-              selection
-              multiple // Enable multi-selection
-              options={filteredUsers}
-              onSearchChange={(e, { searchQuery }) =>
-                handleSearchUser(searchQuery)
-              }
-              onChange={(e, { value }) => {
-                setGroupParticipants(value); // Update group participants
-                const selectedUsers = new Set(value);
-                setFilteredUsers((prev) =>
-                  prev.filter((user) => !selectedUsers.has(user.value))
-                ); // Remove selected users from suggestions
-              }}
-              value={groupParticipants} // Maintain selected users in dropdown
-              style={{ marginBottom: "20px", width: "300px" }}
-            />
+            </div>
             <Button onClick={handleNewGroup}>Create Group Chat</Button>
           </div>
         )}
 
         {isCreatingChat && (
           <div className="new-chat-input">
-            <Dropdown
-              placeholder="Search users..."
-              fluid
-              search
-              selection
-              options={filteredUsers}
-              onSearchChange={(e, { searchQuery }) =>
-                handleSearchUser(searchQuery)
-              }
-              onChange={(e, { value }) => handleNewChat(value)}
-              style={{ marginBottom: "20px", width: "300px" }}
-            />
-            {/* <InputGroup
+            <InputGroup
               placeholder="Type a username..."
               value={newChatUsername}
               onChange={handleSearchUser}
@@ -551,7 +425,7 @@ const Messages = () => {
               ) : (
                 <div className="no-suggestions">No users found</div>
               )}
-            </div> */}
+            </div>
           </div>
         )}
 
@@ -575,63 +449,20 @@ const Messages = () => {
         )}
       </div>
 
-      <div
-        className="chat-content"
-        style={{
-          background: chatTheme === "default" ? "#f0f0f0" : chatTheme,
-        }}
-      >
+      <div className="chat-content">
         {selectedChat ? (
           <>
-            <div className="theme-selector">
-              <Button onClick={handleToggleThemeOptions}>
-                Change Chat Theme
-              </Button>
-              {showThemeOptions && (
-                <div className="theme-options">
-                  <Button onClick={() => handleChangeTheme("white")}>
-                    White
-                  </Button>
-                  <Button onClick={() => handleChangeTheme("blue")}>
-                    Blue
-                  </Button>
-                  <Button onClick={() => handleChangeTheme("green")}>
-                    Green
-                  </Button>
-                  <Button onClick={() => handleChangeTheme("yellow")}>
-                    Yellow
-                  </Button>
-                  <Button onClick={() => handleChangeTheme("red")}>Red</Button>
-                </div>
+            <div className="message-list">
+              {chatHistory.length > 0 ? (
+                chatHistory.map((message) => (
+                  <Card key={message.id} className="message-card">
+                    {`${message.sender}: ${message.text}`}
+                  </Card>
+                ))
+              ) : (
+                <div className="no-messages">No messages in this chat</div>
               )}
             </div>
-
-            {loading ? (
-              <div className="loading-chat">
-                <p>Loading chat...</p>
-                {/* You can replace this with a spinner from a library like React Spinner */}
-              </div>
-            ) : (
-              <div className="message-list">
-                {chatHistory.length > 0 ? (
-                  chatHistory.map((message) => (
-                    <Card key={message.id} className="message-card">
-                      <div className="message-content">
-                        <img
-                          src={message.pfp || "/path/to/default-avatar.png"}
-                          className="message-pfp"
-                        />
-                        <div className="message-text">
-                          <strong>{message.sender}:</strong> {message.text}
-                        </div>
-                      </div>
-                    </Card>
-                  ))
-                ) : (
-                  <div className="no-messages">No messages in this chat</div>
-                )}
-              </div>
-            )}
 
             <form className="message-input" onSubmit={handleSendMessage}>
               <TextArea
