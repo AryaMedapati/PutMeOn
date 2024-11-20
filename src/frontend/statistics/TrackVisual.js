@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Bar } from "react-chartjs-2";
+import { Bar, Scatter } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -76,8 +76,8 @@ const TH = () => {
     label: (context) => {
       const range = context.label;
       const tracksInRange = groupedTracks[range];
-      const trackNames = tracksInRange.map((track) => track.name).join(", "); 
-      return `${range}: ${trackNames}`; 
+      const trackNames = tracksInRange.map((track) => track.name).join(", ");
+      return `${range}: ${trackNames}`;
     },
   };
 
@@ -87,7 +87,7 @@ const TH = () => {
       {
         label: "Number of Tracks",
         data: dataCounts,
-        backgroundColor: "#1DB954", 
+        backgroundColor: "#1DB954",
         borderColor: "#1DB954",
         borderWidth: 1,
       },
@@ -104,16 +104,15 @@ const TH = () => {
             return;
           }
 
-          // Custom styling for tooltip
           const tooltipEl = tooltip.el;
           if (!tooltipEl) return;
 
           tooltipEl.style.opacity = 1;
           tooltipEl.style.pointerEvents = "auto";
-          tooltipEl.style.maxWidth = "300px"; 
-          tooltipEl.style.maxHeight = "200px"; 
-          tooltipEl.style.overflowY = "auto"; 
-          tooltipEl.style.wordWrap = "break-word";  
+          tooltipEl.style.maxWidth = "300px";
+          tooltipEl.style.maxHeight = "200px";
+          tooltipEl.style.overflowY = "auto";
+          tooltipEl.style.wordWrap = "break-word";
         },
       },
     },
@@ -128,6 +127,57 @@ const TH = () => {
         title: {
           display: true,
           text: "Number of Tracks",
+        },
+        beginAtZero: true,
+      },
+    },
+  };
+
+  const scatterData = {
+    datasets: [
+      {
+        label: "Artists",
+        data: tracks.map((track) => ({
+          x: track.popularity,
+          y: track.duration_ms,
+          name: track.name,
+        })),
+        backgroundColor: "#1DB954",
+        pointBorderColor: "#1DB954",
+        pointBorderWidth: 1,
+      },
+    ],
+  };
+  console.log(scatterData);
+
+  const tooltipCallbackScatter = {
+    label: (context) => {
+      const { x, y, name } = context.raw;
+      return `${name}: Popularity ${x}, Duration ${y}`;
+    },
+  };
+
+  const scatterOptions = {
+    responsive: true,
+    plugins: {
+      tooltip: {
+        callbacks: tooltipCallbackScatter,
+      },
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: "Popularity",
+        },
+        ticks: {
+          stepSize: 10,
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: "Duration in Milliseconds",
         },
         beginAtZero: true,
       },
@@ -176,15 +226,23 @@ const TH = () => {
         </button>
       </div>
 
-      {tracks.length > 0 ? (
-        <div
-          style={{ display: "flex", justifyContent: "center", padding: "20px" }}
-        >
-          <Bar data={chartData} options={chartOptions} />
-        </div>
-      ) : (
-        <p>Loading histogram...</p>
-      )}
+      <div style={{ marginTop: "30px" }}>
+        <h3>{trackTimeline}</h3>
+        {tracks.length > 0 ? (
+          <>
+            <div style={{ marginBottom: "50px" }}>
+              <h2>Track Popularity Histogram</h2>
+              <Bar data={chartData} options={chartOptions} />
+            </div>
+            <div>
+              <h2>Track Popularity vs. Duration</h2>
+              <Scatter data={scatterData} options={scatterOptions} />
+            </div>
+          </>
+        ) : (
+          <p>Loading data...</p>
+        )}
+      </div>
     </div>
   );
 };

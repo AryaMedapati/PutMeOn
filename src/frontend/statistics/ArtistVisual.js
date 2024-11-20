@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Bar } from "react-chartjs-2";
+import { Bar, Scatter } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
+  PointElement,
   Tooltip,
   Legend,
 } from "chart.js";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  Tooltip,
+  Legend
+);
 
 const TH = () => {
   const [artists, setArtists] = useState([]);
@@ -37,7 +45,7 @@ const TH = () => {
     fetchTopArtists(action);
   };
 
-  const groupArtistsByPopularity = (tracks) => {
+  const groupArtistsByPopularity = (artists) => {
     const ranges = {
       "0-10": [],
       "11-20": [],
@@ -83,7 +91,14 @@ const TH = () => {
     },
   };
 
-  const chartData = {
+  const tooltipCallbackScatter = {
+    label: (context) => {
+      const { x, y, name } = context.raw;
+      return `${name}: Popularity ${x}, Followers ${y}`;
+    },
+  };
+
+  const histogramData = {
     labels: labels,
     datasets: [
       {
@@ -95,27 +110,13 @@ const TH = () => {
       },
     ],
   };
+  console.log(histogramData);
 
-  const chartOptions = {
+  const histogramOptions = {
     responsive: true,
     plugins: {
       tooltip: {
         callbacks: tooltipCallbacks,
-        custom: (tooltip) => {
-          if (!tooltip.opacity) {
-            return;
-          }
-
-          const tooltipEl = tooltip.el;
-          if (!tooltipEl) return;
-
-          tooltipEl.style.opacity = 1;
-          tooltipEl.style.pointerEvents = "auto";
-          tooltipEl.style.maxWidth = "300px";
-          tooltipEl.style.maxHeight = "200px";
-          tooltipEl.style.overflowY = "auto";
-          tooltipEl.style.wordWrap = "break-word";
-        },
       },
     },
     scales: {
@@ -135,10 +136,54 @@ const TH = () => {
     },
   };
 
+  const scatterData = {
+    datasets: [
+      {
+        label: "Artists",
+        data: artists.map((artist) => ({
+          x: artist.popularity,
+          y: artist.followers.total,
+          name: artist.name,
+        })),
+        backgroundColor: "#1DB954",
+        pointBorderColor: "#1DB954",
+        pointBorderWidth: 1,
+      },
+    ],
+  };
+  console.log(scatterData);
+
+  const scatterOptions = {
+    responsive: true,
+    plugins: {
+      tooltip: {
+        callbacks: tooltipCallbackScatter,
+      },
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: "Popularity",
+        },
+        ticks: {
+          stepSize: 10,
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: "Followers",
+        },
+        beginAtZero: true,
+      },
+    },
+  };
+
   return (
-    <div style={{ padding: "20px", textAlign: "center" }}>
-      <h2>Artist Popularity Histogram</h2>
-      <div style={{ marginBottom: "20px" }}>
+    <div style={{ padding: "20px" }}>
+      <h2>Artist Insights</h2>
+      <div style={{ marginBottom: "20px", textAlign: "center" }}>
         <button
           onClick={() => handleButtonClick("short_term")}
           style={{
@@ -147,6 +192,7 @@ const TH = () => {
             color: "white",
             border: "none",
             borderRadius: "5px",
+            margin: "5px",
           }}
         >
           Last 4 Weeks
@@ -159,6 +205,7 @@ const TH = () => {
             color: "white",
             border: "none",
             borderRadius: "5px",
+            margin: "5px",
           }}
         >
           Last 6 Months
@@ -171,21 +218,29 @@ const TH = () => {
             color: "white",
             border: "none",
             borderRadius: "5px",
+            margin: "5px",
           }}
         >
           Last 12 Months
         </button>
       </div>
-
-      {artists.length > 0 ? (
-        <div
-          style={{ display: "flex", justifyContent: "center", padding: "20px" }}
-        >
-          <Bar data={chartData} options={chartOptions} />
-        </div>
-      ) : (
-        <p>Loading histogram...</p>
-      )}
+      <div style={{ marginTop: "30px" }}>
+        <h3>{artistTimeline}</h3>
+        {artists.length > 0 ? (
+          <>
+            <div style={{ marginBottom: "50px" }}>
+              <h2>Artist Popularity Histogram</h2>
+              <Bar data={histogramData} options={histogramOptions} />
+            </div>
+            <div>
+              <h2>Artist Popularity vs. Followers</h2>
+              <Scatter data={scatterData} options={scatterOptions} />
+            </div>
+          </>
+        ) : (
+          <p>Loading data...</p>
+        )}
+      </div>
     </div>
   );
 };
