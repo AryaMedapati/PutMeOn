@@ -1,15 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { Pie } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Pie, Radar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from "chart.js";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Filler,
+  Tooltip,
+  Legend
+);
 
 const GV = () => {
   const [genres, setGenres] = useState([]);
   const [genreTimeline, setGenreTimeline] = useState("Last 4 Weeks");
 
   const fetchTopArtists = async (timeline) => {
-    const url = "http://localhost:3001"; 
+    const url = "http://localhost:3001";
     const response = await fetch(`${url}/topArtists?timeline=${timeline}`);
     const data = await response.json();
     const genreCounts = getGenreCounts(data.data);
@@ -54,7 +71,7 @@ const GV = () => {
   };
 
   useEffect(() => {
-    const timeline = "short_term"; 
+    const timeline = "short_term";
     fetchTopArtists(timeline);
   }, []);
 
@@ -69,12 +86,12 @@ const GV = () => {
   };
 
   const pieChartData = {
-    labels: genres.map((item) => item.genre), 
+    labels: genres.map((item) => item.genre),
     datasets: [
       {
-        data: genres.map((item) => item.count), 
+        data: genres.map((item) => item.count),
         backgroundColor: [
-          "#FF6F61", 
+          "#FF6F61",
           "#FFB74D",
           "#81C784",
           "#64B5F6",
@@ -104,37 +121,108 @@ const GV = () => {
     },
   };
 
+  const radarData = {
+    labels: genres.map((item) => item.genre),
+    datasets: [
+      {
+        label: `Top Genres (${genreTimeline})`,
+        data: genres.map((item) => item.count),
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 2,
+        pointBackgroundColor: "rgba(75, 192, 192, 1)",
+      },
+    ],
+  };
+  console.log(radarData);
+
+  const radarOptions = {
+    responsive: true,
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const value = context.raw || 0;
+            return `${context.label}: ${value}`;
+          },
+        },
+      },
+    },
+    scales: {
+      r: {
+        angleLines: {
+          display: true,
+        },
+        suggestedMin: 0,
+        suggestedMax: Math.max(...genres.map((item) => item[1])) + 1,
+        ticks: {
+          stepSize: 1,
+          showLabelBackdrop: false,
+          backdropPadding: 2,
+        },
+      },
+    },
+  };
+
   return (
     <div style={{ padding: "20px", textAlign: "center" }}>
       <h2>Genre Pie Chart</h2>
       <div style={{ marginBottom: "20px" }}>
         <button
           onClick={() => handleButtonClick("short_term")}
-          style={{ padding: "10px", backgroundColor: "#1DB954", color: "white", border: "none", borderRadius: "5px" }}
+          style={{
+            padding: "10px",
+            backgroundColor: "#1DB954",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+          }}
         >
           Last 4 Weeks
         </button>
         <button
           onClick={() => handleButtonClick("medium_term")}
-          style={{ padding: "10px", backgroundColor: "#1DB954", color: "white", border: "none", borderRadius: "5px" }}
+          style={{
+            padding: "10px",
+            backgroundColor: "#1DB954",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+          }}
         >
           Last 6 Months
         </button>
         <button
           onClick={() => handleButtonClick("long_term")}
-          style={{ padding: "10px", backgroundColor: "#1DB954", color: "white", border: "none", borderRadius: "5px" }}
+          style={{
+            padding: "10px",
+            backgroundColor: "#1DB954",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+          }}
         >
           Last 12 Months
         </button>
       </div>
 
-      {genres.length > 0 ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: "20px" }}>
-          <Pie data={pieChartData} options={pieChartOptions} />
-        </div>
-      ) : (
-        <p>Loading chart...</p>
-      )}
+      <div style={{ marginTop: "30px" }}>
+        <h3>{genreTimeline}</h3>
+        {genres.length > 0 ? (
+          <>
+            <div style={{ marginBottom: "50px" }}>
+              <h2>Top Genres Pie Chart</h2>
+              <Pie data={pieChartData} options={pieChartOptions} />
+            </div>
+            <div>
+              <h2>Top Genres Radar Chart</h2>
+              <Radar data={radarData} options={radarOptions} />
+            </div>
+          </>
+        ) : (
+          <p>Loading data...</p>
+        )}
+      </div>
     </div>
   );
 };
