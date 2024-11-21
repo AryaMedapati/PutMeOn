@@ -1626,11 +1626,12 @@ app.post('/fetchChatRecipients', async (req, res) => {
 
 app.get("/fetchTopSongs", async (req, res) => {
   try {
-    console.log('test1')
-    const getSongs = db.collection("spotifySongs");
-    const snapshot = await getSongs.get();
-    console.log(snapshot)
-    const songs = snapshot.docs.map(doc => doc.data());
+    const docRef = db.collection("spotifySongs").doc("top_1000_songs");
+    const snapshot = await docRef.get();
+
+    const data = snapshot.data();
+    const songs = data.songs || [];
+
     res.status(200).json(songs);
   } catch (error) {
     // console.log(error);

@@ -8,23 +8,6 @@ import "./styles/NewPlaylist.css";
 
 const NewPlaylist = () => {
 
-    // const items = [
-    //     "test123",
-    //     "te1234",
-    //     "temp1234",
-    //     "testtest",
-    //     "testesttest",
-    //     "nottest",
-    //     "Test",
-    //     "song1",
-    //     "song2",
-    //     "so3",
-    //     "songsong",
-    //     "testsong",
-    //     "songtest",
-    //     "song123",
-    // ];
-
     const [items, setItems] = useState([]);
 
     const { username } = useContext(UserContext);
@@ -119,9 +102,7 @@ const NewPlaylist = () => {
         const fetchSongs = async () => {
             const response = await fetch("http://localhost:3001/fetchTopSongs");
             const songs = await response.json();
-            const trackNames = Object.values(songs).map(song => song.trackName);
-            setItems(trackNames)
-            debugger
+            setItems(songs.map(song => `${song["Track Name"]} - by ${song["Artist Name(s)"]}`))
         };
         fetchSongs();
     }, [items]);
@@ -194,8 +175,8 @@ const NewPlaylist = () => {
                         large: true,
                         placeholder: "Type to add a song...",
                     }}
-                    createNewItemFromQuery={createNewItemFromQuery}
-                    createNewItemRenderer={createNewItemRenderer}
+                    // createNewItemFromQuery={createNewItemFromQuery}
+                    // createNewItemRenderer={createNewItemRenderer}
                     openOnKeyDown
                     resetOnSelect
                 />

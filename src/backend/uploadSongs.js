@@ -24,22 +24,23 @@ async function uploadSongs() {
   const datasetPath = path.join(__dirname, "../../datasets/top_1000_1950-now.csv");
 
   // Open the CSV file and read data row by row
+  const songsArray = []; // Initialize an array to hold all songs
+
+  // Open the CSV file and read data row by row
   fs.createReadStream(datasetPath)
     .pipe(csv())
-    .on("data", async (row) => {
+    .on("data", (row) => {
+      songsArray.push(row); // Collect each row into the array
+    })
+    .on("end", async () => {
       try {
-        // For each row, create a document reference in Firestore
-        // const docRef = doc(db, "spotifySongs", uuidv4()); // Using UUID for unique document IDs
-        // await setDoc(docRef, row);
-        const docRef = db.collection("spotifySongs").doc(uuidv4()); // Using UUID for unique document IDs
-        await docRef.set(row);
-        console.log(`Uploaded: ${row.Song} by ${row.Artist}`);
+        // Once all rows are read, create a single document with the array
+        const docRef = db.collection("spotifySongs").doc("temp doc");
+        await docRef.set({ songs: songsArray[0] }); // Store all songs in an array under the 'songs' field
+        console.log("All songs uploaded as a single document.");
       } catch (error) {
         console.error("Error uploading document:", error);
       }
-    })
-    .on("end", () => {
-      console.log("CSV file successfully processed and data uploaded.");
     });
 }
 

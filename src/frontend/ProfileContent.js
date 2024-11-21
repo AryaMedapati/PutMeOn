@@ -4,6 +4,7 @@ import ViewProfile from "./ViewProfile";
 import EditProfile from "./EditProfile";
 import ProfilePrivacy from "./ProfilePrivacy";
 import FriendsAndNotifications from "./ProfileFriend";
+import UploadListeningHistory from "./UploadListingHistory";
 
 const ProfileContent = ({ activeContent }) => {
   switch (activeContent) {
@@ -35,6 +36,12 @@ const ProfileContent = ({ activeContent }) => {
       return (
         <div>
           <FriendsAndNotifications />
+        </div>
+      );
+    case "uploadHistory":
+      return (
+        <div>
+          <UploadListeningHistory />
         </div>
       );
     default:
