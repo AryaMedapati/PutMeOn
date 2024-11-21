@@ -8,22 +8,7 @@ import "./styles/NewPlaylist.css";
 
 const NewPlaylist = () => {
 
-    const items = [
-        "test123",
-        "te1234",
-        "temp1234",
-        "testtest",
-        "testesttest",
-        "nottest",
-        "Test",
-        "song1",
-        "song2",
-        "so3",
-        "songsong",
-        "testsong",
-        "songtest",
-        "song123",
-    ];
+    const [items, setItems] = useState([]);
 
     const { username } = useContext(UserContext);
     const navigate = useNavigate();
@@ -68,9 +53,9 @@ const NewPlaylist = () => {
     };
 
     const itemPredicate = (query, item) => {
-        const normalizedFruit = item.toLowerCase();
+        const normalizedItem = item.toLowerCase();
         const normalizedQuery = query.toLowerCase();
-        return normalizedFruit.includes(normalizedQuery);
+        return normalizedItem.includes(normalizedQuery);
     };
 
     const updatePlaylists = () => {
@@ -112,6 +97,15 @@ const NewPlaylist = () => {
     const editPlaylistName = (value) => {
         setPlaylistName(value);
     };
+
+    useEffect(() => {
+        const fetchSongs = async () => {
+            const response = await fetch("http://localhost:3001/fetchTopSongs");
+            const songs = await response.json();
+            setItems(songs.map(song => `${song["Track Name"]} - by ${song["Artist Name(s)"]}`))
+        };
+        fetchSongs();
+    }, [items]);
 
     useEffect(() => {
         if (playlistIndex != -1) {
@@ -181,8 +175,8 @@ const NewPlaylist = () => {
                         large: true,
                         placeholder: "Type to add a song...",
                     }}
-                    createNewItemFromQuery={createNewItemFromQuery}
-                    createNewItemRenderer={createNewItemRenderer}
+                    // createNewItemFromQuery={createNewItemFromQuery}
+                    // createNewItemRenderer={createNewItemRenderer}
                     openOnKeyDown
                     resetOnSelect
                 />

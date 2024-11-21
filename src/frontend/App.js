@@ -34,6 +34,7 @@ import TH from "./statistics/TrackVisual";
 import AH from "./statistics/ArtistVisual";
 import PStat from "./statistics/PutMeOnStats";
 import CompareFriend from "./statistics/CompareFriend";
+import ShareStats from "./statistics/ShareStats";
 import Login from "./Login";
 import CreateAccount from "./CreateAccount";
 import EditCollabPlaylist from "./EditCollabPlaylist";
@@ -170,6 +171,7 @@ function App(props) {
         <Route path="/comparefriend" element={<CompareFriend />} />
         <Route path = "/leaderboard" element={<Leaderboard/>}/>
         <Route path = "/global" element={<Global/>}/>
+        <Route path="/sharestats" element={<ShareStats />} />
 
       </Routes>
     </div>

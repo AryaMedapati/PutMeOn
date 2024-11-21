@@ -27,6 +27,7 @@ const EditProfile = () => {
         "song123",
     ];
 
+    // const [items, setItems] = useState([]);
     const [pfp, setPfp] = useState("");
     const [bio, setBio] = useState("");
     const [email, setEmail] = useState("");
@@ -209,6 +210,15 @@ const EditProfile = () => {
         };
         fetchProfileData();
     }, [username]);
+
+    useEffect(() => {
+        const fetchSongs = async () => {
+            const response = await fetch("http://localhost:3001/fetchTopSongs");
+            const songs = await response.json();
+            debugger
+        };
+        fetchSongs();
+    }, [items]);
 
     useEffect(() => {
         displayImage(pfp);
