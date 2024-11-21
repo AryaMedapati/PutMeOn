@@ -124,6 +124,96 @@ async function savePopularityScore(user, popScore) {
     console.log(error);
   }
 }
+app.get("/calculateAveragePopularity", async (req, res) => {
+  try {
+    const col = db.collection("UserData");
+    const snapshot = await col.get();
+    let total = 0;
+    let vals = 0;
+    snapshot.forEach((doc) => {
+      if (doc.data().popScore) {
+        total += doc.data().popScore;
+        vals+=1
+      }
+    })
+    const average = total/vals
+    res.json({total: average});
+  } catch (error) {
+    console.log(error);
+  }
+})
+app.get("/calculateAverageLikes", async (req, res) => {
+  try {
+    const col = db.collection("UserData");
+    const snapshot = await col.get();
+    let total = 0;
+    let vals = 0;
+    snapshot.forEach((doc) => {
+      if (doc.data().totalLikes) {
+        total += doc.data().totalLikes;
+        vals+=1
+      }
+    })
+    const average = total/vals
+    res.json({total: average});
+  } catch (error) {
+    console.log(error);
+  }
+})
+app.get("/calculateAverageFollowers", async (req, res) => {
+  try {
+    const col = db.collection("UserData");
+    const snapshot = await col.get();
+    let total = 0;
+    let vals = 0;
+    snapshot.forEach((doc) => {
+      if (doc.data().followers) {
+        total += doc.data().followers;
+        vals+=1
+      }
+    })
+    const average = total/vals
+    res.json({total: average});
+  } catch (error) {
+    console.log(error);
+  }
+})
+app.get("/calculateAverageReactions", async (req, res) => {
+  try {
+    const col = db.collection("UserData");
+    const snapshot = await col.get();
+    let total = 0;
+    let vals = 0;
+    snapshot.forEach((doc) => {
+      if (doc.data().totalReactions) {
+        total += doc.data().totalReactions;
+        vals+=1
+      }
+    })
+    const average = total/vals
+    res.json({total: average});
+  } catch (error) {
+    console.log(error);
+  }
+})
+app.get("/calculateAverageComments", async (req, res) => {
+  try {
+    const col = db.collection("UserData");
+    const snapshot = await col.get();
+    let total = 0;
+    let vals = 0;
+    snapshot.forEach((doc) => {
+      if (doc.data().totalComments) {
+        total += doc.data().totalComments;
+        vals+=1
+      }
+    })
+    const average = total/vals
+    res.json({total: average});
+  } catch (error) {
+    console.log(error);
+  }
+})
 async function saveFollowers(user, followers) {
   // console.log("user: "+ user);
   try {

@@ -38,6 +38,7 @@ import Login from "./Login";
 import CreateAccount from "./CreateAccount";
 import EditCollabPlaylist from "./EditCollabPlaylist";
 import Leaderboard from "./Leaderboard";
+import Global from "./Global";
 
 function App(props) {
   const [isHomeHovered, setIsHomeHovered] = useState(false);
@@ -168,6 +169,8 @@ function App(props) {
         <Route path="/customstats" element={<PStat />} />
         <Route path="/comparefriend" element={<CompareFriend />} />
         <Route path = "/leaderboard" element={<Leaderboard/>}/>
+        <Route path = "/global" element={<Global/>}/>
+
       </Routes>
     </div>
   );

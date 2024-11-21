@@ -2,6 +2,7 @@ import {React, useEffect, useState, useRef} from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, useLocation, useNavigate, Switch} from "react-router-dom";
 import Playlists from "./Playlists";
 import Leaderboard from './Leaderboard';
+import Global from './Global';
 import "./styles/Home.css";
 import localstorage from 'localstorage-slim';
 import { GiConsoleController } from 'react-icons/gi';
@@ -359,6 +360,9 @@ const Home = () => {
   const handleLeaderboard = () => {
     nav("/leaderboard");
   }
+  const handleGlobal = () => {
+    nav("/global")
+  }
   useEffect(() => {
     const fetchAndSetData = async () => {
         const friendsList = await fetchFriendsList();
@@ -470,12 +474,15 @@ const Home = () => {
             })}
         </div>
         <div>
+          <button onClick={handleGlobal}>Global</button>
           <button onClick={handleLeaderboard}>Leaderboard</button>
         </div>
 
       <Routes>
       <Route path="/playlists" element={<Playlists user = {passIn2}/>} />
       <Route path = "/leaderboard" element={<Leaderboard/>}></Route>
+      <Route path = "/global" element={<Global/>}></Route>
+
       </Routes>
       
     </div>
