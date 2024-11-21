@@ -7,10 +7,7 @@ const Tracks = () => {
 
   const fetchTopTracks = async (timeline) => {
     const url = "http://localhost:3001";
-    // const url = "https://put-me-on-418b7.web.app";
-    const response = await fetch(
-      `${url}/topTracks?timeline=${timeline}`
-    );
+    const response = await fetch(`${url}/topTracks?timeline=${timeline}`);
     const data = await response.json();
     setTracks(data.data);
     console.log(data);
@@ -56,7 +53,9 @@ const Tracks = () => {
         overflowY: "auto",
       }}
     >
-      <h1 style={{ padding: "20px", textAlign: "center" }}>Your Top Tracks from the {trackTimeline}</h1>
+      <h1 style={{ padding: "20px", textAlign: "center" }}>
+        Your Top Tracks from the {trackTimeline}
+      </h1>
       <div
         style={{
           marginBottom: "20px",

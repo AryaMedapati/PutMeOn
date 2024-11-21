@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import Tracks from "./TopTracks";
 import Artists from "./TopArtists";
@@ -6,6 +6,9 @@ import Genres from "./TopGenres";
 import GV from "./GenreVisual";
 import TH from "./TrackVisual";
 import AH from "./ArtistVisual";
+import PStat from "./PutMeOnStats";
+import CompareFriend from "./CompareFriend";
+import ShareStats from "./ShareStats";
 import "../styles/Stats.css";
 
 const Stats = () => {
@@ -46,6 +49,21 @@ const Stats = () => {
               <span className="nav-icon">👤</span>Artist Visual
             </div>
           </Link>
+          <Link to="/customstats" className="nav-link">
+            <div className="nav-item">
+              <span className="nav-icon">🌟</span>PutMeOnStats
+            </div>
+          </Link>
+          <Link to="/comparefriend" className="nav-link">
+            <div className="nav-item">
+              <span className="nav-icon">🧑‍🤝‍🧑</span>CompareFriend
+            </div>
+          </Link>
+          <Link to="/sharestats" className="nav-link">
+            <div className="nav-item">
+              <span className="nav-icon">➦</span>Share Stats
+            </div>
+          </Link>
         </div>
       </nav>
 
@@ -57,6 +75,9 @@ const Stats = () => {
           <Route path="/genrevis" element={<GV />} />
           <Route path="/trackvis" element={<TH />} />
           <Route path="/artistvis" element={<AH />} />
+          <Route path="/customstats" element={<PStat />} />
+          <Route path="/comparefriend" element={<CompareFriend />} />
+          <Route path="/sharestats" element={<ShareStats />} />
         </Routes>
       </div>
     </div>
