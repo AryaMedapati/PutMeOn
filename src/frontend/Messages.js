@@ -123,29 +123,24 @@ const Messages = () => {
   }, [chats, chatNames]);
 
   useEffect(() => {
-    const fetchFriendsList = async () => {
-      try {
-        const res = await fetch("http://localhost:3001/fetchFriends", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username: email }),
-        });
-
-        if (!res.ok) {
-          throw new Error('Failed to fetch friends list. Please try again later.');
-        }
-
-        const data = await res.json();
-        if (!Array.isArray(data.friends)) {
-          throw new Error('Unexpected response format for friends list.');
-        }
-        setFriends(data.friends);
-      } catch (error) {
-        console.error('Error fetching friends list:', error);
-      }
-    };
+  const fetchFriendsList = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/fetchFriends", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: email,
+        }),
+      });
+      const data = await res.json();  
+      const usernames = data.friends.map((friend) => friend.username);
+      setFriends(usernames);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
     if (email) {
       fetchFriendsList();

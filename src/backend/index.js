@@ -462,6 +462,8 @@ app.post("/fetchFriends", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    console.log("passed in username = " + username);
+
     const recipientDoc = recipientSnapshot.docs[0];
     const recipientData = recipientDoc.data();
 
@@ -485,6 +487,7 @@ app.post("/fetchFriends", async (req, res) => {
           friendListWithPfp.push({ username: friendUsername, pfp: null });
         }
       }
+      console.log("friend array = " + friendListWithPfp);
       res.json({ friends: friendListWithPfp });
     } else {
       res.json({ friends: [] });
