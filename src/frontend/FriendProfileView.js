@@ -17,7 +17,6 @@ function FriendProfileView() {
 
   const navigate = useNavigate();
 
-  // Fetch friends list
   useEffect(() => {
     if (routeUsername === loggedInUsername) {
       navigate("/profile");

@@ -1,0 +1,290 @@
+/* Base Styles */
+body, .main-content {
+  scrollbar-width: none;
+}
+
+body::-webkit-scrollbar, .main-content::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+.user-recommendations-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.profile-and-recommendations {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 20px;
+}
+
+.user-taste-profile {
+  flex: 1.5;  /* Reduced flex value to take up less space */
+  margin-right: 20px;
+}
+
+.recommended-users,
+.recommended-songs,
+.recommended-artists {
+  flex: 2.5;  /* Increased flex value for these sections to take up more space */
+}
+
+.taste-profile-card, .recommended-user-card, .song-card, .recommended-artist-card {
+  margin-bottom: 20px;
+  transition: transform 0.3s ease;
+}
+
+.taste-profile-card:hover, .recommended-user-card:hover, .song-card:hover, .recommended-artist-card:hover {
+  transform: scale(1.05);
+}
+
+.recommended-user-info, .recommended-artist-info {
+  display: flex;
+  align-items: center;
+}
+
+.recommended-user-info h3, .recommended-artist-info h3 {
+  margin-right: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.profile-pic, .artist-pic {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.song-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.song-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 15px;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+}
+
+.song-card .album-art, .recommended-artist-card .artist-art {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 5px;
+  margin-right: 15px;
+}
+
+.song-info, .artist-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+}
+
+.song-info h4, .artist-info h4 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.song-info p, .artist-info p {
+  font-size: 14px;
+  color: #555;
+  margin: 5px 0;
+}
+
+.recommended-users h2,
+.recommended-songs h2,
+.recommended-artists h2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.recommended-artist-info h4 {
+  font-size: 16px;
+  margin: 0;
+  color: #333;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+}
+
+.profile-header h2 {
+  font-size: 24px;
+  margin-right: 20px;
+  font-weight: bold;
+}
+
+.profile-header .regenerate-btn {
+  padding: 10px 15px;
+  background-color: #1DB954;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.profile-header .regenerate-btn:hover {
+  background-color: #17a94b;
+}
+
+.song-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.song-header h2 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.song-header .regenerate-btn {
+  padding: 10px 15px;
+  background-color: #1DB954;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.song-header .regenerate-btn:hover {
+  background-color: #17a94b;
+}
+
+/* Playlist Section Styles */
+.recommended-playlist {
+  margin-top: 30px;
+}
+
+.playlist {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.playlist-track {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.album-art {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 5px;
+  margin-right: 15px;
+}
+
+.track-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.track-name {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.artist-name {
+  font-size: 14px;
+  color: #666;
+}
+
+.playlist-track:hover {
+  transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-and-recommendations {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .user-taste-profile {
+    flex: 1;
+  }
+
+  .recommended-users,
+  .recommended-songs,
+  .recommended-artists {
+    flex: 1;
+    width: 100%;
+  }
+
+  .song-card, .recommended-artist-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .song-card .album-art, .recommended-artist-card .artist-art {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 10px;
+  }
+
+  .song-info h4, .artist-info h4 {
+    font-size: 18px;
+  }
+
+  .recommended-artist-info h4 {
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
+
+  .recommended-user-info h3, .recommended-artist-info h3 {
+    font-size: 18px;
+  }
+
+  .playlist-track {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .album-art {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px;
+  }
+
+  .track-name {
+    font-size: 16px;
+  }
+
+  .artist-name {
+    font-size: 12px;
+  }
+}
