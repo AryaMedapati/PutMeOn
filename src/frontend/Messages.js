@@ -17,6 +17,7 @@ import "semantic-ui-css/components/dropdown.min.css";
 import "semantic-ui-css/components/icon.min.css";
 import "semantic-ui-css/components/input.min.css";
 import "semantic-ui-css/components/transition.min.css";
+import { debounce } from "lodash";
 import localstorage from "localstorage-slim";
 
 const Messages = () => {
@@ -41,8 +42,51 @@ const Messages = () => {
   const [groupProfilePictures, setGroupProfilePictures] = useState({});
   const [userProfilePictures, setUserProfilePictures] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [items, setItems] = useState([]);
+  const [selectedSong, setSelectedSong] = useState(""); // To store selected song
+  const [songSearchQuery, setSongSearchQuery] = useState(""); // Search query
 
   const { username, email } = useContext(UserContext);
+
+  useEffect(() => {
+    const fetchSongs = async () => {
+      try {
+        const response = await fetch("http://localhost:3001/fetchTopSongs");
+        if (!response.ok) {
+          throw new Error("Failed to fetch songs");
+        }
+        const songs = await response.json();
+        const formattedSongs = songs.map((song, index) => ({
+          key: `${song["Track Name"]} - by ${song["Artist Name(s)"]} - ${index}`, // Ensures key is unique
+          value: `${song["Track Name"]} - by ${song["Artist Name(s)"]}`, // Value that is selected by the user
+          text: `${song["Track Name"]} - by ${song["Artist Name(s)"]}`, // Text shown in the dropdown
+        }));
+        setItems(formattedSongs);
+      } catch (error) {
+        console.error("Error fetching songs:", error);
+      }
+    };
+
+    fetchSongs();
+  }, []);
+  console.log(items);
+
+  const waitForSongSelection = () => {
+    return new Promise((resolve) => {
+      const interval = setInterval(() => {
+        console.log("waiting");
+        if (newMessage !== undefined) {
+          console.log(newMessage);
+          clearInterval(interval);
+          resolve(newMessage);
+        }
+      }, 100);
+    });
+  };
+
+  const handleSearchChange = debounce((e, { value }) => {
+    setNewMessage(value);
+  }, 300);
 
   const handleToggleThemeOptions = () => {
     setShowThemeOptions((prev) => !prev);
@@ -444,6 +488,8 @@ const Messages = () => {
   };
 
   const handleSendMessage = async (event) => {
+    const song = await waitForSongSelection();
+    console.log(event);
     event.preventDefault();
 
     if (!newMessage.trim()) {
@@ -477,6 +523,7 @@ const Messages = () => {
       }
 
       setNewMessage("");
+      setSelectedSong("");
       setChatHistory((prevHistory) => [
         ...prevHistory,
         {
@@ -740,6 +787,23 @@ const Messages = () => {
                 Send
               </Button>
             </form>
+            <div>
+              {/* Song Search Dropdown */}
+              <Dropdown
+                placeholder="Search for a song..."
+                fluid
+                search
+                selection
+                value={newMessage}
+                options={items}
+                onSearchChange={handleSearchChange}
+                onChange={(e, { value }) => setNewMessage(value)}
+                noResultsMessage="No songs found"
+              />
+
+              {/* Send Song Button */}
+              <Button onClick={handleSendMessage}>Send Song</Button>
+            </div>
           </>
         ) : (
           <div className="no-chat-selected">Select a chat to view messages</div>

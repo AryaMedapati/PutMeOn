@@ -1916,6 +1916,21 @@ app.post("/fetchChatRecipients", async (req, res) => {
   }
 });
 
+app.get("/fetchTopSongs", async (req, res) => {
+  try {
+    const docRef = db.collection("spotifySongs").doc("top_1000_songs");
+    const snapshot = await docRef.get();
+
+    const data = snapshot.data();
+    const songs = data.songs || [];
+
+    res.status(200).json(songs);
+  } catch (error) {
+    // console.log(error);
+    res.status(500).send(error);
+  }
+});
+
 app.listen(port, () => {
   console.log("Server running on port " + port);
 });
