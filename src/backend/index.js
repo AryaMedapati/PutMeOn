@@ -1138,6 +1138,53 @@ const generateHistogram = (popularityData) => {
   return canvas.toBuffer();
 };
 
+app.post("/fetchTrackID", async (req, res) => {
+  try {
+    // console.log(req.query);
+    const { trackName } = req.body;
+    console.log(trackName);
+    const token = accessToken;
+    const trackId = await axios.get(
+      `https://api.spotify.com/v1/search?q=${trackName}&type=track&limit=1`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const data = await trackId.data.tracks.items;
+    console.log(data);
+    const returnID = data[0].id;
+    console.log(returnID);
+    res.status(200).json({ message: returnID });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+app.post("/getTrack", async (req, res) => {
+  try {
+    console.log(req.body);
+    const { songID } = req.body;
+    console.log(songID);
+    console.log("after");
+    const token = accessToken;
+    const data = await axios.get(
+      `https://api.spotify.com/v1/tracks/${songID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log(data);
+    console.log(data.data);
+    res.status(200).json({ trackData: data.data.preview_url });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 app.get("/trackChart", async (req, res) => {
   const timeline = req.query.timeline;
   const token = accessToken;

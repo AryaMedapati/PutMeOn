@@ -36,6 +36,8 @@ const Messages = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [newChatUsername, setNewChatUsername] = useState("");
   const [newMessage, setNewMessage] = useState("");
+  const [newSong, setNewSong] = useState("");
+  const [trackData, setTrackData] = useState(null);
   const [chatTheme, setChatTheme] = useState("default");
   const [showThemeOptions, setShowThemeOptions] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -47,6 +49,18 @@ const Messages = () => {
   const [songSearchQuery, setSongSearchQuery] = useState(""); // Search query
 
   const { username, email } = useContext(UserContext);
+
+  const [renderKey, setRenderKey] = useState(0); // Used to trigger re-renders
+
+  // Function to force re-render
+  const handleRerender = () => {
+    setRenderKey((prevKey) => prevKey + 1); // Increment the key to trigger re-render
+  };
+
+  // Debugging: log re-renders
+  useEffect(() => {
+    console.log("Component re-rendered. Render key:", renderKey);
+  }, [renderKey]);
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -487,10 +501,50 @@ const Messages = () => {
     );
   };
 
-  const handleSendMessage = async (event) => {
+  const handleSendSong = async (event) => {
     const song = await waitForSongSelection();
-    console.log(event);
+    console.log("after this ");
+    console.log(newSong);
     event.preventDefault();
+    console.log(newSong);
+    const res = await fetch("http://localhost:3001/fetchTrackID", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        trackName: newSong,
+      }),
+    });
+    console.log(res);
+    const data = await res.json();
+    const id = await data.message;
+    console.log(data);
+    console.log(data.message);
+    const response = await fetch("http://localhost:3001/getTrack", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        songID: id,
+      }),
+    });
+    const data2 = await response.json();
+    console.log(data2.trackData);
+    setTrackData(data2.trackData);
+    handleSendMessage(null, data2.trackData);
+  };
+
+  const handleSendMessage = async (event, preview_url) => {
+    console.log(event);
+    if (event) {
+      event.preventDefault();
+    }
+
+    if (preview_url) {
+      setNewMessage(`${newSong} ${preview_url}`);
+    }
 
     if (!newMessage.trim()) {
       console.warn("Cannot send an empty message.");
@@ -794,15 +848,26 @@ const Messages = () => {
                 fluid
                 search
                 selection
-                value={newMessage}
+                value={newSong}
                 options={items}
                 onSearchChange={handleSearchChange}
-                onChange={(e, { value }) => setNewMessage(value)}
+                onChange={(e, { value }) => setNewSong(value)}
                 noResultsMessage="No songs found"
               />
 
               {/* Send Song Button */}
-              <Button onClick={handleSendMessage}>Send Song</Button>
+              <Button onClick={handleSendSong}>Send Song</Button>
+            </div>
+            <div key={renderKey}>
+              <button onClick={handleRerender}>Re-render Component</button>
+              {trackData && (
+                <div>
+                  <audio controls>
+                    <source src={trackData} type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              )}
             </div>
           </>
         ) : (
