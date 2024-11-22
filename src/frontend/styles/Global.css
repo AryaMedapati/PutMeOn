@@ -4,6 +4,7 @@
   margin: 0 auto;
   text-align: center;
   border-radius: 10px;
+  margin-bottom: 100px;
   /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); */
 }
 
@@ -67,13 +68,13 @@ h1 {
 }
 
 .stat-card:nth-child(3) {
-  top: 75%;
+  top: 65%;
   left: 70%;
   transform: translate(-50%, -50%);
 }
 
 .stat-card:nth-child(4) {
-  top: 75%;
+  top: 65%;
   left: 30%;
   transform: translate(-50%, -50%);
 }
