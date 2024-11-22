@@ -63,13 +63,24 @@ const Home = () => {
     // console.log(data);
     if (data.data) {
       return data.data.items[0];
-    }
-    else {
+    } else {
       return null;
     }
-  };
-  async function getSaved(user, i, currentLikesTemp, likedByTemp, currentLaughingLikesTemp, laughingLikedByTemp, currentFireLikesTemp, fireLikedByTemp, commentsTemp, totalLikesTemp, totalReactionsTemp, totalCommentsTemp) {
-
+  }
+  async function getSaved(
+    user,
+    i,
+    currentLikesTemp,
+    likedByTemp,
+    currentLaughingLikesTemp,
+    laughingLikedByTemp,
+    currentFireLikesTemp,
+    fireLikedByTemp,
+    commentsTemp,
+    totalLikesTemp,
+    totalReactionsTemp,
+    totalCommentsTemp
+  ) {
     const url = "http://localhost:3001";
     const response = await fetch(`${url}/getRecentlyPlayed?user=${user}`);
     const data = await response.json();
@@ -220,8 +231,8 @@ const Home = () => {
       );
       console.log(savedTrack);
       // console.log(track.track.id);
-      if (track && (savedTrack != track.track.id)) {
-        const tempTotalLikes =  totalLikes;
+      if (track && savedTrack != track.track.id) {
+        const tempTotalLikes = totalLikes;
         tempTotalLikes[i] += tempCurrentLikes[i];
         setTotalLikes(tempTotalLikes);
         tempCurrentLikes[i] = 0;
@@ -250,7 +261,20 @@ const Home = () => {
         setLaughingLikedBy(tempLaughingLikedBy2);
         setFireLikedBy(tempFireLikedBy2);
       }
-      saveRecentlyPlayed(friendsList[i], track ? track.track.id : "0", currentLikes[i], likedBy[i], currentLaughingLikes[i], laughingLikedBy[i], currentFireLikes[i], fireLikedBy[i], comments[i], totalLikes[i], totalReactions[i], totalComments[i]);
+      saveRecentlyPlayed(
+        friendsList[i],
+        track ? track.track.id : "0",
+        currentLikes[i],
+        likedBy[i],
+        currentLaughingLikes[i],
+        laughingLikedBy[i],
+        currentFireLikes[i],
+        fireLikedBy[i],
+        comments[i],
+        totalLikes[i],
+        totalReactions[i],
+        totalComments[i]
+      );
     }
     setInfo(tracks);
     if (friendsList.length == 0) {
@@ -334,7 +358,20 @@ const Home = () => {
       likedByTemp[index].push(username);
       console.log(likedByTemp[index]);
       console.log(laughingLikedBy[index]);
-      saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", updatedLikes[index], likedByTemp[index], currentLaughingLikes[index], laughingLikedBy[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
+      saveRecentlyPlayed(
+        friends[index],
+        info[index] ? info[index].track.id : "0",
+        updatedLikes[index],
+        likedByTemp[index],
+        currentLaughingLikes[index],
+        laughingLikedBy[index],
+        currentFireLikes[index],
+        fireLikedBy[index],
+        comments[index],
+        totalLikes[index],
+        totalReactions[index],
+        totalComments[index]
+      );
     }
   };
 
@@ -350,8 +387,20 @@ const Home = () => {
       // setLikedBy(likedByTemp);
       console.log(likedByTemp[index]);
       setLikedBy(likedByTemp);
-      saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", updatedLikes[index], likedByTemp[index], currentLaughingLikes[index], laughingLikedBy[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
-
+      saveRecentlyPlayed(
+        friends[index],
+        info[index] ? info[index].track.id : "0",
+        updatedLikes[index],
+        likedByTemp[index],
+        currentLaughingLikes[index],
+        laughingLikedBy[index],
+        currentFireLikes[index],
+        fireLikedBy[index],
+        comments[index],
+        totalLikes[index],
+        totalReactions[index],
+        totalComments[index]
+      );
     }
   };
 
@@ -364,8 +413,20 @@ const Home = () => {
       const likedByTemp2 = laughingLikedBy;
       likedByTemp2[index].push(username);
       console.log(currentLikes);
-      saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", currentLikes[index], likedBy[index], updatedLikes[index], likedByTemp2[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
-
+      saveRecentlyPlayed(
+        friends[index],
+        info[index] ? info[index].track.id : "0",
+        currentLikes[index],
+        likedBy[index],
+        updatedLikes[index],
+        likedByTemp2[index],
+        currentFireLikes[index],
+        fireLikedBy[index],
+        comments[index],
+        totalLikes[index],
+        totalReactions[index],
+        totalComments[index]
+      );
     }
   };
   const handleLaughingLike2 = (index) => {
@@ -378,8 +439,20 @@ const Home = () => {
         (user) => user !== username
       );
       setLaughingLikedBy(likedByTemp);
-      saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", currentLikes[index], likedBy[index], updatedLikes[index], likedByTemp[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);  
-
+      saveRecentlyPlayed(
+        friends[index],
+        info[index] ? info[index].track.id : "0",
+        currentLikes[index],
+        likedBy[index],
+        updatedLikes[index],
+        likedByTemp[index],
+        currentFireLikes[index],
+        fireLikedBy[index],
+        comments[index],
+        totalLikes[index],
+        totalReactions[index],
+        totalComments[index]
+      );
     }
   };
   const handleFireLike = (index) => {
@@ -391,8 +464,20 @@ const Home = () => {
       const likedByTemp3 = fireLikedBy;
       likedByTemp3[index].push(username);
       console.log(currentLikes);
-      saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", currentLikes[index], likedBy[index], currentLaughingLikes[index], laughingLikedBy[index], updatedLikes[index], likedByTemp3[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
-
+      saveRecentlyPlayed(
+        friends[index],
+        info[index] ? info[index].track.id : "0",
+        currentLikes[index],
+        likedBy[index],
+        currentLaughingLikes[index],
+        laughingLikedBy[index],
+        updatedLikes[index],
+        likedByTemp3[index],
+        comments[index],
+        totalLikes[index],
+        totalReactions[index],
+        totalComments[index]
+      );
     }
   };
   const handleFireLike2 = (index) => {
@@ -405,8 +490,20 @@ const Home = () => {
         (user) => user !== username
       );
       setFireLikedBy(likedByTemp3);
-      saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", currentLikes[index], likedBy[index], currentLaughingLikes[index], laughingLikedBy[index], updatedLikes[index], likedByTemp3[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
-
+      saveRecentlyPlayed(
+        friends[index],
+        info[index] ? info[index].track.id : "0",
+        currentLikes[index],
+        likedBy[index],
+        currentLaughingLikes[index],
+        laughingLikedBy[index],
+        updatedLikes[index],
+        likedByTemp3[index],
+        comments[index],
+        totalLikes[index],
+        totalReactions[index],
+        totalComments[index]
+      );
     }
   };
   const saveNewComment = (index) => {
@@ -422,8 +519,21 @@ const Home = () => {
     setComments(tempComments);
     setNewComment("");
     setShowCommentInput(false);
-    saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", currentLikes[index], likedBy[index], currentLaughingLikes[index], laughingLikedBy[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
-  }
+    saveRecentlyPlayed(
+      friends[index],
+      info[index] ? info[index].track.id : "0",
+      currentLikes[index],
+      likedBy[index],
+      currentLaughingLikes[index],
+      laughingLikedBy[index],
+      currentFireLikes[index],
+      fireLikedBy[index],
+      comments[index],
+      totalLikes[index],
+      totalReactions[index],
+      totalComments[index]
+    );
+  };
   const handleComment = (e) => {
     setNewComment(e.target.value);
   };
@@ -492,9 +602,6 @@ const Home = () => {
         <button className="icon-button" onClick={handlePoll}>
           <FaPoll />
         </button>
-        <button className="icon-button" onClick={handleQuiz}>
-          <MdQuiz />
-        </button>
       </div>
       {loading ? (
         <div className="loading">Loading...</div>
@@ -505,47 +612,28 @@ const Home = () => {
               ? track.track.album.artists[0].name
               : "Error";
             // console.log(artistName);
-            const timeSinceListened = getTimeSincePlayed(track.played_at);
+            const timeSinceListened = track
+              ? getTimeSincePlayed(track.played_at)
+              : "Error";
             const userLiked = likedBy[index]?.includes(username);
             const userLaughingLiked =
               laughingLikedBy[index]?.includes(username);
             const userFireLiked = fireLikedBy[index]?.includes(username);
 
-            {info.map((track, index) => {
-                const artistName = track ? track.track.album.artists[0].name : "Error";
-                // console.log(artistName);
-                const timeSinceListened = track ? getTimeSincePlayed(track.played_at) : "Error";
-                const userLiked = likedBy[index]?.includes(username);
-                const userLaughingLiked = laughingLikedBy[index]?.includes(username);
-                const userFireLiked = fireLikedBy[index]?.includes(username);
-
-
-                return (
-                    <div className="track-activity" key={index}>
-                      <div className="friend" id = "friend-id" onClick={handleViewProfile}>{friends[index]}</div>
-                        <div className="album-cover"><img src={track ? track.track.album.images[0].url : "Error"} alt="Error"/></div>
-                        <div className="track-name">{track ? track.track.name : "Error"}</div>
-                        <div className="listening-info">
-                            <div className="artist">{artistName}</div>
-                            <div className="album">{track? track.track.album.name : "Error"}</div>
-                        </div>
-                        <div className="time">{timeSinceListened}</div>
-                        <div className="interaction-buttons">
-
-                <button
-                    className={`like-button ${userLiked ? 'liked' : ''}`}
-                    onClick={() =>toggleLike(index)}
-                >
-                    {userLiked ? '❤️' : '❤️'} {currentLikes[index]}
-                </button>
-                <button
-                    className={`like-button ${userLaughingLiked ? 'liked' : ''}`}
-                    onClick={() =>toggleLaughingLike(index)}
+            return (
+              <div className="track-activity" key={index}>
+                <div
+                  className="friend"
+                  id="friend-id"
+                  onClick={handleViewProfile}
                 >
                   {friends[index]}
                 </div>
                 <div className="album-cover">
-                  <img src={track.track.album.images[0].url} alt="Error" />
+                  <img
+                    src={track ? track.track.album.images[0].url : "Error"}
+                    alt="Error"
+                  />
                 </div>
                 <div className="track-name">
                   {track ? track.track.name : "Error"}
