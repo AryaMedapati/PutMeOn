@@ -193,8 +193,8 @@ const Home = () => {
       console.log(tracks);
       const savedTrack = await getSaved(friendsList[i], i, tempCurrentLikes, tempLikedBy, tempCurrentLaughingLikes, tempLaughingLikedBy, tempCurrentFireLikes, tempFireLikedBy, commentsTemp, totalLikesTemp, totalReactionsTemp, totalCommentsTemp);
       console.log(savedTrack);
-      console.log(track.track.id);
-      if (savedTrack != track.track.id) {
+      // console.log(track.track.id);
+      if (track && (savedTrack != track.track.id)) {
         const tempTotalLikes =  totalLikes;
         tempTotalLikes[i] += tempCurrentLikes[i];
         setTotalLikes(tempTotalLikes);
@@ -224,7 +224,7 @@ const Home = () => {
         setFireLikedBy(tempFireLikedBy2);
 
       }
-      saveRecentlyPlayed(friendsList[i], track.track.id, currentLikes[i], likedBy[i], currentLaughingLikes[i], laughingLikedBy[i], currentFireLikes[i], fireLikedBy[i], comments[i], totalLikes[i], totalReactions[i], totalComments[i]);
+      saveRecentlyPlayed(friendsList[i], track ? track.track.id : "0", currentLikes[i], likedBy[i], currentLaughingLikes[i], laughingLikedBy[i], currentFireLikes[i], fireLikedBy[i], comments[i], totalLikes[i], totalReactions[i], totalComments[i]);
     }
     setInfo(tracks);
     if (friendsList.length == 0) {
@@ -282,7 +282,7 @@ const Home = () => {
       likedByTemp[index].push(username);
       console.log(likedByTemp[index]);
       console.log(laughingLikedBy[index]);
-      saveRecentlyPlayed(friends[index], info[index].track.id, updatedLikes[index], likedByTemp[index], currentLaughingLikes[index], laughingLikedBy[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
+      saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", updatedLikes[index], likedByTemp[index], currentLaughingLikes[index], laughingLikedBy[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
     }
   }
   
@@ -296,7 +296,7 @@ const Home = () => {
       // setLikedBy(likedByTemp);
       console.log(likedByTemp[index]);
       setLikedBy(likedByTemp);
-      saveRecentlyPlayed(friends[index], info[index].track.id, updatedLikes[index], likedByTemp[index], currentLaughingLikes[index], laughingLikedBy[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
+      saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", updatedLikes[index], likedByTemp[index], currentLaughingLikes[index], laughingLikedBy[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
     }
   }
   
@@ -311,7 +311,7 @@ const Home = () => {
       const likedByTemp2 = laughingLikedBy;
       likedByTemp2[index].push(username);
       console.log(currentLikes);
-      saveRecentlyPlayed(friends[index], info[index].track.id, currentLikes[index], likedBy[index], updatedLikes[index], likedByTemp2[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
+      saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", currentLikes[index], likedBy[index], updatedLikes[index], likedByTemp2[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
     }
   }
   const handleLaughingLike2 = (index) => {
@@ -322,7 +322,7 @@ const Home = () => {
       const likedByTemp = laughingLikedBy;
       likedByTemp[index] = likedByTemp[index].filter(user => user !== username);
       setLaughingLikedBy(likedByTemp);
-      saveRecentlyPlayed(friends[index], info[index].track.id, currentLikes[index], likedBy[index], updatedLikes[index], likedByTemp[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);  
+      saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", currentLikes[index], likedBy[index], updatedLikes[index], likedByTemp[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);  
     }
   }
   const handleFireLike = (index) => {
@@ -334,7 +334,7 @@ const Home = () => {
       const likedByTemp3 = fireLikedBy;
       likedByTemp3[index].push(username);
       console.log(currentLikes);
-      saveRecentlyPlayed(friends[index], info[index].track.id, currentLikes[index], likedBy[index], currentLaughingLikes[index], laughingLikedBy[index], updatedLikes[index], likedByTemp3[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
+      saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", currentLikes[index], likedBy[index], currentLaughingLikes[index], laughingLikedBy[index], updatedLikes[index], likedByTemp3[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
     }
   }
   const handleFireLike2 = (index) => {
@@ -345,7 +345,7 @@ const Home = () => {
       const likedByTemp3 = fireLikedBy;
       likedByTemp3[index] = likedByTemp3[index].filter(user => user !== username);
       setFireLikedBy(likedByTemp3);
-      saveRecentlyPlayed(friends[index], info[index].track.id, currentLikes[index], likedBy[index], currentLaughingLikes[index], laughingLikedBy[index], updatedLikes[index], likedByTemp3[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
+      saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", currentLikes[index], likedBy[index], currentLaughingLikes[index], laughingLikedBy[index], updatedLikes[index], likedByTemp3[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
     }
   }
   const saveNewComment = (index) => {
@@ -361,7 +361,7 @@ const Home = () => {
     setComments(tempComments);
     setNewComment('');
     setShowCommentInput(false);
-    saveRecentlyPlayed(friends[index], info[index].track.id, currentLikes[index], likedBy[index], currentLaughingLikes[index], laughingLikedBy[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
+    saveRecentlyPlayed(friends[index], info[index] ? info[index].track.id : "0", currentLikes[index], likedBy[index], currentLaughingLikes[index], laughingLikedBy[index], currentFireLikes[index], fireLikedBy[index], comments[index], totalLikes[index], totalReactions[index], totalComments[index]);
   }
   const handleComment = (e) => {
     setNewComment(e.target.value);
@@ -444,7 +444,7 @@ const handleViewProfile = () => {
                 return (
                     <div className="track-activity" key={index}>
                       <div className="friend" id = "friend-id" onClick={handleViewProfile}>{friends[index]}</div>
-                        <div className="album-cover"><img src={track.track.album.images[0].url} alt="Error"/></div>
+                        <div className="album-cover"><img src={track ? track.track.album.images[0].url : "Error"} alt="Error"/></div>
                         <div className="track-name">{track ? track.track.name : "Error"}</div>
                         <div className="listening-info">
                             <div className="artist">{artistName}</div>
