@@ -118,7 +118,7 @@ async function savePopularityScore(user, popScore) {
   try {
     const getUsers = db.collection("UserData");
     // const user = user;
-    const value = getUsers.where('username', '==', user);
+    const value = getUsers.where("username", "==", user);
     const snapshot = await value.get();
 
     if (!snapshot.empty) {
@@ -126,9 +126,8 @@ async function savePopularityScore(user, popScore) {
       const userData = userDoc.data();
       // console.log(userData);
       await userDoc.ref.update({
-        popScore:popScore
+        popScore: popScore,
       });
-
     }
   } catch (error) {
     console.log(error);
@@ -143,15 +142,15 @@ app.get("/calculateAveragePopularity", async (req, res) => {
     snapshot.forEach((doc) => {
       if (doc.data().popScore) {
         total += doc.data().popScore;
-        vals+=1
+        vals += 1;
       }
-    })
-    const average = total/vals
-    res.json({total: average});
+    });
+    const average = total / vals;
+    res.json({ total: average });
   } catch (error) {
     console.log(error);
   }
-})
+});
 app.get("/calculateAverageLikes", async (req, res) => {
   try {
     const col = db.collection("UserData");
@@ -161,15 +160,15 @@ app.get("/calculateAverageLikes", async (req, res) => {
     snapshot.forEach((doc) => {
       if (doc.data().totalLikes) {
         total += doc.data().totalLikes;
-        vals+=1
+        vals += 1;
       }
-    })
-    const average = total/vals
-    res.json({total: average});
+    });
+    const average = total / vals;
+    res.json({ total: average });
   } catch (error) {
     console.log(error);
   }
-})
+});
 app.get("/calculateAverageFollowers", async (req, res) => {
   try {
     const col = db.collection("UserData");
@@ -179,15 +178,15 @@ app.get("/calculateAverageFollowers", async (req, res) => {
     snapshot.forEach((doc) => {
       if (doc.data().followers) {
         total += doc.data().followers;
-        vals+=1
+        vals += 1;
       }
-    })
-    const average = total/vals
-    res.json({total: average});
+    });
+    const average = total / vals;
+    res.json({ total: average });
   } catch (error) {
     console.log(error);
   }
-})
+});
 app.get("/calculateAverageReactions", async (req, res) => {
   try {
     const col = db.collection("UserData");
@@ -197,15 +196,15 @@ app.get("/calculateAverageReactions", async (req, res) => {
     snapshot.forEach((doc) => {
       if (doc.data().totalReactions) {
         total += doc.data().totalReactions;
-        vals+=1
+        vals += 1;
       }
-    })
-    const average = total/vals
-    res.json({total: average});
+    });
+    const average = total / vals;
+    res.json({ total: average });
   } catch (error) {
     console.log(error);
   }
-})
+});
 app.get("/calculateAverageComments", async (req, res) => {
   try {
     const col = db.collection("UserData");
@@ -215,21 +214,21 @@ app.get("/calculateAverageComments", async (req, res) => {
     snapshot.forEach((doc) => {
       if (doc.data().totalComments) {
         total += doc.data().totalComments;
-        vals+=1
+        vals += 1;
       }
-    })
-    const average = total/vals
-    res.json({total: average});
+    });
+    const average = total / vals;
+    res.json({ total: average });
   } catch (error) {
     console.log(error);
   }
-})
+});
 async function saveFollowers(user, followers) {
   // console.log("user: "+ user);
   try {
     const getUsers = db.collection("UserData");
     // const user = user;
-    const value = getUsers.where('username', '==', user);
+    const value = getUsers.where("username", "==", user);
     const snapshot = await value.get();
 
     if (!snapshot.empty) {
@@ -237,9 +236,8 @@ async function saveFollowers(user, followers) {
       const userData = userDoc.data();
       // console.log(userData);
       await userDoc.ref.update({
-        followers:followers
+        followers: followers,
       });
-
     }
   } catch (error) {
     console.log(error);
@@ -1270,6 +1268,53 @@ const generateHistogram = (popularityData) => {
   return canvas.toBuffer();
 };
 
+app.post("/fetchTrackID", async (req, res) => {
+  try {
+    // console.log(req.query);
+    const { trackName } = req.body;
+    console.log(trackName);
+    const token = accessToken;
+    const trackId = await axios.get(
+      `https://api.spotify.com/v1/search?q=${trackName}&type=track&limit=1`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const data = await trackId.data.tracks.items;
+    console.log(data);
+    const returnID = data[0].id;
+    console.log(returnID);
+    res.status(200).json({ message: returnID });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+app.post("/getTrack", async (req, res) => {
+  try {
+    console.log(req.body);
+    const { songID } = req.body;
+    console.log(songID);
+    console.log("after");
+    const token = accessToken;
+    const data = await axios.get(
+      `https://api.spotify.com/v1/tracks/${songID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log(data);
+    console.log(data.data);
+    res.status(200).json({ trackData: data.data.preview_url });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 app.get("/trackChart", async (req, res) => {
   const timeline = req.query.timeline;
   const token = accessToken;
@@ -1530,20 +1575,19 @@ app.get("/recentlyPlayed", async (req, res) => {
   }
 });
 
-
-app.post("/savePopScore", async(req,res) => {
+app.post("/savePopScore", async (req, res) => {
   const popScore = req.body.popScore;
   const user = req.body.user;
   await savePopularityScore(user, popScore);
   res.status(200).json({ message: "Success" });
-})
-app.post("/saveFollowers", async(req,res) => {
+});
+app.post("/saveFollowers", async (req, res) => {
   const followers = req.body.followers;
   const user = req.body.user;
   await saveFollowers(user, followers);
   res.status(200).json({ message: "Success" });
-})
-app.get("/getPopScore", async(req,res) => {
+});
+app.get("/getPopScore", async (req, res) => {
   const username = req.query.user;
   try {
     const userDoc = await db
@@ -1561,11 +1605,9 @@ app.get("/getPopScore", async(req,res) => {
     console.error("Error fetching profile data:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-})
+});
 
 app.post("/saveRecentlyPlayed", async (req, res) => {
-
-
   const song = req.body.song;
   const user = req.body.user;
   const currentLikes = req.body.likes;
@@ -1615,16 +1657,13 @@ app.get("/getRecentlyPlayed", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
-app.get("/getFollowers", async (req,res) => {
+app.get("/getFollowers", async (req, res) => {
   const token = accessToken;
-  const response = await axios.get(
-    `https://api.spotify.com/v1/me`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await axios.get(`https://api.spotify.com/v1/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   const followers = response.data.followers.total;
   console.log("Followers:" + followers);
   res.status(200).json({ data: followers });
@@ -1661,11 +1700,107 @@ app.post("/fetchChats", async (req, res) => {
   }
 });
 
+app.post("/uploadGroupPicture", async (req, res) => {
+  try {
+    const { file, chatID } = req.body;
+
+    if (!chatID || !file) {
+      return res.status(400).send("Chat ID and PFP are required.");
+    }
+
+    const chatThemeRef = db.collection("ChatTheme");
+    const querySnapshot = await chatThemeRef
+      .where("chatId", "==", chatID)
+      .get();
+
+    if (querySnapshot.empty) {
+      return res.status(404).send("Chat with the specified ID does not exist.");
+    }
+
+    // Assuming there's only one document per chatID, use the first document in the result
+    const chatDoc = querySnapshot.docs[0];
+    const docRef = chatThemeRef.doc(chatDoc.id);
+
+    // Update the document with the new profile picture
+    await docRef.update({
+      pfp: file, // Updates or adds the 'pfp' field
+    });
+
+    return res.status(200).json({ message: "PFP uploaded successfully." });
+  } catch (error) {
+    console.error("Error uploading group chat PFP:", error);
+    res.status(500).send("Error uploading PFP.");
+  }
+});
+
+// app.post("/fetchChatNames", async (req, res) => {
+//   const { chatIDs, currentUser } = req.body;
+//   const chatNames = [];
+
+//   // console.log("chatIDs=" + chatIDs);
+//   try {
+//     for (const chatID of chatIDs) {
+//       const querySnapshot = await db
+//         .collection("MessageData")
+//         .where("chatID.id", "==", chatID)
+//         .limit(1)
+//         .get();
+
+//       if (!querySnapshot.empty) {
+//         const messageDoc = querySnapshot.docs[0];
+//         let participants = messageDoc.data().participants;
+//         participants = participants
+//           .filter((participant) => participant !== currentUser)
+//           .sort();
+//         chatNames.push(participants);
+//       } else {
+//         // console.log("so its empty/");
+//       }
+//     }
+
+//     res.status(200).json({ chatNames });
+//   } catch (error) {
+//     console.error("Error fetching chat names:", error);
+//     res.status(500).json({ error: "Failed to fetch chat names" });
+//   }
+// });
+
+app.post("/fetchProfilePictures", async (req, res) => {
+  const { usernames } = req.body; // Expecting an array of participant usernames
+  console.log(usernames);
+  const profilePictures = [];
+
+  try {
+    // Loop through each participant to fetch their profile picture
+    for (const participant of usernames) {
+      const userSnapshot = await db
+        .collection("UserData") // Assuming the users' data is stored in this collection
+        .where("username", "==", participant)
+        .limit(1)
+        .get();
+
+      if (!userSnapshot.empty) {
+        const userDoc = userSnapshot.docs[0];
+        const pfp = userDoc.data().pfp || "/path/to/default-avatar.png"; // Default avatar if pfp doesn't exist
+        profilePictures.push({
+          username: participant,
+          pfp: pfp,
+        });
+      }
+    }
+
+    // Return the participants' profile pictures
+    res.status(200).json({ profilePictures });
+  } catch (error) {
+    console.error("Error fetching profile pictures:", error);
+    res.status(500).json({ error: "Failed to fetch profile pictures" });
+  }
+});
+
 app.post("/fetchChatNames", async (req, res) => {
   const { chatIDs, currentUser } = req.body;
   const chatNames = [];
 
-  // console.log("chatIDs=" + chatIDs);
   try {
     for (const chatID of chatIDs) {
       const querySnapshot = await db
@@ -1677,12 +1812,35 @@ app.post("/fetchChatNames", async (req, res) => {
       if (!querySnapshot.empty) {
         const messageDoc = querySnapshot.docs[0];
         let participants = messageDoc.data().participants;
+        // Filter out the current user and sort the participants
         participants = participants
           .filter((participant) => participant !== currentUser)
           .sort();
-        chatNames.push(participants);
-      } else {
-        // console.log("so its empty/");
+
+        const participantsWithPfp = [];
+
+        // Fetch profile pictures for each participant
+        for (const participant of participants) {
+          const userSnapshot = await db
+            .collection("UserData")
+            .where("username", "==", participant)
+            .limit(1)
+            .get();
+
+          if (!userSnapshot.empty) {
+            const userDoc = userSnapshot.docs[0];
+            const pfp = userDoc.data().pfp || "/path/to/default-avatar.png"; // Default avatar if pfp doesn't exist
+            participantsWithPfp.push({
+              username: participant,
+              pfp: pfp,
+            });
+          }
+        }
+
+        chatNames.push({
+          chatID: chatID,
+          participantsWithPfp: participantsWithPfp,
+        });
       }
     }
 
@@ -1872,7 +2030,7 @@ app.post("/fetchChatHistory", async (req, res) => {
       .get();
 
     // Map messages and fetch profile pictures
-    console.log("before")
+    console.log("before");
     const messages = await Promise.all(
       messagesSnapshot.docs.map(async (doc) => {
         const messageData = doc.data();
@@ -1893,7 +2051,7 @@ app.post("/fetchChatHistory", async (req, res) => {
         };
       })
     );
-    console.log("after")
+    console.log("after");
 
     res.status(200).json({ messages });
   } catch (error) {
@@ -2522,7 +2680,7 @@ app.get("/pickTwoArtists", async (req, res) => {
     const data = snapshot.data();
     const songs = data.songs || [];
 
-    const artistNames = songs.map(song => song["Artist Name(s)"]);
+    const artistNames = songs.map((song) => song["Artist Name(s)"]);
 
     const pickRandomArtists = (artists) => {
       const shuffled = [...artists].sort(() => 0.5 - Math.random());
@@ -2535,6 +2693,127 @@ app.get("/pickTwoArtists", async (req, res) => {
   } catch (error) {
     // console.log(error);
     res.status(500).send(error);
+  }
+});
+
+app.post("/fetchArtistID", async (req, res) => {
+  try {
+    const { artistName } = req.body;
+    const token = accessToken;
+    const trackId = await axios.get(
+      `https://api.spotify.com/v1/search?q=${artistName}&type=artist&limit=1`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const data = await trackId.data.artists.items;
+    console.log(data);
+    const returnID = data[0].id;
+    console.log(returnID);
+    res.status(200).json({ message: returnID });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+app.post("/getArtist", async (req, res) => {
+  try {
+    console.log(req.body);
+    const { songID } = req.body;
+    console.log("after");
+    const token = accessToken;
+    const data = await axios.get(
+      `https://api.spotify.com/v1/artists/${songID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log(data);
+    console.log(data.data);
+    const artistName = data.data.name;
+    const followersOptions = [];
+    const followers = data.data.followers.total;
+    followersOptions.push(
+      `How many followers does ${artistName} have?`,
+      followers,
+      followers + 1000,
+      followers - 1000,
+      followers - 2000
+    );
+    const popularityOptions = [];
+    const popularity = data.data.popularity;
+    popularityOptions.push(
+      `How popular is ${artistName}? (On a scale from 0 to 100)`,
+      popularity,
+      (popularity + 20) % 100,
+      (popularity + 40) % 100,
+      (popularity + 60) % 100
+    );
+    const genres = data.data.genres;
+    const actualGenre = genres[Math.floor(Math.random() * genres.length)];
+    const genreOptions = [];
+    genreOptions.push(
+      `Does ${artistName} make music that falls under this genre: ${actualGenre}?`,
+      "True",
+      "False"
+    );
+    const trackData = await axios.get(
+      `https://api.spotify.com/v1/artists/${songID}/top-tracks`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const tracks = trackData.data.tracks;
+    const sortedTracks = tracks.sort((a, b) => b.popularity - a.popularity);
+    const topTracks = [];
+    const trackNamesSet = new Set();
+
+    for (const track of sortedTracks) {
+      if (!trackNamesSet.has(track.name)) {
+        topTracks.push({
+          name: track.name,
+          popularity: track.popularity,
+          preview_url: track.preview_url,
+          uri: track.uri,
+        });
+        trackNamesSet.add(track.name);
+      }
+      if (topTracks.length >= 4) break;
+    }
+
+    const topTrackQ = [
+      `What is ${artistName}'s most popular track?`,
+      topTracks[0].name,
+      topTracks[1].name || "Option not available",
+      topTracks[2].name || "Option not available",
+      topTracks[3].name || "Option not available",
+    ];
+    const mostPopularTrack = topTracks[0].popularity;
+    const trackPopularity = [];
+    trackPopularity.push(
+      `How popular is ${artistName}'s most popular track: ${topTracks[0].name}? (On a scale from 0 to 100)`,
+      mostPopularTrack,
+      (mostPopularTrack + 20) % 100,
+      (mostPopularTrack + 40) % 100,
+      (mostPopularTrack + 60) % 100
+    );
+
+    const triviaQuestions = [
+      followersOptions,
+      popularityOptions,
+      genreOptions,
+      topTrackQ,
+      trackPopularity,
+    ];
+    res.status(200).json({ trivia: triviaQuestions });
+  } catch (error) {
+    console.error(error);
   }
 });
 
