@@ -6,6 +6,7 @@ import Global from './Global';
 import "./styles/Home.css";
 import localstorage from 'localstorage-slim';
 import { GiConsoleController } from 'react-icons/gi';
+import { FaGlobe, FaTrophy } from "react-icons/fa";
 
 
 const Home = () => {
@@ -33,6 +34,7 @@ const Home = () => {
   const [totalLikes, setTotalLikes] = useState(Array(friends.length).fill(0));
   const [totalReactions, setTotalReactions] = useState(Array(friends.length).fill(0));
   const [totalComments, setTotalComments] = useState(Array(friends.length).fill(0));
+  const [loading, setLoading] = useState(true);
 
   // const [emojiLikes, setEmojiLikes] = useState([]);
   // const emojis = ['😀', '😢', '😍', '😂', '😎', '🤔']; 
@@ -222,6 +224,7 @@ const Home = () => {
     if (friendsList.length == 0) {
       document.getElementById("nofriends").innerHTML = "Please add friends.";
     }
+    setLoading(false);
   }
   const fetchFriendsList = async () => {
     // console.log(username);
@@ -400,6 +403,17 @@ const Home = () => {
     return (
     <div>
         <h1 className="header1" id="nofriends">My Friends</h1>
+        <div className="button-container">
+          <button className="icon-button" onClick={handleGlobal}>
+            <FaGlobe />
+          </button>
+          <button className="icon-button" onClick={handleLeaderboard}>
+            <FaTrophy />
+          </button>
+        </div>
+        {loading ? (
+        <div className="loading">Loading...</div>
+      ) : (
         <div className="track-list">
 
             {info.map((track, index) => {
@@ -472,11 +486,8 @@ const Home = () => {
             </div>
                 );
             })}
-        </div>
-        <div>
-          <button onClick={handleGlobal}>Global</button>
-          <button onClick={handleLeaderboard}>Leaderboard</button>
-        </div>
+        </div> )}
+
 
       <Routes>
       <Route path="/playlists" element={<Playlists user = {passIn2}/>} />
