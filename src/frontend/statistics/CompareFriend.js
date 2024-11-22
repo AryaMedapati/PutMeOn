@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useContext } from "react";
 import localstorage from "localstorage-slim";
 import { UserContext } from "../UserContext";
+import { Dropdown } from "semantic-ui-react";
+import "semantic-ui-css/components/dropdown.min.css";
+import "semantic-ui-css/components/icon.min.css";
+import "semantic-ui-css/components/input.min.css";
+import "semantic-ui-css/components/transition.min.css";
 
 const CompareFriend = () => {
   const [date, setDate] = useState("");
@@ -23,7 +28,8 @@ const CompareFriend = () => {
             body: JSON.stringify({ username }),
           });
           const data = await res.json();
-          setFriends(data.friends);
+          setFriends(data.friends.map((friend) => friend.username));
+          // setFriends(data.friends);
         } catch (error) {
           console.error("Error fetching friends:", error);
         }
@@ -88,7 +94,7 @@ const CompareFriend = () => {
   return (
     <div>
       <h2>Compare Friends</h2>
-      <select
+      {/* <select
         onChange={(e) => setSelectedFriend(e.target.value)}
         value={selectedFriend}
       >
@@ -98,7 +104,25 @@ const CompareFriend = () => {
             {friend}
           </option>
         ))}
-      </select>
+      </select> */}
+      <Dropdown
+        placeholder="Select a friend"
+        fluid
+        selection
+        options={friends.map((friend) => ({
+          key: friend,
+          value: friend,
+          text: (
+            <div style={{ display: "flex", alignItems: "center" }}>
+              {/* Replace the URL with the correct one for your friend's profile picture */}
+              {friend}
+            </div>
+          ),
+        }))}
+        onChange={(e, { value }) => setSelectedFriend(value)}
+        value={selectedFriend}
+        style={{ marginBottom: "20px", width: "300px" }}
+      />
       <div className="input-container">
         <input
           type="text"
