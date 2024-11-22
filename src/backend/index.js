@@ -21,8 +21,7 @@ let user = "";
 const { ArrayTimestamp } = require("@blueprintjs/icons");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
-const { v4: uuidv4 } = require('uuid');
-
+const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -33,7 +32,7 @@ const mainUrl = "https://put-me-on-418b7.web.app";
 // app.use(express.json());
 // app.use(json());
 
-app.use(bp.json({ limit: "50mb" }));
+app.use(bp.json({ limit: "100mb" }));
 app.use(cors());
 
 const tempCodeStore = {};
@@ -55,7 +54,7 @@ async function saveToken(user) {
   try {
     const getUsers = db.collection("UserData");
     // const user = user;
-    const value = getUsers.where('username', '==', user);
+    const value = getUsers.where("username", "==", user);
     const snapshot = await value.get();
 
     if (!snapshot.empty) {
@@ -63,21 +62,33 @@ async function saveToken(user) {
       const userData = userDoc.data();
       // console.log(userData);
       await userDoc.ref.update({
-        accessToken: accessToken
+        accessToken: accessToken,
       });
-
     }
   } catch (error) {
     console.log(error);
   }
 }
-async function saveRecentlyPlayed(user, song, likes, likedBy, laughingLikes, laughingLikedBy, fire, fireLikedBy, comments, totalLikes, totalReactions, totalComments) {
+async function saveRecentlyPlayed(
+  user,
+  song,
+  likes,
+  likedBy,
+  laughingLikes,
+  laughingLikedBy,
+  fire,
+  fireLikedBy,
+  comments,
+  totalLikes,
+  totalReactions,
+  totalComments
+) {
   // console.log("user: "+ user);
   console.log(likedBy);
   try {
     const getUsers = db.collection("UserData");
     // const user = user;
-    const value = getUsers.where('username', '==', user);
+    const value = getUsers.where("username", "==", user);
     const snapshot = await value.get();
 
     if (!snapshot.empty) {
@@ -95,9 +106,8 @@ async function saveRecentlyPlayed(user, song, likes, likedBy, laughingLikes, lau
         comments: comments,
         totalLikes: totalLikes,
         totalReactions: totalReactions,
-        totalComments: totalComments
+        totalComments: totalComments,
       });
-
     }
   } catch (error) {
     console.log(error);
@@ -271,10 +281,10 @@ app.post("/insertCollabPlaylist", async (req, res) => {
 
 app.get("/fetchCollabPlaylist", async (req, res) => {
   try {
-    const docId = req.headers['documentid'];
+    const docId = req.headers["documentid"];
     const userDoc = db.collection("CollabPlaylists").doc(docId);
     const doc = await userDoc.get();
-    const user = doc.data()
+    const user = doc.data();
     res.status(200).json(user);
   } catch (error) {
     console.log(error);
@@ -284,14 +294,14 @@ app.get("/fetchCollabPlaylist", async (req, res) => {
 
 app.post("/updateCollabPlaylist", async (req, res) => {
   try {
-    const docId = req.headers['documentid'];
-    const userRef = db.collection('CollabPlaylists').doc(docId);
+    const docId = req.headers["documentid"];
+    const userRef = db.collection("CollabPlaylists").doc(docId);
     await userRef.set(req.body, { merge: true });
 
-    res.status(200).send('User updated successfully');
+    res.status(200).send("User updated successfully");
   } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).send('Error updating user');
+    console.error("Error updating user:", error);
+    res.status(500).send("Error updating user");
   }
 });
 
@@ -471,13 +481,13 @@ app.get("/fetchUsers", async (req, res) => {
 
 app.get("/fetchUserByUsername", async (req, res) => {
   try {
-    const username = req.headers['username'];
+    const username = req.headers["username"];
     const recipientSnapshot = await db
       .collection("UserData")
       .where("username", "==", username)
       .get();
 
-    const user = recipientSnapshot.docs[0].data()
+    const user = recipientSnapshot.docs[0].data();
     res.status(200).json(user);
   } catch (error) {
     console.error("Error retrieving document:", error);
@@ -538,8 +548,30 @@ app.post("/fetchFriendRequests", async (req, res) => {
     const recipientDoc = recipientSnapshot.docs[0];
     const recipientData = recipientDoc.data();
 
-    if (recipientData.friendRequests) {
-      res.json({ friendRequests: recipientData.friendRequests });
+    if (
+      recipientData.friendRequests &&
+      recipientData.friendRequests.length > 0
+    ) {
+      const friendRequestsWithPfp = [];
+
+      for (const friendUsername of recipientData.friendRequests) {
+        const friendSnapshot = await db
+          .collection("UserData")
+          .where("username", "==", friendUsername)
+          .get();
+
+        if (!friendSnapshot.empty) {
+          const friendDoc = friendSnapshot.docs[0];
+          const friendData = friendDoc.data();
+          friendRequestsWithPfp.push({
+            username: friendUsername,
+            pfp: friendData.pfp || null,
+          });
+        } else {
+          friendRequestsWithPfp.push({ username: friendUsername, pfp: null });
+        }
+      }
+      res.json({ friendRequests: friendRequestsWithPfp });
     } else {
       res.json({ friendRequests: [] });
     }
@@ -562,17 +594,101 @@ app.post("/fetchFriends", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    console.log("passed in username = " + username);
+
     const recipientDoc = recipientSnapshot.docs[0];
     const recipientData = recipientDoc.data();
 
-    if (recipientData.friends_list) {
-      res.json({ friends: recipientData.friends_list });
+    if (recipientData.friends_list && recipientData.friends_list.length > 0) {
+      const friendListWithPfp = [];
+
+      for (const friendUsername of recipientData.friends_list) {
+        const friendSnapshot = await db
+          .collection("UserData")
+          .where("username", "==", friendUsername)
+          .get();
+
+        if (!friendSnapshot.empty) {
+          const friendDoc = friendSnapshot.docs[0];
+          const friendData = friendDoc.data();
+          friendListWithPfp.push({
+            username: friendUsername,
+            pfp: friendData.pfp || null,
+          });
+        } else {
+          friendListWithPfp.push({ username: friendUsername, pfp: null });
+        }
+      }
+      console.log("friend array = " + friendListWithPfp);
+      res.json({ friends: friendListWithPfp });
     } else {
       res.json({ friends: [] });
     }
   } catch (error) {
     console.log(error);
     res.status(500).send(error);
+  }
+});
+
+app.post("/setChatTheme", async (req, res) => {
+  try {
+    const { chatID, theme } = req.body;
+
+    if (!chatID || !theme) {
+      return res.status(400).json({ message: "chatID and theme are required" });
+    }
+
+    const chatThemeRef = db.collection("ChatTheme");
+
+    const existingThemeDoc = await chatThemeRef
+      .where("chatId", "==", chatID)
+      .get();
+
+    if (!existingThemeDoc.empty) {
+      const docId = existingThemeDoc.docs[0].id;
+      await chatThemeRef.doc(docId).update({
+        theme: theme,
+      });
+      return res.status(200).json({ message: "Theme updated successfully." });
+    } else {
+      await chatThemeRef.add({
+        chatId: chatID,
+        theme: theme,
+      });
+      return res.status(201).json({ message: "Chat theme set successfully." });
+    }
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "Error setting chat theme", error: error.message });
+  }
+});
+
+app.post("/getChatTheme", async (req, res) => {
+  try {
+    const { chatID } = req.body;
+
+    if (!chatID) {
+      return res.status(400).json({ message: "chatID is required" });
+    }
+
+    const chatThemeRef = db.collection("ChatTheme");
+    const chatThemeSnapshot = await chatThemeRef
+      .where("chatId", "==", chatID)
+      .get();
+
+    if (!chatThemeSnapshot.empty) {
+      const chatThemeDoc = chatThemeSnapshot.docs[0].data();
+      return res.status(200).json({ theme: chatThemeDoc.theme });
+    } else {
+      return res.status(200).json({ theme: "default" });
+    }
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Error fetching chat theme", error: error.message });
   }
 });
 
@@ -591,7 +707,7 @@ app.post("/updateUser", async (req, res) => {
 
 app.post("/updateUserbyUsername", async (req, res) => {
   try {
-    const username = req.headers['username'];
+    const username = req.headers["username"];
     const recipientSnapshot = await db
       .collection("UserData")
       .where("username", "==", username)
@@ -610,7 +726,7 @@ app.post("/updateUserbyUsername", async (req, res) => {
 
 app.post("/updateUserbyUsername", async (req, res) => {
   try {
-    const username = req.headers['username'];
+    const username = req.headers["username"];
     const recipientSnapshot = await db
       .collection("UserData")
       .where("username", "==", username)
@@ -620,10 +736,10 @@ app.post("/updateUserbyUsername", async (req, res) => {
     const userRef = userDoc.ref;
     await userRef.set(req.body, { merge: true });
 
-    res.status(200).send('User updated successfully');
+    res.status(200).send("User updated successfully");
   } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).send('Error updating user');
+    console.error("Error updating user:", error);
+    res.status(500).send("Error updating user");
   }
 });
 
@@ -633,7 +749,7 @@ app.post("/cypressUserReset", async (req, res) => {
     const userRef = db.collection("UserData").doc(docId);
     await userRef.set(req.body, { merge: false });
 
-    res.status(200).send('User updated successfully');
+    res.status(200).send("User updated successfully");
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).send("Error updating user");
@@ -1198,13 +1314,13 @@ app.get("/spotify-login", async (req, res) => {
   // console.log("hello");
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
-    querystring.stringify({
-      response_type: "code",
-      client_id: clientID,
-      scope:
-        "ugc-image-upload user-read-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-modify user-follow-read user-top-read user-read-recently-played user-library-modify user-library-read user-read-email user-read-private",
-      redirect_uri: `${url}/callback`,
-    })
+      querystring.stringify({
+        response_type: "code",
+        client_id: clientID,
+        scope:
+          "ugc-image-upload user-read-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-modify user-follow-read user-top-read user-read-recently-played user-library-modify user-library-read user-read-email user-read-private",
+        redirect_uri: `${url}/callback`,
+      })
   );
 });
 
@@ -1244,7 +1360,6 @@ app.get("/callback", function (req, res) {
       //   </script>
       // `);
       res.redirect(
-
         `${frontUrl}/transferToken?` +
           querystring.stringify({
             access_token: access_token,
@@ -1279,7 +1394,7 @@ app.get("/profile", async (req, res) => {
 
 app.post("/generate2FACode", async (req, res) => {
   const { username } = req.body;
-  user = username
+  user = username;
   // Validate input
   if (!username) {
     return res.status(400).json({ message: "Username is required" });
@@ -1374,31 +1489,29 @@ app.get("/checkUserExists", (req, res) => {
     const getUsers = db.collection("UserData");
     const user = req.query.user;
     console.log(user);
-    const value = getUsers.where('username', '==', user);
+    const value = getUsers.where("username", "==", user);
     const newVal = value.get().then((snapshot) => {
       res.status(200).json(snapshot);
-    })
+    });
 
     // res.status(200).json({ message: "user exists" });
   } catch (error) {
     console.log(error);
     res.status(500).send(error);
   }
-
-
-})
+});
 app.get("/recentlyPlayed", async (req, res) => {
   try {
     const userN = req.query.user;
-    const usersCollection = db.collection('UserData');
-    const val = usersCollection.where('username', '==', userN);
+    const usersCollection = db.collection("UserData");
+    const val = usersCollection.where("username", "==", userN);
     const snapshot = await val.get();
     if (snapshot.empty) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const userDoc = snapshot.docs[0];
-    const token = userDoc.data().accessToken; 
+    const token = userDoc.data().accessToken;
     // console.log(token);
     const recentlyPlayed = await axios.get(
       `https://api.spotify.com/v1/me/player/recently-played?limit=1`,
@@ -1416,6 +1529,7 @@ app.get("/recentlyPlayed", async (req, res) => {
     // res.status(500).json({ message: error });
   }
 });
+
 
 app.post("/savePopScore", async(req,res) => {
   const popScore = req.body.popScore;
@@ -1449,7 +1563,8 @@ app.get("/getPopScore", async(req,res) => {
   }
 })
 
-app.post("/saveRecentlyPlayed", async(req, res) => {
+
+app.post("/saveRecentlyPlayed", async (req, res) => {
   const song = req.body.song;
   const user = req.body.user;
   const currentLikes = req.body.likes;
@@ -1461,12 +1576,24 @@ app.post("/saveRecentlyPlayed", async(req, res) => {
   const comments = req.body.comments;
   const totalLikes = req.body.totalLikes;
   const totalReactions = req.body.totalReactions;
-  const totalComments = req.body.totalComments
+  const totalComments = req.body.totalComments;
   console.log(likedBy);
-  await saveRecentlyPlayed(user, song, currentLikes, likedBy, laughingLikes, laughingLikedBy, fire, fireLikedBy, comments, totalLikes, totalReactions, totalComments);
+  await saveRecentlyPlayed(
+    user,
+    song,
+    currentLikes,
+    likedBy,
+    laughingLikes,
+    laughingLikedBy,
+    fire,
+    fireLikedBy,
+    comments,
+    totalLikes,
+    totalReactions,
+    totalComments
+  );
   res.status(200).json({ message: "Success" });
-
-})
+});
 app.get("/getRecentlyPlayed", async (req, res) => {
   const username = req.query.user;
   console.log(username);
@@ -1502,8 +1629,6 @@ app.get("/getFollowers", async (req,res) => {
   res.status(200).json({ data: followers });
 });
 
-
-
 app.post("/fetchChats", async (req, res) => {
   try {
     const { username } = req.body;
@@ -1524,7 +1649,6 @@ app.post("/fetchChats", async (req, res) => {
     if (recipientData.chats) {
       // console.log("okay so now we're here");
       res.json({ chats: recipientData.chats });
-
     } else {
       // console.log("le sigh");
       res.json({ chats: [] });
@@ -1536,22 +1660,24 @@ app.post("/fetchChats", async (req, res) => {
   }
 });
 
-app.post('/fetchChatNames', async (req, res) => {
+app.post("/fetchChatNames", async (req, res) => {
   const { chatIDs, currentUser } = req.body;
   const chatNames = [];
 
   // console.log("chatIDs=" + chatIDs);
   try {
     for (const chatID of chatIDs) {
-      const querySnapshot = await db.collection('MessageData')
-        .where('chatID.id', '==', chatID)
+      const querySnapshot = await db
+        .collection("MessageData")
+        .where("chatID.id", "==", chatID)
         .limit(1)
         .get();
 
       if (!querySnapshot.empty) {
         const messageDoc = querySnapshot.docs[0];
         let participants = messageDoc.data().participants;
-        participants = participants.filter(participant => participant !== currentUser)
+        participants = participants
+          .filter((participant) => participant !== currentUser)
           .sort();
         chatNames.push(participants);
       } else {
@@ -1561,8 +1687,8 @@ app.post('/fetchChatNames', async (req, res) => {
 
     res.status(200).json({ chatNames });
   } catch (error) {
-    console.error('Error fetching chat names:', error);
-    res.status(500).json({ error: 'Failed to fetch chat names' });
+    console.error("Error fetching chat names:", error);
+    res.status(500).json({ error: "Failed to fetch chat names" });
   }
 });
 
@@ -1579,7 +1705,7 @@ app.post("/insertChat", async (req, res) => {
       chatID: req.body.chatID,
     });
 
-    if (typeof req.body.recipient === 'string') {
+    if (typeof req.body.recipient === "string") {
       console.log("case string");
       const recipientSnapshot = await db
         .collection("UserData")
@@ -1606,7 +1732,8 @@ app.post("/insertChat", async (req, res) => {
 
       if (recipientData.notifications) {
         await recipientUserRef.update({
-          notifications: admin.firestore.FieldValue.arrayUnion(notificationData),
+          notifications:
+            admin.firestore.FieldValue.arrayUnion(notificationData),
         });
       } else {
         await recipientUserRef.set(
@@ -1630,7 +1757,7 @@ app.post("/insertChat", async (req, res) => {
         const recipientId = recipientDoc.id;
 
         const chatName = req.body.participants
-          .filter(element => element !== rec)
+          .filter((element) => element !== rec)
           .join(", ");
         const notificationData = {
           message: `Unread message from from ${chatName}`,
@@ -1646,7 +1773,8 @@ app.post("/insertChat", async (req, res) => {
 
         if (recipientData.notifications) {
           await recipientUserRef.update({
-            notifications: admin.firestore.FieldValue.arrayUnion(notificationData),
+            notifications:
+              admin.firestore.FieldValue.arrayUnion(notificationData),
           });
         } else {
           await recipientUserRef.set(
@@ -1664,7 +1792,7 @@ app.post("/insertChat", async (req, res) => {
   }
 });
 
-app.post('/updateUserChats', async (req, res) => {
+app.post("/updateUserChats", async (req, res) => {
   const { participants, newChatID } = req.body;
 
   // Log the inputs for debugging
@@ -1672,20 +1800,21 @@ app.post('/updateUserChats', async (req, res) => {
   // console.log('New Chat ID:', newChatID);
 
   if (!Array.isArray(participants) || participants.length === 0) {
-    return res.status(400).send({ error: 'Invalid participants array' });
+    return res.status(400).send({ error: "Invalid participants array" });
   }
 
   // Ensure newChatID is a valid string
-  if (typeof newChatID !== 'string' || !newChatID) {
-    console.error('Invalid newChatID:', newChatID);
-    return res.status(400).send({ error: 'Invalid newChatID' });
+  if (typeof newChatID !== "string" || !newChatID) {
+    console.error("Invalid newChatID:", newChatID);
+    return res.status(400).send({ error: "Invalid newChatID" });
   }
 
   try {
     const updatePromises = participants.map(async (username) => {
       // Query the UserData collection to find the user by username
-      const querySnapshot = await db.collection('UserData')
-        .where('username', '==', username)
+      const querySnapshot = await db
+        .collection("UserData")
+        .where("username", "==", username)
         .limit(1)
         .get();
 
@@ -1703,105 +1832,165 @@ app.post('/updateUserChats', async (req, res) => {
     // Wait for all updates to complete
     await Promise.all(updatePromises);
 
-    res.status(200).send({ message: 'User chats updated successfully for all participants' });
+    res.status(200).send({
+      message: "User chats updated successfully for all participants",
+    });
   } catch (error) {
-    console.error('Error updating user chats:', error);
-    res.status(500).send({ error: 'Failed to update user chats for participants' });
+    console.error("Error updating user chats:", error);
+    res
+      .status(500)
+      .send({ error: "Failed to update user chats for participants" });
   }
 });
 
-app.post('/fetchChatHistory', async (req, res) => {
+app.post("/fetchChatHistory", async (req, res) => {
   const { chatID } = req.body; // Get chatID from request body
   // console.log("chat history id = " + chatID);
 
   if (!chatID) {
-    return res.status(400).json({ error: 'Chat ID is required.' });
+    return res.status(400).json({ error: "Chat ID is required." });
   }
 
   try {
-    const messagesSnapshot = await db.collection('MessageData')
-      .where('chatID.id', '==', chatID)
-      .orderBy('createdAt') // Ensure messages are ordered by creation time
+    // const messagesSnapshot = await db
+    //   .collection("MessageData")
+    //   .where("chatID.id", "==", chatID)
+    //   .orderBy("createdAt") // Ensure messages are ordered by creation time
+    //   .get();
+
+    // const messages = messagesSnapshot.docs.map((doc) => ({
+    //   id: doc.id,
+    //   ...doc.data(),
+    // }));
+
+    // res.status(200).json({ messages });
+    const messagesSnapshot = await db
+      .collection("MessageData")
+      .where("chatID.id", "==", chatID)
+      .orderBy("createdAt")
       .get();
 
-    const messages = messagesSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    // Map messages and fetch profile pictures
+    console.log("before")
+    const messages = await Promise.all(
+      messagesSnapshot.docs.map(async (doc) => {
+        const messageData = doc.data();
+        const userSnapshot = await db
+          .collection("UserData")
+          .where("username", "==", messageData.sender)
+          .limit(1)
+          .get();
+
+        const userData = userSnapshot.empty
+          ? { pfp: "" }
+          : userSnapshot.docs[0].data();
+
+        return {
+          id: doc.id,
+          ...messageData,
+          pfp: userData.pfp || "",
+        };
+      })
+    );
+    console.log("after")
 
     res.status(200).json({ messages });
   } catch (error) {
-    console.error('Error fetching messages:', error);
-    res.status(500).json({ error: 'Failed to fetch messages. Please try again later.' });
+    console.error("Error fetching messages:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to fetch messages. Please try again later." });
   }
 });
 
-app.post('/fetchChatInfo', async (req, res) => {
-  const { chatID , sender } = req.body;
+app.post("/fetchChatInfo", async (req, res) => {
+  const { chatID, sender } = req.body;
 
   // console.log("my fetch id = " + chatID );
 
   if (!chatID) {
-    return res.status(400).json({ error: 'Chat ID is required.' });
+    return res.status(400).json({ error: "Chat ID is required." });
   }
 
   if (!sender) {
-    return res.status(400).json({ error: 'sender is required.' });
+    return res.status(400).json({ error: "sender is required." });
   }
-  
+
   try {
-    const querySnapshot = await db.collection('MessageData')
-      .where('chatID.id', '==', chatID)
+    const querySnapshot = await db
+      .collection("MessageData")
+      .where("chatID.id", "==", chatID)
       .limit(1)
       .get();
 
     if (querySnapshot.empty) {
-      return res.status(404).json({ message: 'No document found' });
+      return res.status(404).json({ message: "No document found" });
     }
 
     const participants = querySnapshot.docs[0].data().participants;
-    const recipients = participants.filter(participant => participant !== sender);
+    const recipients = participants.filter(
+      (participant) => participant !== sender
+    );
 
-    return res.status(200).json({ participants:participants, recipients:recipients });
+    return res
+      .status(200)
+      .json({ participants: participants, recipients: recipients });
   } catch (error) {
-    console.error('Error fetching chat info:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching chat info:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
-app.post('/fetchChatRecipients', async (req, res) => {
+app.post("/fetchChatRecipients", async (req, res) => {
   const { chatID, sender } = req.body;
 
   console.log("received chatID, sender:" + chatID + " " + sender);
 
   if (!chatID) {
-    return res.status(400).json({ error: 'Chat ID is required.' });
+    return res.status(400).json({ error: "Chat ID is required." });
   }
   if (!sender) {
-    return res.status(400).json({ error: 'sender is required.' });
+    return res.status(400).json({ error: "sender is required." });
   }
 
   try {
-    const querySnapshot = await db.collection('MessageData')
-      .where('chatID.id', '==', chatID)
+    const querySnapshot = await db
+      .collection("MessageData")
+      .where("chatID.id", "==", chatID)
       .limit(1)
       .get();
 
     if (querySnapshot.empty) {
       // console.log("okay so it is in fact empty");
-      return res.status(404).json({ message: 'No document found' });
+      return res.status(404).json({ message: "No document found" });
     }
 
     const allParticipants = querySnapshot.docs[0].data().participants;
-    const recipients = allParticipants.filter(participant => participant !== sender);
+    const recipients = allParticipants.filter(
+      (participant) => participant !== sender
+    );
 
     return res.status(200).json({ recipients: recipients });
   } catch (error) {
-    console.error('Error fetching recipients:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching recipients:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
+app.get("/fetchTopSongs", async (req, res) => {
+  try {
+    const docRef = db.collection("spotifySongs").doc("top_1000_songs");
+    const snapshot = await docRef.get();
+
+    const data = snapshot.data();
+    const songs = data.songs || [];
+
+    res.status(200).json(songs);
+  } catch (error) {
+    // console.log(error);
+    res.status(500).send(error);
+  }
+});
 
 app.listen(port, () => {
   console.log("Server running on port " + port);
