@@ -1,6 +1,7 @@
 import {React, useEffect, useState, useRef} from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, useLocation, useNavigate, Switch} from "react-router-dom";
 import Playlists from "./Playlists";
+import Leaderboard from './Leaderboard';
 import "./styles/Home.css";
 import localstorage from 'localstorage-slim';
 import { GiConsoleController } from 'react-icons/gi';
@@ -8,7 +9,7 @@ import { GiConsoleController } from 'react-icons/gi';
 
 const Home = () => {
   const location = useLocation();
-  
+  const nav = useNavigate();
   let passIn2 = "";
   const [info, setInfo] = useState([]);
   const[friends, setFriends] = useState([]);
@@ -355,6 +356,9 @@ const Home = () => {
   const handleComment = (e) => {
     setNewComment(e.target.value);
   }
+  const handleLeaderboard = () => {
+    nav("/leaderboard");
+  }
   useEffect(() => {
     const fetchAndSetData = async () => {
         const friendsList = await fetchFriendsList();
@@ -465,9 +469,13 @@ const Home = () => {
                 );
             })}
         </div>
+        <div>
+          <button onClick={handleLeaderboard}>Leaderboard</button>
+        </div>
 
       <Routes>
       <Route path="/playlists" element={<Playlists user = {passIn2}/>} />
+      <Route path = "/leaderboard" element={<Leaderboard/>}></Route>
       </Routes>
       
     </div>
