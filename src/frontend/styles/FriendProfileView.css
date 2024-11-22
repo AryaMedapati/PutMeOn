@@ -1,0 +1,108 @@
+.friend-profile-view {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.loading-screen {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-header {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile-picture {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ddd;
+}
+
+.profile-info {
+  flex-grow: 1;
+}
+
+.profile-username {
+  font-size: 2rem;
+  margin: 0;
+}
+
+.profile-bio {
+  color: #555;
+  font-size: 1.1rem;
+}
+
+.privacy-settings h3 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.privacy-settings ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.privacy-settings li {
+  padding: 5px 0;
+  font-size: 1rem;
+}
+
+.privacy-message {
+  padding: 20px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 8px;
+  color: #856404;
+  text-align: center;
+}
+
+.friend-action {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.friend-action button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.friend-action button svg {
+  margin-right: 8px;
+}
+
+/* Media Query for Mobile Responsiveness */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .profile-info {
+    text-align: center;
+  }
+
+  .friend-action {
+    justify-content: center;
+  }
+}
