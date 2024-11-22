@@ -21,18 +21,44 @@ import {
   Position,
 } from "@blueprintjs/core";
 import { useNavigate } from "react-router-dom";
+import "./styles/Playlists.css";
 
 const PlaylistList = () => {
   const navigate = useNavigate();
   const { username } = useContext(UserContext);
 
-  const [friendPlaylists, setFriendPlaylists] = useState([]);
   const [playlists, setPlaylists] = useState([]);
   const [friendsList, setFriendsList] = useState([]);
 
   const handleCreatePlaylist = (index) => {
     const additionalInfo = { playlists: playlists, playlistIndex: index };
     navigate("new-playlist", { state: additionalInfo });
+  };
+
+  const handleDeletePlaylist = async (index) => {
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this playlist?"
+    );
+    if (isConfirmed) {
+      const updatedPlaylists = playlists.filter((_, i) => i !== index);
+
+      setPlaylists(updatedPlaylists);
+      try {
+        const resp = await fetch("http://localhost:3001/updateUser", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            DocumentId: username,
+          },
+          body: JSON.stringify({
+            playlists: updatedPlaylists,
+          }),
+        });
+      } catch (error) {
+        console.error(error);
+        alert(error);
+      }
+    }
   };
 
   const handleSharePlaylist = async (friend, playlist) => {
@@ -44,8 +70,7 @@ const PlaylistList = () => {
       },
     });
     const data = await response.json();
-    setFriendPlaylists(data.sharedPlaylists);
-
+    const friendPlaylists = data.sharedPlaylists
     const resp = await fetch("http://localhost:3001/updateUserbyUsername", {
       method: "POST",
       headers: {
@@ -78,13 +103,33 @@ const PlaylistList = () => {
   }, [username]);
 
   return (
-    <div>
-      <div>
+    <div
+      className="playlists-container"
+      style={{
+        border: "3px solid #03bd00",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "10px",
+          backgroundColor: "#03bd00",
+          width: "100%",
+          padding: "0 10px",
+          height: "50px",
+        }}
+      >
+        <h2 className="playlists-title" style={{ color: "white" }}>
+          My Playlists
+        </h2>
         <Button
           className="create-playlist-button"
           intent="primary"
+          icon={<Icon icon="add" />}
           style={{
-            width: "160px",
+            width: "130px",
             height: "35px",
             borderRadius: 20,
           }}
@@ -92,46 +137,67 @@ const PlaylistList = () => {
           text="New Playlist"
         />
       </div>
-      <Section title="My Playlists">
-        <SectionCard padded={false}>
-          <CardList bordered={false}>
-            {playlists.map((playlist, index) => (
-              <Card key={index}>
-                <span>{playlist.name}</span>
-
-                <Popover
-                  interactionKind={PopoverInteractionKind.CLICK}
-                  content={
-                    <Menu>
-                      {friendsList.map((friend, index) => (
-                        <MenuItem
-                          className="share-friend"
-                          text={friend}
-                          onClick={() => handleSharePlaylist(friend, playlist)}
-                        />
-                      ))}
-                    </Menu>
-                  }
-                  position={Position.BOTTOM_LEFT}
-                >
-                  <Button
-                    className="share-button"
-                    icon={<Icon icon="share" />}
-                    minimal
-                  />
-                </Popover>
-
+      <div
+        className="playlists-list"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          width: "100%",
+          padding: "0 10px",
+          paddingTop: "10px",
+        }}
+      >
+        {playlists.map((playlist, index) => (
+          <div
+            className="playlist-item"
+            key={index}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            <span className="playlist-name">{playlist.name}</span>
+            <div className="playlist-actions">
+              <Popover
+                interactionKind="click"
+                content={
+                  <Menu>
+                    {friendsList.map((friend, index) => (
+                      <MenuItem
+                        key={index}
+                        className="share-friend"
+                        text={friend}
+                        onClick={() => handleSharePlaylist(friend, playlist)}
+                      />
+                    ))}
+                  </Menu>
+                }
+                position="bottom-left"
+              >
                 <Button
-                  className="edit-button"
-                  icon={<Icon icon="edit" />}
+                  className="share-button"
+                  icon={<Icon icon="share" />}
                   minimal
-                  onClick={() => handleCreatePlaylist(index)}
                 />
-              </Card>
-            ))}
-          </CardList>
-        </SectionCard>
-      </Section>
+              </Popover>
+              <Button
+                className="edit-button"
+                icon={<Icon icon="edit" />}
+                minimal
+                onClick={() => handleCreatePlaylist(index)}
+              />
+              <Button
+                className="delete-button"
+                icon={<Icon icon="trash" />}
+                minimal
+                onClick={() => handleDeletePlaylist(index)}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

@@ -398,6 +398,10 @@ const Home = () => {
         return `${hoursAgo} hours ago`;
     }
 }
+const handleViewProfile = () => {
+  const friendUser = document.getElementById("friend-id").innerHTML;
+  nav(`/profile/${friendUser}`);
+}
 
   // console.log(info);
     return (
@@ -427,7 +431,7 @@ const Home = () => {
 
                 return (
                     <div className="track-activity" key={index}>
-                      <div className="friend">{friends[index]}</div>
+                      <div className="friend" id = "friend-id" onClick={handleViewProfile}>{friends[index]}</div>
                         <div className="album-cover"><img src={track.track.album.images[0].url} alt="Error"/></div>
                         <div className="track-name">{track ? track.track.name : "Error"}</div>
                         <div className="listening-info">
