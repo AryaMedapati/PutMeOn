@@ -15,6 +15,8 @@ import {
   Card,
   Elevation,
   EditableText,
+  Popover,
+  Position,
 } from "@blueprintjs/core";
 import { MultiSelect } from "@blueprintjs/select";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -22,7 +24,7 @@ import "./styles/NewPlaylist.css";
 
 const NewPlaylist = () => {
   const [items, setItems] = useState([]);
-
+  const [songs, setSongs] = useState([]);
   const { username } = useContext(UserContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -110,13 +112,119 @@ const NewPlaylist = () => {
     setPlaylistName(value);
   };
 
+  const renderSongDetails = (index) => {
+    if (songs.length > index) {
+      const trackName = selectedSongs[index].split(" -- by ")[0]; 
+ 
+      const song = songs.find((s) => s["Track Name"] === trackName);
+      return (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "20px",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <img
+              src={song["Album Image URL"]}
+              alt={`${song["Album Name"]} Cover`}
+              style={{
+                maxWidth: "120px",
+                height: "auto",
+                borderRadius: "8px",
+              }}
+            />
+            <div style={{ marginTop: "10px" }}>
+              <a
+                href={song["Track Preview URL"]}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "#007BFF",
+                  textDecoration: "none",
+                  fontWeight: "bold",
+                }}
+              >
+                Preview
+              </a>
+            </div>
+          </div>
+          <div style={{ lineHeight: "1.6", fontSize: "14px" }}>
+            <div>
+              <strong>Track Name:</strong> {song["Track Name"]}
+            </div>
+            <div>
+              <strong>Album Name:</strong> {song["Album Name"]}
+            </div>
+            <div>
+              <strong>Album Artist Name(s):</strong>{" "}
+              {song["Album Artist Name(s)"]}
+            </div>
+            <div>
+              <strong>Artist Name(s):</strong> {song["Artist Name(s)"]}
+            </div>
+            <div>
+              <strong>Album Release Date:</strong> {song["Album Release Date"]}
+            </div>
+            <div>
+              <strong>Track Duration:</strong>{" "}
+              {`${(song["Track Duration (ms)"] / 1000).toFixed(2)} seconds`}
+            </div>
+            <div>
+              <strong>Danceability:</strong> {song["Danceability"]}
+            </div>
+            <div>
+              <strong>Energy:</strong> {song["Energy"]}
+            </div>
+            <div>
+              <strong>Acousticness:</strong> {song["Acousticness"]}
+            </div>
+            <div>
+              <strong>Instrumentalness:</strong> {song["Instrumentalness"]}
+            </div>
+            <div>
+              <strong>Speechiness:</strong> {song["Speechiness"]}
+            </div>
+            <div>
+              <strong>Liveness:</strong> {song["Liveness"]}
+            </div>
+            <div>
+              <strong>Loudness:</strong> {song["Loudness"]}
+            </div>
+            <div>
+              <strong>Tempo:</strong> {song["Tempo"]}
+            </div>
+            <div>
+              <strong>Time Signature:</strong> {song["Time Signature"]}
+            </div>
+            <div>
+              <strong>Popularity:</strong> {song["Popularity"]}
+            </div>
+            <div>
+              <strong>Explicit:</strong>{" "}
+              {song["Explicit"] === "true" ? "Yes" : "No"}
+            </div>
+            <div>
+              <strong>Label:</strong> {song["Label"]}
+            </div>
+            <div>
+              <strong>Copyrights:</strong> {song["Copyrights"]}
+            </div>
+          </div>
+        </div>
+      );
+    }
+  };
+
   useEffect(() => {
     const fetchSongs = async () => {
       const response = await fetch("http://localhost:3001/fetchTopSongs");
       const songs = await response.json();
+      setSongs(songs);
       setItems(
         songs.map(
-          (song) => `${song["Track Name"]} - by ${song["Artist Name(s)"]}`
+          (song) => `${song["Track Name"]} -- by ${song["Artist Name(s)"]}`
         )
       );
     };
@@ -201,26 +309,58 @@ const NewPlaylist = () => {
         }}
       >
         {selectedSongs.map((song, index) => (
-          <Card
+          <Popover
             key={index}
-            interactive={true}
-            elevation={Elevation.TWO}
-            style={{
-              padding: "10px 20px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
+            position={Position.BOTTOM}
+            content={
+              <div
+                style={{
+                  padding: "20px",
+                  backgroundColor: "white",
+                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                  maxWidth: "600px",
+                }}
+              >
+                <h3
+                  style={{
+                    margin: 0,
+                    paddingBottom: "15px",
+                    display: "flex",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  Song Details
+                </h3>
+                {renderSongDetails(index)}
+                <Button text="Close" minimal={true} />
+              </div>
+            }
           >
-            <span>{song}</span>
-            <Button
-              className="delete-card-button"
-              icon="cross"
-              minimal={true}
-              onClick={() => handleSongTagRemove(index)}
-              style={{ width: "30px" }}
-            />
-          </Card>
+            <Card
+              key={index}
+              interactive={true}
+              elevation={Elevation.TWO}
+              style={{
+                padding: "10px 20px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+              // onClick={}
+            >
+              <span>{song}</span>
+              <Button
+                className="delete-card-button"
+                icon="cross"
+                minimal={true}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSongTagRemove(index);
+                }}
+                style={{ width: "30px" }}
+              />
+            </Card>
+          </Popover>
         ))}
       </div>
     </div>
