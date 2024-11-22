@@ -215,7 +215,7 @@ const EditProfile = () => {
         const fetchSongs = async () => {
             const response = await fetch("http://localhost:3001/fetchTopSongs");
             const songs = await response.json();
-            debugger
+            // debugger
         };
         fetchSongs();
     }, [items]);
