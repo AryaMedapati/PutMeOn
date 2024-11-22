@@ -45,19 +45,17 @@ const Messages = () => {
   const [userProfilePictures, setUserProfilePictures] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [items, setItems] = useState([]);
-  const [selectedSong, setSelectedSong] = useState(""); // To store selected song
-  const [songSearchQuery, setSongSearchQuery] = useState(""); // Search query
+  const [selectedSong, setSelectedSong] = useState("");
+  const [songSearchQuery, setSongSearchQuery] = useState("");
 
   const { username, email } = useContext(UserContext);
 
-  const [renderKey, setRenderKey] = useState(0); // Used to trigger re-renders
+  const [renderKey, setRenderKey] = useState(0);
 
-  // Function to force re-render
   const handleRerender = () => {
-    setRenderKey((prevKey) => prevKey + 1); // Increment the key to trigger re-render
+    setRenderKey((prevKey) => prevKey + 1);
   };
 
-  // Debugging: log re-renders
   useEffect(() => {
     console.log("Component re-rendered. Render key:", renderKey);
   }, [renderKey]);
@@ -107,13 +105,13 @@ const Messages = () => {
   };
 
   const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]); // Update file state
+    setSelectedFile(e.target.files[0]);
   };
 
   const handleUploadSubmit = () => {
     if (selectedFile && selectedChat.id) {
       handleUploadGroupPicture(selectedChat.id, selectedFile);
-      setSelectedFile(null); // Clear the file after upload
+      setSelectedFile(null);
     } else {
       console.error("No file selected or no chat ID available.");
     }
