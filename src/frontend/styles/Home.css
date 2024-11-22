@@ -191,3 +191,46 @@ body {
 .comments-list div:nth-child(odd) {
   background-color: #f1f3f5;
 }
+.button-container {
+  position: fixed; 
+  top: 80px; 
+  right: 40px; 
+  display: flex;
+  gap: 10px;
+  z-index: 1000; 
+}
+
+.icon-button {
+  background-color: #f0f0f0;
+  border: 2px solid black;
+  border-radius: 20%;
+  padding: 10px;
+  font-size: 1.5rem;
+  color: #333;
+  cursor: pointer;
+  /* box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); */
+  transition: transform 0.2s, background-color 0.3s;
+}
+
+.icon-button:hover {
+  background-color: #e0e0e0;
+  transform: scale(1.1);
+}
+
+.icon-button:active {
+  transform: scale(0.9);
+}
+
+.loading {
+  position: fixed; /* Ensures it stays centered regardless of scroll */
+  top: 50%; /* Centers vertically */
+  left: 50%; /* Centers horizontally */
+  transform: translate(-50%, -50%); /* Adjusts for element's own dimensions */
+  font-size: 1.5rem; /* Makes the text slightly larger */
+  font-weight: bold; /* Enhances visibility */
+  color: #333; /* Neutral color */
+  text-align: center;
+}
+
+
+

@@ -1,9 +1,6 @@
 import {React, useEffect, useState, useRef} from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, useLocation, useNavigate, Switch} from "react-router-dom";
-import Playlists from "./Playlists";
 import "./styles/Leaderboard.css";
 import localstorage from 'localstorage-slim';
-import { GiConsoleController } from 'react-icons/gi';
 
 const Leaderboard = () => {
   const username = localstorage.get("user");
