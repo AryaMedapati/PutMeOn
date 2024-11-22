@@ -50,7 +50,12 @@ const Home = () => {
     );
     const data = await response.json();
     // console.log(data);
-    return data.data.items[0];
+    if (data.data) {
+      return data.data.items[0];
+    }
+    else {
+      return null;
+    }
   };
   async function getSaved(user, i, currentLikesTemp, likedByTemp, currentLaughingLikesTemp, laughingLikedByTemp, currentFireLikesTemp, fireLikedByTemp, commentsTemp, totalLikesTemp, totalReactionsTemp, totalCommentsTemp) {
 
@@ -430,7 +435,7 @@ const handleViewProfile = () => {
             {info.map((track, index) => {
                 const artistName = track ? track.track.album.artists[0].name : "Error";
                 // console.log(artistName);
-                const timeSinceListened = getTimeSincePlayed(track.played_at);
+                const timeSinceListened = track ? getTimeSincePlayed(track.played_at) : "Error";
                 const userLiked = likedBy[index]?.includes(username);
                 const userLaughingLiked = laughingLikedBy[index]?.includes(username);
                 const userFireLiked = fireLikedBy[index]?.includes(username);
