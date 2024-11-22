@@ -4,8 +4,8 @@ import { UserContext } from "./UserContext";
 import { Button } from "@blueprintjs/core";
 import { FaUserFriends } from "react-icons/fa";
 import localstorage from "localstorage-slim";
-import { toast } from "react-toastify"; // Assuming you're using react-toastify for notifications
-import "./styles/FriendProfileView.css"; // Import the CSS styles
+import { toast } from "react-toastify";
+import "./styles/FriendProfileView.css";
 
 function FriendProfileView() {
   const { email: loggedInUsername } = useContext(UserContext);
@@ -109,7 +109,7 @@ function FriendProfileView() {
       const result = await response.json();
       if (response.ok) {
         toast.success(result.message);
-        fetchFriendsList(); // Refresh friends list after removing a friend
+        fetchFriendsList();
       } else {
         toast.error(result.message);
       }
@@ -119,7 +119,6 @@ function FriendProfileView() {
     }
   };
 
-  // Fetch friends list after a successful operation
   const fetchFriendsList = async () => {
     try {
       const res = await fetch("http://localhost:3001/fetchFriends", {
@@ -147,14 +146,7 @@ function FriendProfileView() {
     );
   }
 
-  const renderPrivacyMessage = () => (
-    <div className="privacy-message">
-      <p>This profile is private, and certain information is hidden.</p>
-    </div>
-  );
-
   const renderProfileDetails = () => {
-    // Always render the basic profile information (username, pfp, bio)
     return (
       <div className="profile-details">
         <div className="profile-header">
@@ -165,7 +157,6 @@ function FriendProfileView() {
           </div>
         </div>
 
-        {/* If profile is private, only show selected privacy fields */}
         {userData.isPrivate ? (
           <div className="privacy-settings">
             {userData.privacySettings.topSongs && userData.topSongs && (
@@ -202,7 +193,6 @@ function FriendProfileView() {
             )}
           </div>
         ) : (
-          // If not private, render all details
           <div className="privacy-settings">
             {userData.topSongs && (
               <div className="top-songs">
