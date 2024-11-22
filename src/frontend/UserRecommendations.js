@@ -133,8 +133,47 @@ const UserRecommendations = () => {
     }
   };
 
-  const handleRegenerateTasteProfile = () => {
-    fetchUserTasteProfile();
+  
+  const handleRegenerateTasteProfile = async () => {
+    if (!username && !localstorage.get("user")) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:3001/generateTasteProfile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: username || localstorage.get("user") }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setUserTaste({
+          username: data.username,
+          genreFrequency: data.genreFrequency,
+          topArtists: data.topArtists,
+          featureAverages: data.featureAverages,
+          timestamp: data.timestamp,
+          recommendedSongs: data.recommendedSongs || [],
+        });
+
+        findRecommendedProfiles(data.username);
+        setRecommendedSongs(data.recommendedSongs || []);
+      } else {
+        console.error(data.message);
+        setUserTaste(null);
+      }
+    } catch (error) {
+      console.error("Error fetching user taste profile:", error);
+      setUserTaste(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRegenerateRecommendedSongs = () => {
@@ -238,7 +277,18 @@ const UserRecommendations = () => {
                     </div>
                   </Card>
                 ) : (
-                  <p>No taste profile found for this user.</p>
+                  <Card interactive={true} elevation={Elevation.THREE} className="taste-profile-card">
+                    <div className="profile-header">
+                      <h2>Your Taste Profile</h2>
+                      <Button
+                        icon="refresh"
+                        intent="primary"
+                        onClick={handleRegenerateTasteProfile}
+                      >
+                        Generate Taste Profile
+                      </Button>
+                    </div>
+                  </Card>
                 )}
               </div>
 

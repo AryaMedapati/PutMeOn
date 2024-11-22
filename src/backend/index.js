@@ -2643,7 +2643,7 @@ app.post('/generatePlaylistSpotifyLink', async (req, res) => {
     });
   }
 });
-    
+
 app.get("/fetchPoll", async (req, res) => {
   try {
     const docRef = db.collection("spotifySongs").doc("polls");
