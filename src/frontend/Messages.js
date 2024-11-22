@@ -38,11 +38,59 @@ const Messages = () => {
   const [chatTheme, setChatTheme] = useState("default");
   const [showThemeOptions, setShowThemeOptions] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [groupProfilePictures, setGroupProfilePictures] = useState({});
+  const [userProfilePictures, setUserProfilePictures] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const { username, email } = useContext(UserContext);
 
   const handleToggleThemeOptions = () => {
     setShowThemeOptions((prev) => !prev);
+  };
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]); // Update file state
+  };
+
+  const handleUploadSubmit = () => {
+    if (selectedFile && selectedChat.id) {
+      handleUploadGroupPicture(selectedChat.id, selectedFile);
+      setSelectedFile(null); // Clear the file after upload
+    } else {
+      console.error("No file selected or no chat ID available.");
+    }
+  };
+
+  const handleUploadGroupPicture = async (chatID, file) => {
+    if (!file) return;
+
+    const toBase64 = (file) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+      });
+
+    const base64String = await toBase64(file);
+
+    try {
+      const res = await fetch("http://localhost:3001/uploadGroupPicture", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ file: base64String, chatID: chatID }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to upload group picture.");
+      }
+
+      const data = await res.json();
+    } catch (error) {
+      console.error("Error uploading group picture:", error);
+    }
   };
 
   const fetchChats = async () => {
@@ -55,6 +103,7 @@ const Messages = () => {
         body: JSON.stringify({ username: email }),
       });
       const data = await res.json();
+      console.log(data);
       setChats(data.chats || []);
     } catch (error) {
       console.error(error);
@@ -72,6 +121,7 @@ const Messages = () => {
         body: JSON.stringify({ chatID: chatID, sender: email }),
       });
       const data = await res.json();
+      console.log(data);
       setParticipants(data.participants || []);
       setRecipient(data.recipients || []);
     } catch (error) {
@@ -111,7 +161,12 @@ const Messages = () => {
           throw new Error("Unexpected response format for chat names.");
         }
 
-        setChatNames(data.chatNames);
+        // setChatNames(data.chatNames);
+        setChatNames((prevChatNames) => [
+          ...prevChatNames,
+          ...(data.chatNames || []),
+          [recipient].sort(),
+        ]);
       } catch (error) {
         console.error("Error fetching chat names:", error);
       }
@@ -121,6 +176,9 @@ const Messages = () => {
   }, [chats, email]);
 
   useEffect(() => {
+    console.log("enters use effect for the dict");
+    console.log(chats);
+    console.log(chatNames);
     if (!chats || chats.length == 0 || !chatNames || chatNames.length == 0) {
       setChatDict({});
       // console.log("chats = " + chats);
@@ -223,6 +281,57 @@ const Messages = () => {
     }
   };
 
+  const fetchProfilePicturesForGroup = async (pfpParticipants, newID) => {
+    try {
+      console.log(pfpParticipants);
+      const response = await fetch(
+        "http://localhost:3001/fetchProfilePictures",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ usernames: pfpParticipants }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch profile pictures.");
+      }
+
+      const data = await response.json();
+      console.log(data);
+      if (data.profilePictures) {
+        // Now set the profile pictures to the group chat's participants
+        const updatedChats = { ...chatDict };
+        console.log(updatedChats);
+        console.log(newID);
+        updatedChats[newID] = {
+          ...updatedChats[newID],
+          chatID: newID,
+          participantsWithPfp: pfpParticipants.map((username) => ({
+            username,
+            pfp:
+              data.profilePictures[username] || "/path/to/default-avatar.png",
+          })),
+        };
+        console.log(updatedChats);
+        setChatDict(updatedChats);
+        await new Promise((resolve) => {
+          // Wait for the state update
+          const interval = setInterval(() => {
+            if (chatDict !== updatedChats) return; // Check if chatDict is updated
+            clearInterval(interval);
+            resolve();
+          }, 10);
+        });
+        console.log(chatDict);
+      }
+    } catch (error) {
+      console.error("Error fetching profile pictures:", error);
+    }
+  };
+
   const handleNewChat = async (recipient) => {
     if (!recipient) {
       console.error("Recipient is not valid.");
@@ -274,7 +383,11 @@ const Messages = () => {
         }),
       });
 
-      fetchChats();
+      await fetchProfilePicturesForGroup(participantArray, newChatID);
+
+      await fetchChats();
+
+      setChatNames((prevChatNames) => [...prevChatNames, [recipient].sort()]);
     } catch (error) {
       console.error("Error updating chats:", error);
     }
@@ -421,11 +534,21 @@ const Messages = () => {
         throw new Error("Failed to update group chat. Please try again later.");
       }
 
-      fetchChats();
+      console.log("before");
+
+      console.log(participantArray);
+
+      await fetchProfilePicturesForGroup(participantArray, newChatID);
+      console.log(chatDict);
+
+      await fetchChats();
     } catch (error) {
       console.error("Error updating group chat:", error);
     }
   };
+
+  console.log(chatNames);
+  console.log(chatDict);
 
   return (
     <div className="messages-container">
@@ -437,7 +560,6 @@ const Messages = () => {
         >
           New Chat
         </Button>
-
         <Button
           icon="group"
           onClick={() => setIsCreatingGroup(!isCreatingGroup)}
@@ -445,7 +567,6 @@ const Messages = () => {
         >
           New Group Chat
         </Button>
-
         {isCreatingGroup && (
           <div className="new-group-chat-input">
             <Dropdown
@@ -471,7 +592,6 @@ const Messages = () => {
             <Button onClick={handleNewGroup}>Create Group Chat</Button>
           </div>
         )}
-
         {isCreatingChat && (
           <div className="new-chat-input">
             <Dropdown
@@ -488,7 +608,6 @@ const Messages = () => {
             />
           </div>
         )}
-
         {Object.entries(chatDict).length > 0 ? (
           Object.entries(chatDict).map(([chatID, chatName]) => (
             <Card
@@ -501,7 +620,24 @@ const Messages = () => {
                 setClickedChat(true);
               }}
             >
-              {Array.isArray(chatName) ? chatName.join(", ") : chatName}
+              {/* Display first 3 profile pictures */}
+              <div className="profile-pictures">
+                {chatName.participantsWithPfp.slice(0, 3).map((participant) => (
+                  <img
+                    key={participant.username}
+                    src={participant.pfp || "/path/to/default-avatar.png"}
+                    alt={participant.username}
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "50%",
+                    }}
+                  />
+                ))}
+              </div>
+              {chatName.participantsWithPfp
+                .map((participant) => participant.username)
+                .join(", ")}
             </Card>
           ))
         ) : (
@@ -537,6 +673,33 @@ const Messages = () => {
                   </Button>
                   <Button onClick={() => handleChangeTheme("red")}>Red</Button>
                 </div>
+              )}
+            </div>
+
+            <div className="chat-settings">
+              {selectedChat && Array.isArray(selectedChat.name) && (
+                <>
+                  {/* <h3>Group Chat Settings</h3>
+                  <div>
+                    <label htmlFor="upload-pfp">Upload Group Chat PFP:</label>
+                    <input
+                      type="file"
+                      id="upload-pfp"
+                      accept="image/*"
+                      onChange={handleUploadGroupPicture}
+                    />
+                  </div> */}
+                  {chatTheme.pfp && (
+                    <img
+                      src={chatTheme.pfp}
+                      style={{
+                        width: "100px",
+                        height: "100px",
+                        borderRadius: "50%",
+                      }}
+                    />
+                  )}
+                </>
               )}
             </div>
 

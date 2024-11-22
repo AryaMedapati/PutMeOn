@@ -1480,11 +1480,107 @@ app.post("/fetchChats", async (req, res) => {
   }
 });
 
+app.post("/uploadGroupPicture", async (req, res) => {
+  try {
+    const { file, chatID } = req.body;
+
+    if (!chatID || !file) {
+      return res.status(400).send("Chat ID and PFP are required.");
+    }
+
+    const chatThemeRef = db.collection("ChatTheme");
+    const querySnapshot = await chatThemeRef
+      .where("chatId", "==", chatID)
+      .get();
+
+    if (querySnapshot.empty) {
+      return res.status(404).send("Chat with the specified ID does not exist.");
+    }
+
+    // Assuming there's only one document per chatID, use the first document in the result
+    const chatDoc = querySnapshot.docs[0];
+    const docRef = chatThemeRef.doc(chatDoc.id);
+
+    // Update the document with the new profile picture
+    await docRef.update({
+      pfp: file, // Updates or adds the 'pfp' field
+    });
+
+    return res.status(200).json({ message: "PFP uploaded successfully." });
+  } catch (error) {
+    console.error("Error uploading group chat PFP:", error);
+    res.status(500).send("Error uploading PFP.");
+  }
+});
+
+// app.post("/fetchChatNames", async (req, res) => {
+//   const { chatIDs, currentUser } = req.body;
+//   const chatNames = [];
+
+//   // console.log("chatIDs=" + chatIDs);
+//   try {
+//     for (const chatID of chatIDs) {
+//       const querySnapshot = await db
+//         .collection("MessageData")
+//         .where("chatID.id", "==", chatID)
+//         .limit(1)
+//         .get();
+
+//       if (!querySnapshot.empty) {
+//         const messageDoc = querySnapshot.docs[0];
+//         let participants = messageDoc.data().participants;
+//         participants = participants
+//           .filter((participant) => participant !== currentUser)
+//           .sort();
+//         chatNames.push(participants);
+//       } else {
+//         // console.log("so its empty/");
+//       }
+//     }
+
+//     res.status(200).json({ chatNames });
+//   } catch (error) {
+//     console.error("Error fetching chat names:", error);
+//     res.status(500).json({ error: "Failed to fetch chat names" });
+//   }
+// });
+
+app.post("/fetchProfilePictures", async (req, res) => {
+  const { usernames } = req.body; // Expecting an array of participant usernames
+  console.log(usernames);
+  const profilePictures = [];
+
+  try {
+    // Loop through each participant to fetch their profile picture
+    for (const participant of usernames) {
+      const userSnapshot = await db
+        .collection("UserData") // Assuming the users' data is stored in this collection
+        .where("username", "==", participant)
+        .limit(1)
+        .get();
+
+      if (!userSnapshot.empty) {
+        const userDoc = userSnapshot.docs[0];
+        const pfp = userDoc.data().pfp || "/path/to/default-avatar.png"; // Default avatar if pfp doesn't exist
+        profilePictures.push({
+          username: participant,
+          pfp: pfp,
+        });
+      }
+    }
+
+    // Return the participants' profile pictures
+    res.status(200).json({ profilePictures });
+  } catch (error) {
+    console.error("Error fetching profile pictures:", error);
+    res.status(500).json({ error: "Failed to fetch profile pictures" });
+  }
+});
+
 app.post("/fetchChatNames", async (req, res) => {
   const { chatIDs, currentUser } = req.body;
   const chatNames = [];
 
-  // console.log("chatIDs=" + chatIDs);
   try {
     for (const chatID of chatIDs) {
       const querySnapshot = await db
@@ -1496,12 +1592,35 @@ app.post("/fetchChatNames", async (req, res) => {
       if (!querySnapshot.empty) {
         const messageDoc = querySnapshot.docs[0];
         let participants = messageDoc.data().participants;
+        // Filter out the current user and sort the participants
         participants = participants
           .filter((participant) => participant !== currentUser)
           .sort();
-        chatNames.push(participants);
-      } else {
-        // console.log("so its empty/");
+
+        const participantsWithPfp = [];
+
+        // Fetch profile pictures for each participant
+        for (const participant of participants) {
+          const userSnapshot = await db
+            .collection("UserData")
+            .where("username", "==", participant)
+            .limit(1)
+            .get();
+
+          if (!userSnapshot.empty) {
+            const userDoc = userSnapshot.docs[0];
+            const pfp = userDoc.data().pfp || "/path/to/default-avatar.png"; // Default avatar if pfp doesn't exist
+            participantsWithPfp.push({
+              username: participant,
+              pfp: pfp,
+            });
+          }
+        }
+
+        chatNames.push({
+          chatID: chatID,
+          participantsWithPfp: participantsWithPfp,
+        });
       }
     }
 
@@ -1691,7 +1810,7 @@ app.post("/fetchChatHistory", async (req, res) => {
       .get();
 
     // Map messages and fetch profile pictures
-    console.log("before")
+    console.log("before");
     const messages = await Promise.all(
       messagesSnapshot.docs.map(async (doc) => {
         const messageData = doc.data();
@@ -1712,7 +1831,7 @@ app.post("/fetchChatHistory", async (req, res) => {
         };
       })
     );
-    console.log("after")
+    console.log("after");
 
     res.status(200).json({ messages });
   } catch (error) {

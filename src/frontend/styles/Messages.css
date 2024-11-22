@@ -100,3 +100,29 @@ html {
     flex: 1; 
     word-wrap: break-word; 
   }
+
+  .group-profile-picture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+  }
+  
+  .placeholder-profile-picture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+  }
+  
+  .upload-group-picture-btn {
+    font-size: 12px;
+    color: blue;
+    cursor: pointer;
+    text-decoration: underline;
+  }
