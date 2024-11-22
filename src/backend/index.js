@@ -1314,13 +1314,13 @@ app.get("/spotify-login", async (req, res) => {
   // console.log("hello");
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
-      querystring.stringify({
-        response_type: "code",
-        client_id: clientID,
-        scope:
-          "ugc-image-upload user-read-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-modify user-follow-read user-top-read user-read-recently-played user-library-modify user-library-read user-read-email user-read-private",
-        redirect_uri: `${url}/callback`,
-      })
+    querystring.stringify({
+      response_type: "code",
+      client_id: clientID,
+      scope:
+        "ugc-image-upload user-read-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-modify user-follow-read user-top-read user-read-recently-played user-library-modify user-library-read user-read-email user-read-private",
+      redirect_uri: `${url}/callback`,
+    })
   );
 });
 
@@ -1361,10 +1361,10 @@ app.get("/callback", function (req, res) {
       // `);
       res.redirect(
         `${frontUrl}/transferToken?` +
-          querystring.stringify({
-            access_token: access_token,
-            refresh_token: refresh_token,
-          })
+        querystring.stringify({
+          access_token: access_token,
+          refresh_token: refresh_token,
+        })
       );
     } else {
       // console.log("error");
@@ -1993,6 +1993,496 @@ app.get("/fetchTopSongs", async (req, res) => {
   }
 });
 
+const tasteTopArtists = async (accessToken) => {
+  try {
+    const timeline = "medium_range";
+    const token = accessToken;
+    const limit = 20;
+    const topArtistsResponse = await axios.get(
+      `https://api.spotify.com/v1/me/top/artists`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return topArtistsResponse.data.items;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+const tasteTopTracks = async (accessToken) => {
+  try {
+    const response = await axios.get(
+      'https://api.spotify.com/v1/me/top/tracks',
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+    return response.data.items;
+  } catch (error) {
+    console.error('Error fetching top tracks:', error);
+    throw error;
+  }
+};
+
+const tasteAudioFeatures = async (trackIds, accessToken) => {
+  try {
+    const ids = trackIds.join(',');
+    const response = await axios.get(`https://api.spotify.com/v1/audio-features?ids=${ids}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return response.data.audio_features;
+  } catch (error) {
+    console.error('Error fetching audio features for tracks:', error);
+    throw error;
+  }
+};
+
+app.post('/generateTasteProfile', async (req, res) => {
+  const { username } = req.body;
+  const token = accessToken;
+
+  try {
+    const topArtists = await tasteTopArtists(token);
+    let genreFrequency = {};
+    topArtists.forEach(artist => {
+      artist.genres.forEach(genre => {
+        if (genreFrequency[genre]) {
+          genreFrequency[genre] += 1;
+        } else {
+          genreFrequency[genre] = 1;
+        }
+      });
+    });
+
+
+    const topTracks = await tasteTopTracks(token);
+    let trackIds = [];
+
+    topTracks.forEach(track => {
+      trackIds.push(track.id);
+    });
+
+    const batchSize = 50; // Maximum number of tracks that can be requested at once (Spotify API limit is 100, but let's use a smaller batch size for safety)
+    let audioFeatures = [];
+
+    // Break the track IDs into batches of 50 or fewer
+    for (let i = 0; i < trackIds.length; i += batchSize) {
+      const batchTrackIds = trackIds.slice(i, i + batchSize);
+      const features = await tasteAudioFeatures(batchTrackIds, accessToken);
+      audioFeatures = audioFeatures.concat(features);
+    }
+    let featureAverages = {
+      acousticness: 0,
+      danceability: 0,
+      energy: 0,
+      instrumentalness: 0,
+      liveness: 0,
+      loudness: 0,
+      speechiness: 0,
+      tempo: 0,
+      time_signature: 0,
+      valence: 0,
+    };
+
+    audioFeatures.forEach(features => {
+      featureAverages.acousticness += features.acousticness;
+      featureAverages.danceability += features.danceability;
+      featureAverages.energy += features.energy;
+      featureAverages.instrumentalness += features.instrumentalness;
+      featureAverages.liveness += features.liveness;
+      featureAverages.loudness += features.loudness;
+      featureAverages.speechiness += features.speechiness;
+      featureAverages.tempo += features.tempo;
+      featureAverages.time_signature += features.time_signature;
+      featureAverages.valence += features.valence;
+    });
+
+    let trackCount = audioFeatures.length;
+    for (let feature in featureAverages) {
+      featureAverages[feature] /= trackCount;
+    }
+
+    const reportData = {
+      username: username,
+      genreFrequency: genreFrequency,
+      topArtists: topArtists.map(artist => ({
+        name: artist.name,
+        genres: artist.genres,
+        popularity: artist.popularity,
+        id: artist.id,
+      })),
+      featureAverages: featureAverages,
+      timestamp: new Date(),
+    };
+
+    await db.collection('TasteReports').doc(username).set(reportData);
+
+    res.json({
+      success: true,
+      message: 'User taste report generated successfully.',
+      reportData: reportData,
+    });
+  } catch (error) {
+    console.error('Error generating taste report:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while generating the report.' });
+  }
+});
+
+const getMostFrequentGenres = (genreFrequency, topN = 3) => {
+  const sortedGenres = Object.entries(genreFrequency)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN);
+  return sortedGenres.map(([genre]) => genre);
+};
+
+const isFeatureSimilar = (userAvg, otherAvg) => {
+  return Math.abs(userAvg - otherAvg) <= userAvg * 0.1;
+};
+
+const getArtistSimilarity = (userArtists, otherArtists) => {
+  const userArtistIds = new Set(userArtists.map(artist => artist.id));
+  let similarityCount = 0;
+
+  otherArtists.forEach(artist => {
+    if (userArtistIds.has(artist.id)) {
+      similarityCount++;
+    }
+  });
+
+  return similarityCount;
+};
+
+app.post('/findRecommendedProfiles', async (req, res) => {
+  const { username } = req.body; // User ID to find recommendations for
+
+  try {
+    const userReportSnapshot = await db.collection('TasteReports').doc(username).get();
+    if (!userReportSnapshot.exists) {
+      return res.status(404).json({ success: false, message: 'No taste report found.' });
+    }
+    const userReport = userReportSnapshot.data();
+
+    const userTopArtists = userReport.topArtists;
+    const userGenreFrequency = userReport.genreFrequency;
+    const userFeatureAverages = userReport.featureAverages;
+
+    const userTopGenres = getMostFrequentGenres(userGenreFrequency, 3);
+
+    const allUsersSnapshot = await db.collection('TasteReports').get();
+    const recommendedUsers = [];
+
+    const recommendations = await Promise.all(allUsersSnapshot.docs.map(async (userDoc) => {
+      const otherUserReport = userDoc.data();
+
+      if (userDoc.id === username) {
+        return null;
+      }
+
+      const artistSimilarity = getArtistSimilarity(userTopArtists, otherUserReport.topArtists);
+      const hasSimilarArtists = artistSimilarity >= 3;
+
+      const otherUserTopGenres = getMostFrequentGenres(otherUserReport.genreFrequency, 3);
+      const hasSimilarGenres = userTopGenres.every(genre => otherUserTopGenres.includes(genre));
+
+      const featureSimilarityCount = Object.keys(userFeatureAverages).filter(feature => {
+        return isFeatureSimilar(userFeatureAverages[feature], otherUserReport.featureAverages[feature]);
+      }).length;
+
+      const hasSimilarFeatures = featureSimilarityCount >= 3;
+
+      if (hasSimilarArtists || hasSimilarGenres || hasSimilarFeatures) {
+        const userDataSnapshot = await db.collection('UserData').doc(userDoc.id).get();
+        const pfp = userDataSnapshot.exists ? userDataSnapshot.data().pfp : null;
+
+        return {
+          username: userDoc.id,
+          topArtists: otherUserReport.topArtists,
+          genreFrequency: otherUserReport.genreFrequency,
+          featureAverages: otherUserReport.featureAverages,
+          pfp: pfp || 'https://via.placeholder.com/150',
+        };
+      }
+
+      return null;
+    }));
+
+    recommendedUsers.push(...recommendations.filter(user => user !== null));
+
+    res.json({
+      success: true,
+      message: 'Recommended users found.',
+      recommendedUsers: recommendedUsers,
+    });
+  } catch (error) {
+    console.error('Error finding recommended profiles:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while finding recommendations.' });
+  }
+});
+
+app.post("/fetchTasteProfile", async (req, res) => {
+  const { username } = req.body;
+
+  if (!username) {
+    return res.status(400).json({ message: "Username is required" });
+  }
+
+  try {
+    const docSnapshot = await db.collection('TasteReports').doc(username).get();
+
+    if (docSnapshot.exists) {
+      console.log(docSnapshot.data());
+      return res.status(200).json(docSnapshot.data());
+    } else {
+      return res.status(404).json({ message: "No taste profile found for this user" });
+    }
+  } catch (error) {
+    console.error("Error fetching user taste profile:", error);
+    return res.status(500).json({ message: "An error occurred while fetching the profile" });
+  }
+});
+
+const getTopArtistsFromProfile = async (username) => {
+  try {
+    const userProfile = await db.collection('TasteReports').doc(username).get();
+    if (!userProfile.exists) {
+      throw new Error('User taste profile not found');
+    }
+    const reportData = userProfile.data();
+    return reportData.topArtists;
+  } catch (error) {
+    console.error('Error fetching top artists:', error);
+    throw error;
+  }
+};
+
+// Helper function to get the user's taste report for audio features and genre frequency
+const getUserTasteReport = async (username) => {
+  try {
+    const userProfile = await db.collection('TasteReports').doc(username).get();
+    if (!userProfile.exists) {
+      throw new Error('User taste profile not found');
+    }
+    return userProfile.data();
+  } catch (error) {
+    console.error('Error fetching taste report:', error);
+    throw error;
+  }
+};
+
+app.post('/getRecommendedSongs', async (req, res) => {
+  const { username } = req.body;
+  const token = accessToken;
+
+
+  try {
+    const topArtists = await getTopArtistsFromProfile(username);
+    const tasteReport = await getUserTasteReport(username);
+
+
+    const seedArtists = topArtists
+      .sort((a, b) => b.popularity - a.popularity)
+      .slice(0, 2)
+      .map(artist => artist.id);
+
+    const seedGenres = Object.keys(tasteReport.genreFrequency)
+      .filter(genre => tasteReport.genreFrequency[genre] > 0)
+      .slice(0, 2);
+
+    const { featureAverages } = tasteReport;
+
+    const recommendationsResponse = await axios.get('https://api.spotify.com/v1/recommendations', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        seed_artists: seedArtists.join(','),
+        seed_genres: seedGenres.join(','),
+        target_acousticness: featureAverages.acousticness,
+        target_danceability: featureAverages.danceability,
+        target_energy: featureAverages.energy,
+        target_instrumentalness: featureAverages.instrumentalness,
+        target_liveness: featureAverages.liveness,
+        target_loudness: featureAverages.loudness,
+        target_speechiness: featureAverages.speechiness,
+        target_tempo: featureAverages.tempo,
+        target_valence: featureAverages.valence,
+        limit: 20,
+      },
+    });
+
+    const recommendedSongs = recommendationsResponse.data.tracks;
+
+    await db.collection('TasteReports').doc(username).update({
+      recommendedSongs: recommendedSongs,
+      timestamp: new Date(),
+    });
+
+    res.json({
+      success: true,
+      message: 'Recommended songs fetched successfully.',
+      recommendedSongs: recommendedSongs,
+    });
+  } catch (error) {
+    console.error('Error fetching recommended songs:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while fetching recommendations.',
+    });
+  }
+});
+
+app.post('/generatePlaylist', async (req, res) => {
+  const { username, selection } = req.body;
+  const token = accessToken;
+
+  try {
+    const userProfile = await db.collection('TasteReports').doc(username).get();
+    if (!userProfile.exists) {
+      return res.status(404).json({ success: false, message: 'User taste profile not found.' });
+    }
+
+    const tasteReport = userProfile.data();
+    const topArtists = tasteReport.topArtists;
+    const genreFrequency = tasteReport.genreFrequency;
+    const featureAverages = tasteReport.featureAverages;
+
+    seedArtists = topArtists
+      .sort((a, b) => b.popularity - a.popularity)
+      .slice(0, 1)
+      .map(artist => artist.id);
+    let seedGenres = Object.keys(genreFrequency).slice(0, 1);
+    let targetFeatures = {};
+
+    switch (selection) {
+      case 'top_artists':
+        seedArtists = topArtists
+          .sort((a, b) => b.popularity - a.popularity)
+          .slice(0, 3)
+          .map(artist => artist.id);
+        break;
+
+      case 'top_songs':
+        const topTracks = await tasteTopTracks(token);
+        seedArtists = topTracks
+          .sort((a, b) => b.popularity - a.popularity)
+          .slice(0, 3)
+          .map(track => track.id);
+        targetFeatures[artists] = seedArtists;
+        break;
+
+      case 'top_genres':
+        seedGenres = Object.keys(genreFrequency).slice(0, 3);
+        break;
+
+      case 'acousticness':
+      case 'danceability':
+      case 'energy':
+      case 'instrumentalness':
+      case 'speechiness':
+      case 'tempo':
+      case 'popularity':
+        targetFeatures[selection] = featureAverages[selection];
+        break;
+
+      default:
+        return res.status(400).json({ success: false, message: 'Invalid selection.' });
+    }
+
+    const recommendationsResponse = await axios.get('https://api.spotify.com/v1/recommendations', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        seed_artists: seedArtists.join(','),
+        seed_genres: seedGenres.join(','),
+        ...targetFeatures,
+        limit: 20,
+      },
+    });
+
+    const recommendedTracks = recommendationsResponse.data.tracks;
+
+    res.json({
+      success: true,
+      message: 'Playlist generated successfully.',
+      recommendedTracks,
+    });
+  } catch (error) {
+    console.error('Error generating playlist:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while generating the playlist.',
+    });
+  }
+});
+
+app.post('/generatePlaylistSpotifyLink', async (req, res) => {
+  const { username, recommendedPlaylist } = req.body;
+  const token = accessToken;
+
+  if (!Array.isArray(recommendedPlaylist) || recommendedPlaylist.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid recommendedPlaylist. It must be a non-empty array of track objects.'
+    });
+  }
+
+  try {
+    const userProfile = await db.collection('TasteReports').doc(username).get();
+    if (!userProfile.exists) {
+      return res.status(404).json({ success: false, message: 'User taste profile not found.' });
+    }
+
+    const createPlaylistResponse = await axios.post(
+      'https://api.spotify.com/v1/me/playlists',
+      {
+        name: 'Recommended Playlist',
+        description: 'Playlist generated based on your music taste',
+        public: false,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const playlistId = createPlaylistResponse.data.id;
+    const trackUris = recommendedPlaylist.map(track => track.uri);
+
+    await axios.post(
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+      {
+        uris: trackUris,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const playlistUrl = `https://open.spotify.com/playlist/${playlistId}`;
+
+    res.json({
+      success: true,
+      message: 'Playlist generated successfully.',
+      playlistUrl,  // Send the Spotify playlist URL to the frontend
+    });
+  } catch (error) {
+    console.error('Error generating Spotify playlist:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while generating the playlist.',
+    });
 app.get("/fetchPoll", async (req, res) => {
   try {
     const docRef = db.collection("spotifySongs").doc("polls");
