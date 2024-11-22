@@ -35,6 +35,7 @@ import AH from "./statistics/ArtistVisual";
 import PStat from "./statistics/PutMeOnStats";
 import CompareFriend from "./statistics/CompareFriend";
 import ShareStats from "./statistics/ShareStats";
+import FriendProfileView from "./FriendProfileView";
 import Login from "./Login";
 import CreateAccount from "./CreateAccount";
 import EditCollabPlaylist from "./EditCollabPlaylist";
@@ -168,6 +169,7 @@ function App(props) {
         <Route path="/customstats" element={<PStat />} />
         <Route path="/comparefriend" element={<CompareFriend />} />
         <Route path="/sharestats" element={<ShareStats />} />
+        <Route path="/profile/:username" element={<FriendProfileView />} />
       </Routes>
     </div>
   );

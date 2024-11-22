@@ -10,6 +10,7 @@ const ProfileSidebar = ({ onChangeContent }) => {
     const [hoverPrivacy, setHoverPrivacy] = useState(false);
     const [hoverFriends, setHoverFriends] = useState(false);
     const [hoverUploadHistory, setHoverUploadHistory] = useState(false);
+    const [hoverRecommendations, setHoverRecommendations] = useState(false);
 
     return (
         <div className="sidebar">
@@ -87,6 +88,16 @@ const ProfileSidebar = ({ onChangeContent }) => {
                     onMouseLeave={() => setHoverUploadHistory(false)}
                     onClick={() => onChangeContent('uploadHistory')}
                     text="Upload Listening History" />
+                <Button
+                    className="sidebarButton"
+                    style={{...buttonStyle,
+                        backgroundColor: hoverRecommendations ? colors.text : colors.background,
+                        color: hoverRecommendations ? colors.background : colors.text,
+                    }}
+                    onMouseEnter={() => setHoverRecommendations(true)}
+                    onMouseLeave={() => setHoverRecommendations(false)}
+                    onClick={() => onChangeContent('recommendations')}
+                    text="View Recommendations" />
 
             </ButtonGroup>
         </div>
