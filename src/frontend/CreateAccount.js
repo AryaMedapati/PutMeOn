@@ -106,6 +106,7 @@ function CreateAccount() {
             playlists: false,
             listeningActivity: false,
           },
+          isAdmin: false,
         }),
         });
         try {

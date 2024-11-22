@@ -21,7 +21,7 @@ const csv = require("csv-parser");
 
 // Function to upload data from CSV to Firebase
 async function uploadSongs() {
-  const datasetPath = path.join(__dirname, "../../datasets/top_1000_1950-now.csv");
+  const datasetPath = path.join(__dirname, "../../datasets/top10k-spotify-artist-metadata.csv");
 
   // Open the CSV file and read data row by row
   const songsArray = []; // Initialize an array to hold all songs
@@ -35,8 +35,8 @@ async function uploadSongs() {
     .on("end", async () => {
       try {
         // Once all rows are read, create a single document with the array
-        const docRef = db.collection("spotifySongs").doc("temp doc");
-        await docRef.set({ songs: songsArray[0] }); // Store all songs in an array under the 'songs' field
+        const docRef = db.collection("spotifySongs").doc("top_800_artists");
+        await docRef.set({ artists: songsArray }); // Store all songs in an array under the 'songs' field
         console.log("All songs uploaded as a single document.");
       } catch (error) {
         console.error("Error uploading document:", error);
