@@ -118,7 +118,7 @@ async function savePopularityScore(user, popScore) {
   try {
     const getUsers = db.collection("UserData");
     // const user = user;
-    const value = getUsers.where('username', '==', user);
+    const value = getUsers.where("username", "==", user);
     const snapshot = await value.get();
 
     if (!snapshot.empty) {
@@ -126,9 +126,8 @@ async function savePopularityScore(user, popScore) {
       const userData = userDoc.data();
       // console.log(userData);
       await userDoc.ref.update({
-        popScore:popScore
+        popScore: popScore,
       });
-
     }
   } catch (error) {
     console.log(error);
@@ -143,15 +142,15 @@ app.get("/calculateAveragePopularity", async (req, res) => {
     snapshot.forEach((doc) => {
       if (doc.data().popScore) {
         total += doc.data().popScore;
-        vals+=1
+        vals += 1;
       }
-    })
-    const average = total/vals
-    res.json({total: average});
+    });
+    const average = total / vals;
+    res.json({ total: average });
   } catch (error) {
     console.log(error);
   }
-})
+});
 app.get("/calculateAverageLikes", async (req, res) => {
   try {
     const col = db.collection("UserData");
@@ -161,15 +160,15 @@ app.get("/calculateAverageLikes", async (req, res) => {
     snapshot.forEach((doc) => {
       if (doc.data().totalLikes) {
         total += doc.data().totalLikes;
-        vals+=1
+        vals += 1;
       }
-    })
-    const average = total/vals
-    res.json({total: average});
+    });
+    const average = total / vals;
+    res.json({ total: average });
   } catch (error) {
     console.log(error);
   }
-})
+});
 app.get("/calculateAverageFollowers", async (req, res) => {
   try {
     const col = db.collection("UserData");
@@ -179,15 +178,15 @@ app.get("/calculateAverageFollowers", async (req, res) => {
     snapshot.forEach((doc) => {
       if (doc.data().followers) {
         total += doc.data().followers;
-        vals+=1
+        vals += 1;
       }
-    })
-    const average = total/vals
-    res.json({total: average});
+    });
+    const average = total / vals;
+    res.json({ total: average });
   } catch (error) {
     console.log(error);
   }
-})
+});
 app.get("/calculateAverageReactions", async (req, res) => {
   try {
     const col = db.collection("UserData");
@@ -197,15 +196,15 @@ app.get("/calculateAverageReactions", async (req, res) => {
     snapshot.forEach((doc) => {
       if (doc.data().totalReactions) {
         total += doc.data().totalReactions;
-        vals+=1
+        vals += 1;
       }
-    })
-    const average = total/vals
-    res.json({total: average});
+    });
+    const average = total / vals;
+    res.json({ total: average });
   } catch (error) {
     console.log(error);
   }
-})
+});
 app.get("/calculateAverageComments", async (req, res) => {
   try {
     const col = db.collection("UserData");
@@ -215,21 +214,21 @@ app.get("/calculateAverageComments", async (req, res) => {
     snapshot.forEach((doc) => {
       if (doc.data().totalComments) {
         total += doc.data().totalComments;
-        vals+=1
+        vals += 1;
       }
-    })
-    const average = total/vals
-    res.json({total: average});
+    });
+    const average = total / vals;
+    res.json({ total: average });
   } catch (error) {
     console.log(error);
   }
-})
+});
 async function saveFollowers(user, followers) {
   // console.log("user: "+ user);
   try {
     const getUsers = db.collection("UserData");
     // const user = user;
-    const value = getUsers.where('username', '==', user);
+    const value = getUsers.where("username", "==", user);
     const snapshot = await value.get();
 
     if (!snapshot.empty) {
@@ -237,9 +236,8 @@ async function saveFollowers(user, followers) {
       const userData = userDoc.data();
       // console.log(userData);
       await userDoc.ref.update({
-        followers:followers
+        followers: followers,
       });
-
     }
   } catch (error) {
     console.log(error);
@@ -1530,20 +1528,19 @@ app.get("/recentlyPlayed", async (req, res) => {
   }
 });
 
-
-app.post("/savePopScore", async(req,res) => {
+app.post("/savePopScore", async (req, res) => {
   const popScore = req.body.popScore;
   const user = req.body.user;
   await savePopularityScore(user, popScore);
   res.status(200).json({ message: "Success" });
-})
-app.post("/saveFollowers", async(req,res) => {
+});
+app.post("/saveFollowers", async (req, res) => {
   const followers = req.body.followers;
   const user = req.body.user;
   await saveFollowers(user, followers);
   res.status(200).json({ message: "Success" });
-})
-app.get("/getPopScore", async(req,res) => {
+});
+app.get("/getPopScore", async (req, res) => {
   const username = req.query.user;
   try {
     const userDoc = await db
@@ -1561,11 +1558,9 @@ app.get("/getPopScore", async(req,res) => {
     console.error("Error fetching profile data:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-})
+});
 
 app.post("/saveRecentlyPlayed", async (req, res) => {
-
-
   const song = req.body.song;
   const user = req.body.user;
   const currentLikes = req.body.likes;
@@ -1615,16 +1610,13 @@ app.get("/getRecentlyPlayed", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
-app.get("/getFollowers", async (req,res) => {
+app.get("/getFollowers", async (req, res) => {
   const token = accessToken;
-  const response = await axios.get(
-    `https://api.spotify.com/v1/me`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await axios.get(`https://api.spotify.com/v1/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   const followers = response.data.followers.total;
   console.log("Followers:" + followers);
   res.status(200).json({ data: followers });
@@ -1872,7 +1864,7 @@ app.post("/fetchChatHistory", async (req, res) => {
       .get();
 
     // Map messages and fetch profile pictures
-    console.log("before")
+    console.log("before");
     const messages = await Promise.all(
       messagesSnapshot.docs.map(async (doc) => {
         const messageData = doc.data();
@@ -1893,7 +1885,7 @@ app.post("/fetchChatHistory", async (req, res) => {
         };
       })
     );
-    console.log("after")
+    console.log("after");
 
     res.status(200).json({ messages });
   } catch (error) {
@@ -1980,6 +1972,7 @@ app.post("/fetchChatRecipients", async (req, res) => {
 
 app.get("/fetchTopSongs", async (req, res) => {
   try {
+    console.log("during call");
     const docRef = db.collection("spotifySongs").doc("top_1000_songs");
     const snapshot = await docRef.get();
 
@@ -2522,7 +2515,7 @@ app.get("/pickTwoArtists", async (req, res) => {
     const data = snapshot.data();
     const songs = data.songs || [];
 
-    const artistNames = songs.map(song => song["Artist Name(s)"]);
+    const artistNames = songs.map((song) => song["Artist Name(s)"]);
 
     const pickRandomArtists = (artists) => {
       const shuffled = [...artists].sort(() => 0.5 - Math.random());
@@ -2535,6 +2528,127 @@ app.get("/pickTwoArtists", async (req, res) => {
   } catch (error) {
     // console.log(error);
     res.status(500).send(error);
+  }
+});
+
+app.post("/fetchArtistID", async (req, res) => {
+  try {
+    const { artistName } = req.body;
+    const token = accessToken;
+    const trackId = await axios.get(
+      `https://api.spotify.com/v1/search?q=${artistName}&type=artist&limit=1`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const data = await trackId.data.artists.items;
+    console.log(data);
+    const returnID = data[0].id;
+    console.log(returnID);
+    res.status(200).json({ message: returnID });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+app.post("/getArtist", async (req, res) => {
+  try {
+    console.log(req.body);
+    const { songID } = req.body;
+    console.log("after");
+    const token = accessToken;
+    const data = await axios.get(
+      `https://api.spotify.com/v1/artists/${songID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log(data);
+    console.log(data.data);
+    const artistName = data.data.name;
+    const followersOptions = [];
+    const followers = data.data.followers.total;
+    followersOptions.push(
+      `How many followers does ${artistName} have?`,
+      followers,
+      followers + 1000,
+      followers - 1000,
+      followers - 2000
+    );
+    const popularityOptions = [];
+    const popularity = data.data.popularity;
+    popularityOptions.push(
+      `How popular is ${artistName}? (On a scale from 0 to 100)`,
+      popularity,
+      (popularity + 20) % 100,
+      (popularity + 40) % 100,
+      (popularity + 60) % 100
+    );
+    const genres = data.data.genres;
+    const actualGenre = genres[Math.floor(Math.random() * genres.length)];
+    const genreOptions = [];
+    genreOptions.push(
+      `Does ${artistName} make music that falls under this genre: ${actualGenre}?`,
+      "True",
+      "False"
+    );
+    const trackData = await axios.get(
+      `https://api.spotify.com/v1/artists/${songID}/top-tracks`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const tracks = trackData.data.tracks;
+    const sortedTracks = tracks.sort((a, b) => b.popularity - a.popularity);
+    const topTracks = [];
+    const trackNamesSet = new Set();
+
+    for (const track of sortedTracks) {
+      if (!trackNamesSet.has(track.name)) {
+        topTracks.push({
+          name: track.name,
+          popularity: track.popularity,
+          preview_url: track.preview_url,
+          uri: track.uri,
+        });
+        trackNamesSet.add(track.name);
+      }
+      if (topTracks.length >= 4) break;
+    }
+
+    const topTrackQ = [
+      `What is ${artistName}'s most popular track?`,
+      topTracks[0].name,
+      topTracks[1].name || "Option not available",
+      topTracks[2].name || "Option not available",
+      topTracks[3].name || "Option not available",
+    ];
+    const mostPopularTrack = topTracks[0].popularity;
+    const trackPopularity = [];
+    trackPopularity.push(
+      `How popular is ${artistName}'s most popular track: ${topTracks[0].name}? (On a scale from 0 to 100)`,
+      mostPopularTrack,
+      (mostPopularTrack + 20) % 100,
+      (mostPopularTrack + 40) % 100,
+      (mostPopularTrack + 60) % 100
+    );
+
+    const triviaQuestions = [
+      followersOptions,
+      popularityOptions,
+      genreOptions,
+      topTrackQ,
+      trackPopularity,
+    ];
+    res.status(200).json({ trivia: triviaQuestions });
+  } catch (error) {
+    console.error(error);
   }
 });
 
