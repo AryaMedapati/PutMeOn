@@ -602,6 +602,9 @@ const Home = () => {
         <button className="icon-button" onClick={handlePoll}>
           <FaPoll />
         </button>
+        <button className="icon-button" onClick={handleQuiz}>
+          <MdQuiz />
+        </button>
       </div>
       {loading ? (
         <div className="loading">Loading...</div>
