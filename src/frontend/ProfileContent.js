@@ -4,6 +4,8 @@ import ViewProfile from "./ViewProfile";
 import EditProfile from "./EditProfile";
 import ProfilePrivacy from "./ProfilePrivacy";
 import FriendsAndNotifications from "./ProfileFriend";
+import UploadListeningHistory from "./UploadListingHistory";
+import UserRecommendations from "./UserRecommendations";
 
 const ProfileContent = ({ activeContent }) => {
   switch (activeContent) {
@@ -37,6 +39,18 @@ const ProfileContent = ({ activeContent }) => {
           <FriendsAndNotifications />
         </div>
       );
+    case "uploadHistory":
+      return (
+        <div>
+          <UploadListeningHistory />
+        </div>
+      );
+    case "recommendations":
+      return (
+        <div>
+          <UserRecommendations />
+        </div>
+      )
     default:
       return (
         <div>

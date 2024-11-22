@@ -17,3 +17,8 @@ body {
     overflow-y: auto;
     height: 95vh;
 }
+
+.bp5-popover-content {
+    max-height: 300px;
+    overflow-y: auto;
+  }

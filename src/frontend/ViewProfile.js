@@ -1,5 +1,15 @@
 import React, { useRef } from "react";
-import { Button, TextArea } from "@blueprintjs/core";
+import {
+  MenuItem,
+  Tag,
+  Button,
+  TextArea,
+  Card,
+  Elevation,
+  EditableText,
+  Popover,
+  Position,
+} from "@blueprintjs/core";
 import { useState, useEffect, useContext } from "react";
 import "@blueprintjs/core/lib/css/blueprint.css";
 import "@blueprintjs/core/lib/css/blueprint.css";
@@ -26,9 +36,9 @@ const ViewProfile = () => {
   const [currentLikes, setCurrentLikes] = useState(0);
   const [currentReactions, setCurrentReactions] = useState(0);
   const [currentComments, setCurrentComments] = useState(0);
+  const [songs, setSongs] = useState([]);
 
   const { username, setUsername } = useContext(UserContext);
-
 
   const fileInputRef = useRef(null);
   const imageContainerRef = useRef(null);
@@ -38,9 +48,9 @@ const ViewProfile = () => {
   // const { username } = useContext(UserContext);
 
   const linkSpotifyAccount = async () => {
-    const user = localstorage.get('user');
+    const user = localstorage.get("user");
     const spotifyAuthUrl = `http://localhost:3001/spotify-login?user=${user}`;
-    
+
     // const accessTokenFromUrl = params.get('access_token');
     // const refreshTokenFromUrl = params.get('refresh_token');
     // console.log(accessTokenFromUrl);
@@ -62,11 +72,9 @@ const ViewProfile = () => {
       });
   };
   async function getSaved() {
-    const user = localstorage.get('user');
+    const user = localstorage.get("user");
     const url = "http://localhost:3001";
-    const response = await fetch(
-      `${url}/getRecentlyPlayed?user=${user}`
-    );
+    const response = await fetch(`${url}/getRecentlyPlayed?user=${user}`);
     const data = await response.json();
     const totalLikesTemp = data.totalLikes || 0;
     setTotalLikes(totalLikesTemp);
@@ -76,7 +84,7 @@ const ViewProfile = () => {
     setTotalComments(totalCommentsTemp);
     const currentCommentsTemp = data.comments ? data.comments.length : 0;
     setCurrentComments(currentCommentsTemp);
-    const currentReactionsTemp = (data.fire + data.currentLaughingLikes) || 0;
+    const currentReactionsTemp = data.fire + data.currentLaughingLikes || 0;
     setCurrentReactions(currentReactionsTemp);
     const currentLikesTemp = data.currentLikes || 0;
     setCurrentLikes(currentLikesTemp);
@@ -110,6 +118,111 @@ const ViewProfile = () => {
     fetchProfileData();
   }, [username]);
 
+  const renderSongDetails = (index) => {
+    if (songs.length > index) {
+      const trackName = selectedSongs[index].split(" -- by ")[0];
+
+      const song = songs.find((s) => s["Track Name"] === trackName);
+      return (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "20px",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <img
+              src={song["Album Image URL"]}
+              alt={`${song["Album Name"]} Cover`}
+              style={{
+                maxWidth: "120px",
+                height: "auto",
+                borderRadius: "8px",
+              }}
+            />
+            <div style={{ marginTop: "10px" }}>
+              <a
+                href={song["Track Preview URL"]}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "#007BFF",
+                  textDecoration: "none",
+                  fontWeight: "bold",
+                }}
+              >
+                Preview
+              </a>
+            </div>
+          </div>
+          <div style={{ lineHeight: "1.6", fontSize: "14px" }}>
+            <div>
+              <strong>Track Name:</strong> {song["Track Name"]}
+            </div>
+            <div>
+              <strong>Album Name:</strong> {song["Album Name"]}
+            </div>
+            <div>
+              <strong>Album Artist Name(s):</strong>{" "}
+              {song["Album Artist Name(s)"]}
+            </div>
+            <div>
+              <strong>Artist Name(s):</strong> {song["Artist Name(s)"]}
+            </div>
+            <div>
+              <strong>Album Release Date:</strong> {song["Album Release Date"]}
+            </div>
+            <div>
+              <strong>Track Duration:</strong>{" "}
+              {`${(song["Track Duration (ms)"] / 1000).toFixed(2)} seconds`}
+            </div>
+            <div>
+              <strong>Danceability:</strong> {song["Danceability"]}
+            </div>
+            <div>
+              <strong>Energy:</strong> {song["Energy"]}
+            </div>
+            <div>
+              <strong>Acousticness:</strong> {song["Acousticness"]}
+            </div>
+            <div>
+              <strong>Instrumentalness:</strong> {song["Instrumentalness"]}
+            </div>
+            <div>
+              <strong>Speechiness:</strong> {song["Speechiness"]}
+            </div>
+            <div>
+              <strong>Liveness:</strong> {song["Liveness"]}
+            </div>
+            <div>
+              <strong>Loudness:</strong> {song["Loudness"]}
+            </div>
+            <div>
+              <strong>Tempo:</strong> {song["Tempo"]}
+            </div>
+            <div>
+              <strong>Time Signature:</strong> {song["Time Signature"]}
+            </div>
+            <div>
+              <strong>Popularity:</strong> {song["Popularity"]}
+            </div>
+            <div>
+              <strong>Explicit:</strong>{" "}
+              {song["Explicit"] === "true" ? "Yes" : "No"}
+            </div>
+            <div>
+              <strong>Label:</strong> {song["Label"]}
+            </div>
+            <div>
+              <strong>Copyrights:</strong> {song["Copyrights"]}
+            </div>
+          </div>
+        </div>
+      );
+    }
+  };
+
   useEffect(() => {
     displayImage(pfp);
   }, [pfp]);
@@ -134,6 +247,15 @@ const ViewProfile = () => {
     };
     fetchProfileData();
   }, [username]);
+
+  useEffect(() => {
+    const fetchSongs = async () => {
+      const response = await fetch("http://localhost:3001/fetchTopSongs");
+      const songs = await response.json();
+      setSongs(songs);
+    };
+    fetchSongs();
+  });
 
   useEffect(() => {
     const fetchCurrentlyPlaying = async () => {
@@ -185,16 +307,94 @@ const ViewProfile = () => {
       >
         Favorites:
       </div>
-      {selectedSongs.map((item, index) => (
-        <div key={index}>{item}</div>
-      ))}
-      {selectedGenres.map((item, index) => (
-        <div key={index}>{item}</div>
-      ))}
-      {selectedArtists.map((item, index) => (
-        <div key={index}>{item}</div>
-      ))}
-
+      <div>
+        {selectedSongs.map((song, index) => (
+          <Popover
+            key={index}
+            position={Position.BOTTOM}
+            content={
+              <div
+                style={{
+                  padding: "20px",
+                  backgroundColor: "white",
+                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                  maxWidth: "600px",
+                }}
+              >
+                <h3
+                  style={{
+                    margin: 0,
+                    paddingBottom: "15px",
+                    display: "flex",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  Song Details
+                </h3>
+                {renderSongDetails(index)}
+                <Button text="Close" minimal={true} />
+              </div>
+            }
+          >
+            <Card
+              key={index}
+              interactive={true}
+              elevation={Elevation.TWO}
+              style={{
+                padding: "10px 20px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                border: "2px solid #1E90FF",
+              }}
+            >
+              <span>{song}</span>
+            </Card>
+          </Popover>
+        ))}
+      </div>
+      <div>
+        {selectedGenres.map((genre, index) => (
+          <Card
+            key={index}
+            interactive={true}
+            elevation={Elevation.TWO}
+            style={{
+              backgroundColor: "white",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              padding: "10px 20px",
+              display: "inline-block",
+              alignItems: "center",
+              justifyContent: "space-between",
+              whiteSpace: "nowrap",
+              border: "2px solid #9370DB",
+            }}
+          >
+            <span>{genre}</span>
+          </Card>
+        ))}
+      </div>
+      <div>
+        {selectedArtists.map((artist, index) => (
+          <Card
+            key={index}
+            interactive={true}
+            elevation={Elevation.TWO}
+            style={{
+              backgroundColor: "white",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              padding: "10px 20px",
+              display: "inline-block",
+              alignItems: "center",
+              justifyContent: "space-between",
+              whiteSpace: "nowrap",
+              border: "2px solid #32CD32",
+            }}
+          >
+            <span>{artist}</span>
+          </Card>
+        ))}
+      </div>
       <div style={{ marginTop: "20px" }}>
         <Button
           text="Link Account with Spotify"
@@ -227,15 +427,26 @@ const ViewProfile = () => {
         <Button text="Log Out" intent="primary" onClick={handleLogOut} />
       </div>
       <div style={{ marginTop: "20px" }}>
-          <p><strong>Current Likes:</strong> {currentLikes}</p>
-          <p><strong>Current Reactions:</strong> {currentReactions}</p>
-          <p><strong>Current Comments:</strong> {currentComments}</p>
+        <p>
+          <strong>Current Likes:</strong> {currentLikes}
+        </p>
+        <p>
+          <strong>Current Reactions:</strong> {currentReactions}
+        </p>
+        <p>
+          <strong>Current Comments:</strong> {currentComments}
+        </p>
 
-          <p style={{ marginTop: "20px" }}><strong>Total Likes:</strong> {totalLikes}</p>
-          <p><strong>Total Reactions:</strong> {totalReactions}</p>
-          <p><strong>Total Comments:</strong> {totalComments}</p>
+        <p style={{ marginTop: "20px" }}>
+          <strong>Total Likes:</strong> {totalLikes}
+        </p>
+        <p>
+          <strong>Total Reactions:</strong> {totalReactions}
+        </p>
+        <p>
+          <strong>Total Comments:</strong> {totalComments}
+        </p>
       </div>
-
     </div>
   );
 };

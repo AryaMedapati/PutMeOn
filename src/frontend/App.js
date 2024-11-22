@@ -35,9 +35,14 @@ import AH from "./statistics/ArtistVisual";
 import PStat from "./statistics/PutMeOnStats";
 import CompareFriend from "./statistics/CompareFriend";
 import ShareStats from "./statistics/ShareStats";
+import FriendProfileView from "./FriendProfileView";
 import Login from "./Login";
 import CreateAccount from "./CreateAccount";
 import EditCollabPlaylist from "./EditCollabPlaylist";
+import Leaderboard from "./Leaderboard";
+import Global from "./Global";
+import Poll from "./Poll";
+import Quiz from "./Quiz";
 
 function App(props) {
   const [isHomeHovered, setIsHomeHovered] = useState(false);
@@ -167,7 +172,12 @@ function App(props) {
         <Route path="/artistvis" element={<AH />} />
         <Route path="/customstats" element={<PStat />} />
         <Route path="/comparefriend" element={<CompareFriend />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/global" element={<Global />} />
+        <Route path="/polls" element={<Poll />} />
+        <Route path="/quiz" element={<Quiz />} />
         <Route path="/sharestats" element={<ShareStats />} />
+        <Route path="/profile/:username" element={<FriendProfileView />} />
       </Routes>
     </div>
   );

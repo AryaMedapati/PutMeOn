@@ -1,0 +1,100 @@
+/* Leaderboard container styling */
+.leaderboard-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  position: relative; /* Enable positioning for child elements */
+}
+
+/* Dropdown styling */
+.sort-dropdown {
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 90px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Sort toggle button */
+.sort-toggle {
+  top: 20px;
+  right: 20px;
+  background-color: white;
+  border: 1px solid #ddd;
+  font-size: 24px;
+  cursor: pointer;
+  color: #000000;
+  float:right;
+  width:50px;
+  transition: color 0.3s ease;
+}
+.sort-toggle:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
+
+/* Leaderboard item styling */
+.leaderboard-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.leaderboard-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02);
+}
+
+/* Name and score styling */
+.leaderboard-item p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.leaderboard-item .name {
+  font-weight: bold;
+}
+
+.leaderboard-item .score {
+  color: #555;
+}
+
+/* Highlight for the current user */
+.leaderboard-item.highlight {
+  background-color: #b6f9c8; /* Light teal background */
+  /* border: 2px solid #000000; Blue border */
+  font-weight: bold;
+}
+
+.leaderboard-item.highlight .name {
+  color: #000000; /* Blue text for the name */
+}
+
+.leaderboard-item.highlight .score {
+  color: #000000; /* Darker blue for the score */
+}
+
+/* Loading message */
+.loading-message {
+  text-align: center;
+  font-size: 18px;
+  color: #888;
+}
