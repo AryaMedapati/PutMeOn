@@ -2483,6 +2483,9 @@ app.post('/generatePlaylistSpotifyLink', async (req, res) => {
       success: false,
       message: 'An error occurred while generating the playlist.',
     });
+  }
+});
+
 app.get("/fetchPoll", async (req, res) => {
   try {
     const docRef = db.collection("spotifySongs").doc("polls");
