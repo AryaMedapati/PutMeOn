@@ -99,6 +99,13 @@ function CreateAccount() {
           chats: [],
           sharedPlaylists: [],
           collabPlaylists: [],
+          privacySettings: {
+            topTracks: false,
+            topAlbums: false,
+            topGenres: false,
+            playlists: false,
+            listeningActivity: false,
+          },
         }),
         });
         try {
