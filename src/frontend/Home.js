@@ -2,11 +2,12 @@ import {React, useEffect, useState, useRef} from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, useLocation, useNavigate, Switch} from "react-router-dom";
 import Playlists from "./Playlists";
 import Leaderboard from './Leaderboard';
+import Poll from "./Poll"
 import Global from './Global';
 import "./styles/Home.css";
 import localstorage from 'localstorage-slim';
 import { GiConsoleController } from 'react-icons/gi';
-import { FaGlobe, FaTrophy } from "react-icons/fa";
+import { FaGlobe, FaTrophy, FaPoll } from "react-icons/fa";
 
 
 const Home = () => {
@@ -363,6 +364,9 @@ const Home = () => {
   const handleLeaderboard = () => {
     nav("/leaderboard");
   }
+  const handlePoll = () => {
+    nav("/polls");
+  }
   const handleGlobal = () => {
     nav("/global")
   }
@@ -413,6 +417,9 @@ const handleViewProfile = () => {
           </button>
           <button className="icon-button" onClick={handleLeaderboard}>
             <FaTrophy />
+          </button>
+          <button className="icon-button" onClick={handlePoll}>
+            <FaPoll />
           </button>
         </div>
         {loading ? (
@@ -497,6 +504,7 @@ const handleViewProfile = () => {
       <Route path="/playlists" element={<Playlists user = {passIn2}/>} />
       <Route path = "/leaderboard" element={<Leaderboard/>}></Route>
       <Route path = "/global" element={<Global/>}></Route>
+      <Route path = "/polls" element={<Poll/>}></Route>
 
       </Routes>
       

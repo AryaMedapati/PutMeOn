@@ -236,7 +236,7 @@ const NewPlaylist = () => {
       setPlaylistName(playlists[playlistIndex].name);
       setSelectedSongs(playlists[playlistIndex].songs);
     }
-  }, [playlists, playlistIndex]);
+  });
 
   return (
     <div className="edit-playlist-body">
