@@ -255,7 +255,7 @@ const ViewProfile = () => {
       setSongs(songs);
     };
     fetchSongs();
-  }, [songs]);
+  });
 
   useEffect(() => {
     const fetchCurrentlyPlaying = async () => {

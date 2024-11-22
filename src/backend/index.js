@@ -1993,6 +1993,58 @@ app.get("/fetchTopSongs", async (req, res) => {
   }
 });
 
+app.get("/fetchPoll", async (req, res) => {
+  try {
+    const docRef = db.collection("spotifySongs").doc("polls");
+    const snapshot = await docRef.get();
+
+    const data = snapshot.data();
+    const artists = data.artists || [];
+
+    res.status(200).json(artists);
+  } catch (error) {
+    // console.log(error);
+    res.status(500).send(error);
+  }
+});
+
+app.post("/updatePoll", async (req, res) => {
+  try {
+    const docRef = db.collection("spotifySongs").doc("polls");
+
+    await docRef.set(req.body);
+
+    res.status(200).send("User updated successfully");
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).send("Error updating user");
+  }
+});
+
+app.get("/pickTwoArtists", async (req, res) => {
+  try {
+    const docRef = db.collection("spotifySongs").doc("top_1000_songs");
+    const snapshot = await docRef.get();
+
+    const data = snapshot.data();
+    const songs = data.songs || [];
+
+    const artistNames = songs.map(song => song["Artist Name(s)"]);
+
+    const pickRandomArtists = (artists) => {
+      const shuffled = [...artists].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, 2);
+    };
+
+    const randomArtists = pickRandomArtists(artistNames);
+
+    res.status(200).json(randomArtists);
+  } catch (error) {
+    // console.log(error);
+    res.status(500).send(error);
+  }
+});
+
 app.listen(port, () => {
   console.log("Server running on port " + port);
 });
