@@ -10,7 +10,7 @@ import { MenuItem, Tag, Button, TextArea } from '@blueprintjs/core';
 
 const EditProfile = () => {
 
-    const items = [
+    const exampleItems = [
         "test123",
         "te1234",
         "temp1234",
@@ -27,7 +27,9 @@ const EditProfile = () => {
         "song123",
     ];
 
-    // const [items, setItems] = useState([]);
+    const [items, setItems] = useState([]);
+    const [songs, setSongs] = useState([]);
+
     const [pfp, setPfp] = useState("");
     const [bio, setBio] = useState("");
     const [email, setEmail] = useState("");
@@ -213,12 +215,17 @@ const EditProfile = () => {
 
     useEffect(() => {
         const fetchSongs = async () => {
-            const response = await fetch("http://localhost:3001/fetchTopSongs");
-            const songs = await response.json();
-            debugger
+          const response = await fetch("http://localhost:3001/fetchTopSongs");
+          const songs = await response.json();
+          setSongs(songs);
+          setItems(
+            songs.map(
+              (song) => `${song["Track Name"]} -- by ${song["Artist Name(s)"]}`
+            )
+          );
         };
         fetchSongs();
-    }, [items]);
+      }, [items]);
 
     useEffect(() => {
         displayImage(pfp);
@@ -329,8 +336,8 @@ const EditProfile = () => {
                         large: true,
                         placeholder: "Type to add a song...",
                     }}
-                    createNewItemFromQuery={createNewItemFromQuery}
-                    createNewItemRenderer={createNewItemRenderer}
+                    // createNewItemFromQuery={createNewItemFromQuery}
+                    // createNewItemRenderer={createNewItemRenderer}
                     openOnKeyDown
                     resetOnSelect
                 />
@@ -349,7 +356,7 @@ const EditProfile = () => {
             >
                 <MultiSelect
                     className='top-multiselect'
-                    items={items}
+                    items={exampleItems}
                     itemPredicate={itemPredicate}
                     itemRenderer={renderGenres}
                     onItemSelect={handleGenreSelect}
@@ -380,7 +387,7 @@ const EditProfile = () => {
             >
                 <MultiSelect
                     className='top-multiselect'
-                    items={items}
+                    items={exampleItems}
                     itemPredicate={itemPredicate}
                     itemRenderer={renderArtists}
                     onItemSelect={handleArtistSelect}
