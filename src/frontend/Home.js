@@ -210,13 +210,13 @@ const Home = () => {
 
     console.log(friendsList);
     for (let i = 0; i < friendsList.length; i++) {
-      const user = friendsList[i];
+      const user = friendsList[i].username;
       let track = await getRecentlyPlayed(user);
       console.log(track);
       tracks.push(track);
       console.log(tracks);
       const savedTrack = await getSaved(
-        friendsList[i],
+        friendsList[i].username,
         i,
         tempCurrentLikes,
         tempLikedBy,
@@ -262,7 +262,7 @@ const Home = () => {
         setFireLikedBy(tempFireLikedBy2);
       }
       saveRecentlyPlayed(
-        friendsList[i],
+        friendsList[i].username,
         track ? track.track.id : "0",
         currentLikes[i],
         likedBy[i],
@@ -359,7 +359,7 @@ const Home = () => {
       console.log(likedByTemp[index]);
       console.log(laughingLikedBy[index]);
       saveRecentlyPlayed(
-        friends[index],
+        friends[index].username,
         info[index] ? info[index].track.id : "0",
         updatedLikes[index],
         likedByTemp[index],
@@ -388,7 +388,7 @@ const Home = () => {
       console.log(likedByTemp[index]);
       setLikedBy(likedByTemp);
       saveRecentlyPlayed(
-        friends[index],
+        friends[index].username,
         info[index] ? info[index].track.id : "0",
         updatedLikes[index],
         likedByTemp[index],
@@ -414,7 +414,7 @@ const Home = () => {
       likedByTemp2[index].push(username);
       console.log(currentLikes);
       saveRecentlyPlayed(
-        friends[index],
+        friends[index].username,
         info[index] ? info[index].track.id : "0",
         currentLikes[index],
         likedBy[index],
@@ -440,7 +440,7 @@ const Home = () => {
       );
       setLaughingLikedBy(likedByTemp);
       saveRecentlyPlayed(
-        friends[index],
+        friends[index].username,
         info[index] ? info[index].track.id : "0",
         currentLikes[index],
         likedBy[index],
@@ -465,7 +465,7 @@ const Home = () => {
       likedByTemp3[index].push(username);
       console.log(currentLikes);
       saveRecentlyPlayed(
-        friends[index],
+        friends[index].username,
         info[index] ? info[index].track.id : "0",
         currentLikes[index],
         likedBy[index],
@@ -491,7 +491,7 @@ const Home = () => {
       );
       setFireLikedBy(likedByTemp3);
       saveRecentlyPlayed(
-        friends[index],
+        friends[index].username,
         info[index] ? info[index].track.id : "0",
         currentLikes[index],
         likedBy[index],
@@ -520,7 +520,7 @@ const Home = () => {
     setNewComment("");
     setShowCommentInput(false);
     saveRecentlyPlayed(
-      friends[index],
+      friends[index].username,
       info[index] ? info[index].track.id : "0",
       currentLikes[index],
       likedBy[index],
@@ -630,7 +630,7 @@ const Home = () => {
                   id="friend-id"
                   onClick={handleViewProfile}
                 >
-                  {friends[index]}
+                  {friends[index].username}
                 </div>
                 <div className="album-cover">
                   <img

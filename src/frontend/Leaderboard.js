@@ -71,10 +71,10 @@ const Leaderboard = () => {
       async function fetchLeaderboard() {
         const leaderboardData = await Promise.all(
           friends.map(async (user) => {
-            const score = await getScore(user);
-            const totalLikes = await getTotalLikes(user);
-            const followers = await getFollowers(user);
-            return { name: user, popScore:score, totalLikes:totalLikes, followers:followers }; // Construct leaderboard entry
+            const score = await getScore(user.username);
+            const totalLikes = await getTotalLikes(user.username);
+            const followers = await getFollowers(user.username);
+            return { name: user.username, popScore:score, totalLikes:totalLikes, followers:followers }; // Construct leaderboard entry
           }));
           const currentUserScore = await getScore(username);
           const currentUserLikes = await getTotalLikes(username);
