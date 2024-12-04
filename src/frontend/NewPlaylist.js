@@ -229,7 +229,7 @@ const NewPlaylist = () => {
       );
     };
     fetchSongs();
-  }, [items]);
+  });
 
   useEffect(() => {
     if (playlistIndex != -1) {

@@ -140,3 +140,33 @@ describe("playlist functinality", () => {
     // cy.contains("New Testing Playlist 1").should("be.visible");
   });
 });
+
+it("Playlist Collab Test", () => {
+
+  cy.request({
+      method: "POST",
+      url: "http://localhost:3001/cypressUserReset",
+      headers: {
+        documentid: "Du33v7g2VInEVppp6wNU",
+      },
+      body: {
+        username: "cypressTesting@gmail.com",
+        password: "Testing1",
+        isPrivate: false,
+        pfp: "",
+        bio: "",
+        topSongs: [],
+        topGenres: [],
+        topArtists: [],
+        pdf: "",
+        playlists: [],
+        friends_list: [],
+        chats: [],
+        sharedPlaylists: [],
+        collabPlaylists: [],
+      },
+    });
+  cy.wait(300)
+
+});
+
