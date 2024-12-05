@@ -22,10 +22,12 @@ import {
 } from "@blueprintjs/core";
 import { useNavigate } from "react-router-dom";
 import "./styles/Playlists.css";
+import localstorage from "localstorage-slim";
 
 const PlaylistList = () => {
   const navigate = useNavigate();
-  const { username } = useContext(UserContext);
+  // const { username } = useContext(UserContext);
+  const username = localstorage.get("docId");
 
   const [playlists, setPlaylists] = useState([]);
   const [friendsList, setFriendsList] = useState([]);

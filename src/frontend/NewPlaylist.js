@@ -21,11 +21,14 @@ import {
 import { MultiSelect } from "@blueprintjs/select";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./styles/NewPlaylist.css";
+import localstorage from "localstorage-slim";
 
 const NewPlaylist = () => {
   const [items, setItems] = useState([]);
   const [songs, setSongs] = useState([]);
-  const { username } = useContext(UserContext);
+  // const { username } = useContext(UserContext);
+  const username = localstorage.get("docId");
+
   const navigate = useNavigate();
   const location = useLocation();
   const { playlists, playlistIndex } = location.state || {};
@@ -115,7 +118,7 @@ const NewPlaylist = () => {
   const renderSongDetails = (index) => {
     if (songs.length > index) {
       const trackName = selectedSongs[index].split(" -- by ")[0]; 
- 
+      debugger
       const song = songs.find((s) => s["Track Name"] === trackName);
       return (
         <div
@@ -229,7 +232,7 @@ const NewPlaylist = () => {
       );
     };
     fetchSongs();
-  }, [items]);
+  });
 
   useEffect(() => {
     if (playlistIndex != -1) {

@@ -25,12 +25,15 @@ import {
 import { MultiSelect } from "@blueprintjs/select";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./styles/NewPlaylist.css";
+import localstorage from "localstorage-slim";
 
 const EditCollabPlaylist = () => {
   const [items, setItems] = useState([]);
   const [songs, setSongs] = useState([]);
 
-  const { username } = useContext(UserContext);
+  // const { username } = useContext(UserContext);
+  const username = localstorage.get("docId");
+
   const [currentUser, setCurrentUser] = useState("");
   const navigate = useNavigate();
   const location = useLocation();

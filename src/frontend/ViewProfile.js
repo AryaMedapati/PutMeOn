@@ -38,7 +38,8 @@ const ViewProfile = () => {
   const [currentComments, setCurrentComments] = useState(0);
   const [songs, setSongs] = useState([]);
 
-  const { username, setUsername } = useContext(UserContext);
+  // const { username, setUsername } = useContext(UserContext);
+  const username = localstorage.get("user");
 
   const fileInputRef = useRef(null);
   const imageContainerRef = useRef(null);
@@ -65,6 +66,7 @@ const ViewProfile = () => {
         // setIsLoggedIn(false);
         localstorage.set("user", "");
         localstorage.set("pass", "");
+        localstorage.set("docId", "");
         nav("/login");
       })
       .catch((error) => {
@@ -102,21 +104,6 @@ const ViewProfile = () => {
     container.innerHTML = "";
     container.appendChild(img);
   };
-
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      if (username) {
-        const userDoc = await getDoc(doc(db, "UserData", username));
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          setPfp(data.pfp);
-          setBio(data.bio);
-          setEmail(data.username);
-        }
-      }
-    };
-    fetchProfileData();
-  }, [username]);
 
   const renderSongDetails = (index) => {
     if (songs.length > index) {
@@ -233,16 +220,23 @@ const ViewProfile = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       if (username) {
-        const userDoc = await getDoc(doc(db, "UserData", username));
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          setPfp(data.pfp);
-          setBio(data.bio);
-          setEmail(data.username);
-          setSelectedGenres(data.topGenres);
-          setSelectedSongs(data.topSongs);
-          setSelectedArtists(data.topArtists);
-        }
+        const response = await fetch(
+          "http://localhost:3001/fetchUserByUsername",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              username: username,
+            },
+          }
+        );
+        const data = await response.json();
+        setPfp(data.pfp);
+        setBio(data.bio);
+        setEmail(data.username);
+        setSelectedGenres(data.topGenres);
+        setSelectedSongs(data.topSongs);
+        setSelectedArtists(data.topArtists);
       }
     };
     fetchProfileData();

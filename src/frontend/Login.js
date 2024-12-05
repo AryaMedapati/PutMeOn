@@ -99,6 +99,7 @@ function Login() {
               // setIsLoggedIn(true);
               localstorage.set('user', username);
               localstorage.set('pass', pass);
+              localstorage.set('docId', users[i].docId)
               nav("/", { user: users[i] })
             } catch (error) {
               console.log(error);

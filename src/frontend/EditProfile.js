@@ -7,6 +7,7 @@ import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { UserContext } from './UserContext';
 import { MultiSelect } from "@blueprintjs/select";
 import { MenuItem, Tag, Button, TextArea } from '@blueprintjs/core';
+import localstorage from "localstorage-slim";
 
 const EditProfile = () => {
 
@@ -36,7 +37,8 @@ const EditProfile = () => {
     const [docId, setDocId] = useState("")
 
     const db = getFirestore();
-    const { username } = useContext(UserContext);
+    // const { username } = useContext(UserContext);
+    const username = localstorage.get("docId");
 
     const fileInputRef = useRef(null);
     const imageContainerRef = useRef(null);
