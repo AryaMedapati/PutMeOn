@@ -68,10 +68,12 @@ const Messages = () => {
           throw new Error("Failed to fetch songs");
         }
         const songs = await response.json();
+        console.log(songs);
         const formattedSongs = songs.map((song, index) => ({
-          key: `${song["Track Name"]} - by ${song["Artist Name(s)"]} - ${index}`, // Ensures key is unique
-          value: `${song["Track Name"]} - by ${song["Artist Name(s)"]}`, // Value that is selected by the user
-          text: `${song["Track Name"]} - by ${song["Artist Name(s)"]}`, // Text shown in the dropdown
+          key: `${song["Track Name"]} - by ${song["Artist Name(s)"]} - ${index}`,
+          value: `${song["Track Name"]} - by ${song["Artist Name(s)"]}`,
+          text: `${song["Track Name"]} - by ${song["Artist Name(s)"]}`,
+          url: `${song["Track Preview URL"]}`,
         }));
         setItems(formattedSongs);
       } catch (error) {
@@ -500,38 +502,49 @@ const Messages = () => {
   };
 
   const handleSendSong = async (event) => {
-    const song = await waitForSongSelection();
-    console.log("after this ");
-    console.log(newSong);
+    // const song = await waitForSongSelection();
+    // console.log("after this ");
+    // console.log(newSong);
+    // event.preventDefault();
+    // console.log(newSong);
+    // const res = await fetch("http://localhost:3001/fetchTrackID", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     trackName: newSong,
+    //   }),
+    // });
+    // console.log(res);
+    // const data = await res.json();
+    // const id = await data.message;
+    // console.log(data);
+    // console.log(data.message);
+    // const response = await fetch("http://localhost:3001/getTrack", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     songID: id,
+    //   }),
+    // });
+    // const data2 = await response.json();
+    // console.log(data2.trackData);
+    // setTrackData(data2.trackData);
+    // handleSendMessage(null, data2.trackData);
     event.preventDefault();
-    console.log(newSong);
-    const res = await fetch("http://localhost:3001/fetchTrackID", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        trackName: newSong,
-      }),
-    });
-    console.log(res);
-    const data = await res.json();
-    const id = await data.message;
-    console.log(data);
-    console.log(data.message);
-    const response = await fetch("http://localhost:3001/getTrack", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        songID: id,
-      }),
-    });
-    const data2 = await response.json();
-    console.log(data2.trackData);
-    setTrackData(data2.trackData);
-    handleSendMessage(null, data2.trackData);
+
+    const selectedSong = items.find((item) => item.value === newSong);
+
+    if (selectedSong && selectedSong.url) {
+      const preview_url = selectedSong.url;
+      handleSendMessage(null, preview_url);
+      setTrackData(preview_url);
+    } else {
+      console.error("No song selected or no preview URL available.");
+    }
   };
 
   const handleSendMessage = async (event, preview_url) => {
