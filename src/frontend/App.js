@@ -79,8 +79,7 @@ function App(props) {
   let passIn = "";
   if (location) {
     // passIn = location.state.user;
-    // console.log(passIn);
-  }
+   }
   return (
     <div>
       {window.location.pathname !== "/login" &&
