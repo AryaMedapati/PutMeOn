@@ -315,6 +315,7 @@ const Messages = () => {
 
   useEffect(() => {
     fetchMessages();
+    setTrackData(null);
     setShowThemeOptions(false);
     getChatTheme(selectedChat.id);
   }, [selectedChat]);
