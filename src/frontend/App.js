@@ -74,10 +74,13 @@ function App(props) {
       nav("/login");
     }
   }, []);
+  //  console.log(props.user);
+  // console.log(location);
   let passIn = "";
   if (location) {
     // passIn = location.state.user;
-   }
+    // console.log(passIn);
+  }
   return (
     <div>
       {window.location.pathname !== "/login" &&

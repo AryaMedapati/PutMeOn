@@ -371,7 +371,7 @@ const EditCollabPlaylist = () => {
       );
     };
     fetchSongs();
-  });
+  }, []);
 
   useEffect(() => {
     if (playlistIndex != -1) {
