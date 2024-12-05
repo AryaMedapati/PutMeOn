@@ -74,7 +74,6 @@ function App(props) {
       nav("/login");
     }
   }, []);
-  //  console.log(props.user);
   let passIn = "";
   if (location) {
     // passIn = location.state.user;
