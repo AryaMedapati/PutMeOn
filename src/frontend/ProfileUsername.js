@@ -1,14 +1,16 @@
-import React, { useRef } from 'react';
-import { Button, TextArea } from '@blueprintjs/core';
+import React, { useRef } from "react";
+import { Button, TextArea } from "@blueprintjs/core";
 import { useState, useEffect, useContext } from "react";
-import '@blueprintjs/core/lib/css/blueprint.css';
+import "@blueprintjs/core/lib/css/blueprint.css";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
-import { UserContext } from './UserContext';
+import { UserContext } from "./UserContext";
+import localstorage from "localstorage-slim";
 
 const ProfileUsername = () => {
-
   const db = getFirestore();
-  const { username } = useContext(UserContext);
+  // const { username } = useContext(UserContext);
+  const username = localstorage.get("docId");
+
   const [password, setPassword] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -23,18 +25,22 @@ const ProfileUsername = () => {
 
   const handleSaveChanges = async () => {
     if (username) {
-      if (oldPassword == password) {
-        try {
-          await setDoc(doc(db, "UserData", username), {
-            password: newPassword
-          }, { merge: true });
-          alert("Changes saved");
-        } catch (error) {
-          console.error(error);
-          alert(error);
-        }
-      } else {
-        alert("Old password does not match");
+      try {
+        const resp = await fetch('http://localhost:3001/updateUser', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'DocumentId': username,
+            },
+            body: JSON.stringify({
+              password: newPassword,
+            }),
+        });
+
+        alert("Changes saved");
+      } catch (error) {
+        console.error(error);
+        alert(error);
       }
     } else {
       alert("No user logged in.");
@@ -44,11 +50,15 @@ const ProfileUsername = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       if (username) {
-        const userDoc = await getDoc(doc(db, "UserData", username));
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          setPassword(data.password)
-        }
+        const response = await fetch("http://localhost:3001/fetchCurrentUser", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            DocumentId: username,
+          },
+        });
+        const data = await response.json();
+        setPassword(data.password)
       }
     };
     fetchProfileData();
@@ -59,20 +69,20 @@ const ProfileUsername = () => {
       <h1>Change Password</h1>
       <div
         style={{
-          fontWeight: 'bold',
+          fontWeight: "bold",
           fontSize: 24,
-          padding: 10
+          padding: 10,
         }}
       >
         Old Password
       </div>
       <div>
         <TextArea
-          intent='none'
+          intent="none"
           style={{
-            resize: 'none',
-            width: '800px',
-            height: '40px',
+            resize: "none",
+            width: "800px",
+            height: "40px",
           }}
           large
           value={oldPassword}
@@ -81,20 +91,20 @@ const ProfileUsername = () => {
       </div>
       <div
         style={{
-          fontWeight: 'bold',
+          fontWeight: "bold",
           fontSize: 24,
-          padding: 10
+          padding: 10,
         }}
       >
         New Password
       </div>
       <div>
         <TextArea
-          intent='none'
+          intent="none"
           style={{
-            resize: 'none',
-            width: '800px',
-            height: '40px',
+            resize: "none",
+            width: "800px",
+            height: "40px",
           }}
           large
           value={newPassword}
@@ -103,15 +113,15 @@ const ProfileUsername = () => {
       </div>
       <div>
         <Button
-          intent='primary'
+          intent="primary"
           style={{
-            width: '160px',
-            height: '35px',
-            borderRadius: 20
+            width: "160px",
+            height: "35px",
+            borderRadius: 20,
           }}
           onClick={handleSaveChanges}
-          text="Change Password" />
-
+          text="Change Password"
+        />
       </div>
     </div>
   );
