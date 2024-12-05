@@ -118,7 +118,6 @@ const NewPlaylist = () => {
   const renderSongDetails = (index) => {
     if (songs.length > index) {
       const trackName = selectedSongs[index].split(" -- by ")[0]; 
-      debugger
       const song = songs.find((s) => s["Track Name"] === trackName);
       return (
         <div
@@ -232,14 +231,14 @@ const NewPlaylist = () => {
       );
     };
     fetchSongs();
-  });
+  }, []);
 
   useEffect(() => {
     if (playlistIndex != -1) {
       setPlaylistName(playlists[playlistIndex].name);
       setSelectedSongs(playlists[playlistIndex].songs);
     }
-  });
+  }, [playlistIndex]);
 
   return (
     <div className="edit-playlist-body">

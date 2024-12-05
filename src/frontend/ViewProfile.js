@@ -249,7 +249,7 @@ const ViewProfile = () => {
       setSongs(songs);
     };
     fetchSongs();
-  });
+  }, []);
 
   useEffect(() => {
     const fetchCurrentlyPlaying = async () => {

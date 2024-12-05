@@ -227,7 +227,7 @@ const EditProfile = () => {
           );
         };
         fetchSongs();
-      }, [items]);
+      }, []);
 
     useEffect(() => {
         displayImage(pfp);
