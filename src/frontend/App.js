@@ -75,7 +75,6 @@ function App(props) {
     }
   }, []);
   //  console.log(props.user);
-  // console.log(location);
   let passIn = "";
   if (location) {
     // passIn = location.state.user;
